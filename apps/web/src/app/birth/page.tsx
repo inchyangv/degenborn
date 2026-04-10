@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef, Suspense } from "react";
+import { playSynthSting, playIfUnmuted } from "@/lib/sfx";
 import type { PersonaDNA, ArchetypeResult } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
 import ArchetypeReveal from "@/components/ArchetypeReveal";
@@ -127,7 +128,10 @@ function BirthContent() {
         setTimeout(() => {
           if (!skipRef.current) {
             setPhase("genesis");
-            setTimeout(() => setGenesisVisible(true), 100);
+            setTimeout(() => {
+              setGenesisVisible(true);
+              playIfUnmuted(playSynthSting);
+            }, 100);
           }
         }, 5500);
         setTimeout(() => { if (!skipRef.current) setPhase("mint"); }, 9000);
