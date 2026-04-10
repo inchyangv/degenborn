@@ -1,7 +1,7 @@
 "use client";
 
 import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/shared";
-import { ARCHETYPE_COLORS } from "@degenborn/shared";
+import { ARCHETYPE_COLORS, pickCaption } from "@degenborn/shared";
 import { useRef, useState } from "react";
 import CharacterDisplay from "./CharacterDisplay";
 
@@ -12,51 +12,6 @@ interface Props {
   wallet: string;
 }
 
-const CAPTION_BANK: Record<string, string[]> = {
-  mad_gambler: [
-    "Ape in. Ape out. Ape in again. The ritual never ends.",
-    "I don't have a plan. I have aggression.",
-    "100x or the morgue. There is no in between.",
-    "Chart? That's my enemy. Vibes? That's my edge.",
-  ],
-  ice_whale: [
-    "I don't trade. I wait. Then I destroy.",
-    "The market moves around me. I am the floor.",
-    "Patience is the most violent thing in crypto.",
-    "You sold at the bottom. I bought. That's the whole story.",
-  ],
-  rug_necromancer: [
-    "Rugged three times this week. Still here. Still cursed.",
-    "I died. The bag survived. Close enough.",
-    "Down 1400. Back 1200. The necromancer returns.",
-    "Every rug is just a scar I haven't named yet.",
-  ],
-  diamond_cultist: [
-    "The bags don't move. Neither do I.",
-    "Red candles are just character development.",
-    "I've been averaging down since 2021. This is fine.",
-    "The price means nothing. The conviction means everything.",
-  ],
-  sniper_jester: [
-    "In. Out. +400%. In again. Out again. Repeat.",
-    "I don't time the market. I am the market.",
-    "Fast hands. No heart. Perfect accuracy.",
-    "They called it luck. I call it reflexes.",
-  ],
-  ghost_bagholder: [
-    "I don't check the price anymore. It's better this way.",
-    "The bag is heavy. The ghost is light.",
-    "I remember the floor price. I will always remember.",
-    "Somewhere between bagholding and enlightenment.",
-  ],
-};
-
-function pickCaption(archetype: string, state: CharacterState): string {
-  const bank = CAPTION_BANK[archetype] ?? [`I am the ${archetype.replace(/_/g, " ")}.`];
-  // Pick based on mood + crown for some determinism
-  const idx = ((state.crown_count ?? 0) + (state.scar_count ?? 0)) % bank.length;
-  return bank[idx]!;
-}
 
 export default function ShareCard({ dna, archetype, state, wallet }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
