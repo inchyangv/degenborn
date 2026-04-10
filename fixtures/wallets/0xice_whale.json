@@ -1,0 +1,16 @@
+{
+  "wallet_address": "0xicewhale000000000000000000000000000000001",
+  "fetched_at": 1712700000,
+  "source": "fixture",
+  "archetype_label": "ice_whale",
+  "events": [
+    { "id": "iw001", "wallet_address": "0xicewhale000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_big1", "token_symbol": "BIG1", "value_usd": 10000, "pnl_delta": 0, "hold_duration_seconds": 0, "timestamp": 1704000000, "chain_id": 56 },
+    { "id": "iw002", "wallet_address": "0xicewhale000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_big1", "token_symbol": "BIG1", "value_usd": 5000, "pnl_delta": 0, "hold_duration_seconds": 0, "timestamp": 1704086400, "chain_id": 56 },
+    { "id": "iw003", "wallet_address": "0xicewhale000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_big1", "token_symbol": "BIG1", "value_usd": 8000, "pnl_delta": 0, "hold_duration_seconds": 0, "timestamp": 1706000000, "chain_id": 56 },
+    { "id": "iw004", "wallet_address": "0xicewhale000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_big1", "token_symbol": "BIG1", "value_usd": 40000, "pnl_delta": 17000, "hold_duration_seconds": 7776000, "timestamp": 1711776000, "chain_id": 56 },
+    { "id": "iw005", "wallet_address": "0xicewhale000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_long2", "token_symbol": "LONG2", "value_usd": 5000, "pnl_delta": 0, "hold_duration_seconds": 0, "timestamp": 1711800000, "chain_id": 56 },
+    { "id": "iw006", "wallet_address": "0xicewhale000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_long2", "token_symbol": "LONG2", "value_usd": 3000, "pnl_delta": 0, "hold_duration_seconds": 0, "timestamp": 1712000000, "chain_id": 56 },
+    { "id": "iw007", "wallet_address": "0xicewhale000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_long2", "token_symbol": "LONG2", "value_usd": 12000, "pnl_delta": 4000, "hold_duration_seconds": 604800, "timestamp": 1712604800, "chain_id": 56 },
+    { "id": "iw008", "wallet_address": "0xicewhale000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_stable", "token_symbol": "STABLE", "value_usd": 20000, "pnl_delta": 0, "hold_duration_seconds": 0, "timestamp": 1712620000, "chain_id": 56 }
+  ]
+}

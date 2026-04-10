@@ -1,0 +1,96 @@
+{
+  "preset_id": "hackathon_demo_v1",
+  "name": "DegenBorn Hackathon Demo",
+  "description": "Full story arc: Rug Necromancer — rugged, recovered, crowned",
+  "wallet_address": "0xrugnecromancer000000000000000000000000001",
+  "initial_dna": {
+    "aggression": 55,
+    "conviction": 45,
+    "chaos": 82,
+    "luck": 41,
+    "survival": 91
+  },
+  "archetype": "rug_necromancer",
+  "steps": [
+    {
+      "step": 1,
+      "label": "Connect Wallet",
+      "description": "User connects their wallet",
+      "action": "connect_wallet",
+      "delay_ms": 0
+    },
+    {
+      "step": 2,
+      "label": "Awakening",
+      "description": "Analyzing wallet history...",
+      "action": "show_dna",
+      "dna": { "aggression": 55, "conviction": 45, "chaos": 82, "luck": 41, "survival": 91 },
+      "archetype": "rug_necromancer",
+      "delay_ms": 2000
+    },
+    {
+      "step": 3,
+      "label": "Genesis Birth",
+      "description": "You are: Rug Necromancer",
+      "action": "show_genesis",
+      "delay_ms": 1500
+    },
+    {
+      "step": 4,
+      "label": "Win Streak",
+      "description": "3 consecutive wins → Crown acquired",
+      "action": "state_event",
+      "event_type": "win_streak_3",
+      "state_changes": {
+        "crown_count": 1,
+        "mood": "euphoria",
+        "traits_added": ["crown"]
+      },
+      "caption": "Three in a row. The crown was always yours.",
+      "delay_ms": 2000
+    },
+    {
+      "step": 5,
+      "label": "Rug Event",
+      "description": "DEAD3 token rugged — corruption rises",
+      "action": "state_event",
+      "event_type": "rug_exposure",
+      "state_changes": {
+        "corruption": 45,
+        "scar_count": 1,
+        "traits_added": ["zombie_eyes", "bandage"],
+        "mood": "despair"
+      },
+      "caption": "The rug found you. Again. The eyes never lie.",
+      "delay_ms": 2000
+    },
+    {
+      "step": 6,
+      "label": "Comeback",
+      "description": "UNDEAD token 3x — survival streak continues",
+      "action": "state_event",
+      "event_type": "loss_recovery",
+      "state_changes": {
+        "survival_streak": 3,
+        "mood": "revenge",
+        "traits_added": ["revenge_aura"]
+      },
+      "caption": "Down 1400. Back 1200. The necromancer returns.",
+      "delay_ms": 2000
+    },
+    {
+      "step": 7,
+      "label": "Mutation Diary",
+      "description": "Open the diary of changes",
+      "action": "show_diary",
+      "delay_ms": 1000
+    },
+    {
+      "step": 8,
+      "label": "Share Card",
+      "description": "Generate share card for community",
+      "action": "show_share_card",
+      "delay_ms": 1000
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "wallet_address": "0xrugnecromancer000000000000000000000000001",
+  "fetched_at": 1712700000,
+  "source": "fixture",
+  "archetype_label": "rug_necromancer",
+  "events": [
+    { "id": "rn001", "wallet_address": "0xrugnecromancer000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_tomb1", "token_symbol": "TOMB1", "value_usd": 1000, "pnl_delta": 0, "timestamp": 1712100000, "chain_id": 56 },
+    { "id": "rn002", "wallet_address": "0xrugnecromancer000000000000000000000000001", "event_type": "rug", "token_address": "0xtoken_tomb1", "token_symbol": "TOMB1", "value_usd": 0, "pnl_delta": -1000, "timestamp": 1712110000, "chain_id": 56 },
+    { "id": "rn003", "wallet_address": "0xrugnecromancer000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_rise1", "token_symbol": "RISE1", "value_usd": 800, "pnl_delta": 0, "timestamp": 1712200000, "chain_id": 56 },
+    { "id": "rn004", "wallet_address": "0xrugnecromancer000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_rise1", "token_symbol": "RISE1", "value_usd": 1400, "pnl_delta": 600, "hold_duration_seconds": 86400, "timestamp": 1712286400, "chain_id": 56 },
+    { "id": "rn005", "wallet_address": "0xrugnecromancer000000000000000000000000001", "event_type": "rug", "token_address": "0xtoken_death2", "token_symbol": "DEATH2", "value_usd": 0, "pnl_delta": -1400, "timestamp": 1712300000, "chain_id": 56 },
+    { "id": "rn006", "wallet_address": "0xrugnecromancer000000000000000000000000001", "event_type": "recovery", "token_address": "0xtoken_phoenix", "token_symbol": "PHOENIX", "value_usd": 500, "pnl_delta": 900, "timestamp": 1712400000, "chain_id": 56 },
+    { "id": "rn007", "wallet_address": "0xrugnecromancer000000000000000000000000001", "event_type": "rug", "token_address": "0xtoken_dead3", "token_symbol": "DEAD3", "value_usd": 0, "pnl_delta": -700, "timestamp": 1712450000, "chain_id": 56 },
+    { "id": "rn008", "wallet_address": "0xrugnecromancer000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_undead", "token_symbol": "UNDEAD", "value_usd": 600, "pnl_delta": 0, "timestamp": 1712480000, "chain_id": 56 },
+    { "id": "rn009", "wallet_address": "0xrugnecromancer000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_undead", "token_symbol": "UNDEAD", "value_usd": 1800, "pnl_delta": 1200, "hold_duration_seconds": 172800, "timestamp": 1712652800, "chain_id": 56 },
+    { "id": "rn010", "wallet_address": "0xrugnecromancer000000000000000000000000001", "event_type": "recovery", "token_address": "0xtoken_rebirth", "token_symbol": "REBIRTH", "value_usd": 400, "pnl_delta": 600, "timestamp": 1712690000, "chain_id": 56 }
+  ]
+}
