@@ -25,6 +25,19 @@ body {
   min-height: 100vh;
 }
 
+/* Global focus ring for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--neon-green);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Minimum contrast: body text gray-400+ */
+.text-gray-600 { color: #9ca3af; }
+.text-gray-700 { color: #6b7280; }
+
 /* Scanlines overlay for retro vibe */
 body::before {
   content: "";
