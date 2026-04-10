@@ -73,3 +73,13 @@ export const ARCHETYPE_PROFILES: Record<ArchetypeId, ArchetypeProfile> = {
     tone_seed: "haunted, resigned, quietly delusional",
   },
 };
+
+/** Single source of truth for archetype UI colors */
+export const ARCHETYPE_COLORS: Record<ArchetypeId, string> = {
+  mad_gambler: "#ff3d3d",
+  ice_whale: "#00d4ff",
+  rug_necromancer: "#9945ff",
+  diamond_cultist: "#88ccff",
+  sniper_jester: "#ffd700",
+  ghost_bagholder: "#aaaaaa",
+};

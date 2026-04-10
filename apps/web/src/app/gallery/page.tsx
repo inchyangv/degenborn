@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { ArchetypeId } from "@degenborn/shared";
-import { ARCHETYPE_PROFILES } from "@degenborn/shared";
+import type { ArchetypeId, CharacterState } from "@degenborn/shared";
+import { ARCHETYPE_PROFILES, ARCHETYPE_COLORS } from "@degenborn/shared";
 import CharacterDisplay from "@/components/CharacterDisplay";
-import type { CharacterState } from "@degenborn/shared";
 
 interface GalleryEntry {
   wallet_short: string;
@@ -188,16 +187,7 @@ export default function GalleryPage() {
 
 function GalleryCard({ entry }: { entry: GalleryEntry }) {
   const profile = ARCHETYPE_PROFILES[entry.archetype];
-
-  const archetypeColors: Record<ArchetypeId, string> = {
-    mad_gambler: "#ff3d3d",
-    ice_whale: "#00d4ff",
-    rug_necromancer: "#9945ff",
-    diamond_cultist: "#88ccff",
-    sniper_jester: "#ffd700",
-    ghost_bagholder: "#aaaaaa",
-  };
-  const color = archetypeColors[entry.archetype] ?? "#ffffff";
+  const color = ARCHETYPE_COLORS[entry.archetype] ?? "#ffffff";
 
   return (
     <div

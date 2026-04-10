@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/shared";
-import { ARCHETYPE_PROFILES, TRAIT_DEFINITIONS } from "@degenborn/shared";
+import { ARCHETYPE_PROFILES, TRAIT_DEFINITIONS, ARCHETYPE_COLORS } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import Link from "next/link";
@@ -392,15 +392,8 @@ export default function ReplayPage() {
 }
 
 function archetypeGlow(archetype: string): string {
-  const glows: Record<string, string> = {
-    mad_gambler: "#ff3d3d22",
-    ice_whale: "#00d4ff22",
-    rug_necromancer: "#9945ff22",
-    diamond_cultist: "#88ccff22",
-    sniper_jester: "#ffd70022",
-    ghost_bagholder: "#aaaaaa22",
-  };
-  return glows[archetype] ?? "#9945ff22";
+  const base = ARCHETYPE_COLORS[archetype as keyof typeof ARCHETYPE_COLORS] ?? "#9945ff";
+  return `${base}22`;
 }
 
 // Embedded preset so replay works without any API/network

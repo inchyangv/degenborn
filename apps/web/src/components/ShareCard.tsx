@@ -1,6 +1,7 @@
 "use client";
 
 import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/shared";
+import { ARCHETYPE_COLORS } from "@degenborn/shared";
 import { useRef, useState } from "react";
 import CharacterDisplay from "./CharacterDisplay";
 
@@ -200,11 +201,3 @@ export default function ShareCard({ dna, archetype, state, wallet }: Props) {
   );
 }
 
-const ARCHETYPE_COLORS: Record<string, string> = {
-  mad_gambler: "#ff3d3d",
-  ice_whale: "#00d4ff",
-  rug_necromancer: "#9945ff",
-  diamond_cultist: "#88ccff",
-  sniper_jester: "#ffd700",
-  ghost_bagholder: "#aaaaaa",
-};

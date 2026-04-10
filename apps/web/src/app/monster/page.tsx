@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import type { PersonaDNA, ArchetypeResult, CharacterState, MutationEvent, DiaryPage } from "@degenborn/shared";
-import { TRAIT_DEFINITIONS, TRAIT_EMOJI } from "@degenborn/shared";
+import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
 import ShareCard from "@/components/ShareCard";
 import CharacterDisplay from "@/components/CharacterDisplay";
@@ -248,15 +248,8 @@ function traitEmoji(traitId: string): string {
 }
 
 function archetypeGlow(archetype: string): string {
-  const glows: Record<string, string> = {
-    mad_gambler: "#ff3d3d22",
-    ice_whale: "#00d4ff22",
-    rug_necromancer: "#9945ff22",
-    diamond_cultist: "#88ccff22",
-    sniper_jester: "#ffd70022",
-    ghost_bagholder: "#aaaaaa22",
-  };
-  return glows[archetype] ?? "#9945ff22";
+  const base = ARCHETYPE_COLORS[archetype as keyof typeof ARCHETYPE_COLORS] ?? "#9945ff";
+  return `${base}22`;
 }
 
 export default function MonsterPage() {

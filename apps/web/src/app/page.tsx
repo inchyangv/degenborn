@@ -7,7 +7,7 @@ import { useState } from "react";
 import Link from "next/link";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import type { CharacterState, ArchetypeId } from "@degenborn/shared";
-import { ARCHETYPE_PROFILES } from "@degenborn/shared";
+import { ARCHETYPE_PROFILES, ARCHETYPE_COLORS } from "@degenborn/shared";
 
 const ARCHETYPE_NAMES = [
   "Mad Gambler",
@@ -95,14 +95,6 @@ const STEPS = [
   },
 ];
 
-const ARCHETYPE_COLORS: Record<string, string> = {
-  mad_gambler: "#ff3d3d",
-  ice_whale: "#00d4ff",
-  rug_necromancer: "#9945ff",
-  diamond_cultist: "#88ccff",
-  sniper_jester: "#ffd700",
-  ghost_bagholder: "#aaaaaa",
-};
 
 export default function LandingPage() {
   const router = useRouter();
