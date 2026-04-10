@@ -1,6 +1,25 @@
 import type { Metadata } from "next";
+import { JetBrains_Mono, Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "DegenBorn — Your wallet, reborn as a monster",
@@ -22,7 +41,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${jetbrainsMono.variable} ${spaceGrotesk.variable} ${inter.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>

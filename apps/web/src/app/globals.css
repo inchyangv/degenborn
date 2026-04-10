@@ -21,8 +21,12 @@
 body {
   background: var(--bg);
   color: #e2e8f0;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body, 'Inter', sans-serif);
   min-height: 100vh;
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', monospace);
 }
 
 /* Global focus ring for keyboard navigation */

@@ -20,8 +20,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        mono: ["'Courier New'", "Courier", "monospace"],
-        display: ["'Arial Black'", "Impact", "sans-serif"],
+        mono: ["var(--font-mono)", "JetBrains Mono", "'Courier New'", "monospace"],
+        display: ["var(--font-display)", "Space Grotesk", "'Arial Black'", "sans-serif"],
+        body: ["var(--font-body)", "Inter", "sans-serif"],
+        sans: ["var(--font-body)", "Inter", "sans-serif"],
       },
       animation: {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
