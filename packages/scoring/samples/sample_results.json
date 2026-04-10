@@ -1,0 +1,49 @@
+{
+  "_description": "Sample DNA scoring results for 3 fixture wallets",
+  "results": [
+    {
+      "wallet": "0xmadgambler0000000000000000000000000000001",
+      "label": "Mad Gambler candidate",
+      "dna": {
+        "aggression": 85,
+        "conviction": 22,
+        "chaos": 72,
+        "luck": 48,
+        "survival": 30,
+        "event_count": 15
+      },
+      "archetype_expected": "mad_gambler"
+    },
+    {
+      "wallet": "0xrugnecromancer000000000000000000000000001",
+      "label": "Rug Necromancer candidate",
+      "dna": {
+        "aggression": 45,
+        "conviction": 38,
+        "chaos": 80,
+        "luck": 42,
+        "survival": 88,
+        "event_count": 10
+      },
+      "archetype_expected": "rug_necromancer"
+    },
+    {
+      "wallet": "0xicewhale000000000000000000000000000000001",
+      "label": "Ice Whale candidate",
+      "dna": {
+        "aggression": 12,
+        "conviction": 91,
+        "chaos": 8,
+        "luck": 85,
+        "survival": 70,
+        "event_count": 8
+      },
+      "archetype_expected": "ice_whale"
+    }
+  ],
+  "scoring_spec": {
+    "all_fields_0_to_100": true,
+    "deterministic": true,
+    "edge_cases_handled": ["empty_event_list", "zero_trades", "all_rugs", "single_event"]
+  }
+}
