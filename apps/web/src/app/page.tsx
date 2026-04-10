@@ -90,13 +90,19 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* Demo / Replay link */}
-      <div className="mt-12 text-center">
+      {/* Demo / Replay / Gallery links */}
+      <div className="mt-12 text-center flex flex-col gap-2">
         <Link
           href="/replay"
           className="text-sm text-gray-600 hover:text-[var(--neon-purple)] transition-colors"
         >
           → Watch the demo (Replay Mode)
+        </Link>
+        <Link
+          href="/gallery"
+          className="text-sm text-gray-600 hover:text-[var(--neon-green)] transition-colors"
+        >
+          → Monster Gallery (compare archetypes)
         </Link>
       </div>
 
