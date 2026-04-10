@@ -155,8 +155,17 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
           : "MINT SOUL CORE"}
       </button>
 
-      <div className="mt-3 text-xs text-gray-600">
-        Soulbound NFT · 1 per wallet · Non-transferable
+      <div className="mt-3 text-xs text-gray-600 flex items-center justify-center gap-1.5">
+        <span
+          title="Soulbound = once minted, it cannot be transferred to another wallet. It is your identity only."
+          className="cursor-help underline decoration-dotted"
+        >
+          Soulbound NFT
+        </span>
+        <span>·</span>
+        <span>1 per wallet</span>
+        <span>·</span>
+        <span>Non-transferable</span>
       </div>
 
       <div className="mt-4">

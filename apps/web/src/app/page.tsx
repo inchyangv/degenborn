@@ -249,18 +249,28 @@ export default function LandingPage() {
       <div className="mt-16 text-center text-xs text-gray-700 space-y-1">
         <div>Built for Four.meme Hackathon · Chain: BNB Smart Chain</div>
         <div className="flex justify-center gap-4 mt-2">
-          <span className="text-gray-800">What is Soul Core?</span>
+          <span
+            className="text-gray-600 cursor-help underline decoration-dotted"
+            title="Soul Core is your non-transferable on-chain identity NFT. Once minted, it is bound to your wallet forever."
+          >
+            What is Soul Core?
+          </span>
           <span className="text-gray-800">·</span>
           <Link
             href="https://four.meme"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-500 transition-colors"
+            className="text-gray-600 hover:text-gray-400 transition-colors"
           >
             What is Four.meme?
           </Link>
           <span className="text-gray-800">·</span>
-          <span className="text-gray-800">How is DNA calculated?</span>
+          <span
+            className="text-gray-600 cursor-help underline decoration-dotted"
+            title="5 axes: Aggression (trade frequency), Conviction (hold length), Chaos (volatility/rugs), Luck (exit timing), Survival (recovery rate). Each is normalized 0–100."
+          >
+            How is DNA calculated?
+          </span>
         </div>
       </div>
     </main>
