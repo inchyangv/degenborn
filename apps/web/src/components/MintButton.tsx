@@ -91,6 +91,7 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
               crown_count: 0,
               survival_streak: 0,
               active_traits: [],
+              updated_at: Math.floor(Date.now() / 1000),
             }}
             wallet={wallet}
             size={200}

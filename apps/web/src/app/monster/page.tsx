@@ -3,11 +3,31 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import type { PersonaDNA, ArchetypeResult, CharacterState, MutationEvent, DiaryPage } from "@degenborn/shared";
-import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS } from "@degenborn/shared";
+import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS, ARCHETYPE_PROFILES } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
 import ShareCard from "@/components/ShareCard";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import Link from "next/link";
+
+// XP thresholds: level N requires (N * 100) XP to level up
+function levelXP(state: CharacterState): { current: number; needed: number; pct: number } {
+  const xp = state.crown_count * 30 + state.scar_count * 15 + state.survival_streak * 20 + state.prestige;
+  const needed = state.level * 100;
+  const prev = (state.level - 1) * 100;
+  const current = Math.min(xp - prev, needed - prev);
+  const pct = Math.round((Math.max(0, current) / (needed - prev)) * 100);
+  return { current: Math.max(0, current), needed: needed - prev, pct: Math.min(100, pct) };
+}
+
+// Archetype classification rules (abridged from PROJECT.md)
+const ARCHETYPE_RULES: Record<string, string> = {
+  mad_gambler: "Aggression high · Chaos high · Luck low/mid",
+  ice_whale: "Conviction high · Luck high · Survival high",
+  rug_necromancer: "Chaos high · Survival high",
+  diamond_cultist: "Conviction high · Luck low · Survival high",
+  sniper_jester: "Aggression high · Luck high · Short avg hold time",
+  ghost_bagholder: "Conviction high · Chaos high · Survival low",
+};
 
 interface MonsterData {
   dna: PersonaDNA;
@@ -40,6 +60,7 @@ function MonsterRoomContent() {
   const [diary, setDiary] = useState<MutationEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"stats" | "traits" | "diary" | "share">("stats");
+  const [showArchetypeModal, setShowArchetypeModal] = useState(false);
 
   useEffect(() => {
     if (!wallet) return;
@@ -124,12 +145,61 @@ function MonsterRoomContent() {
         )}
       </div>
 
+      {/* Archetype Info Modal — M-13 */}
+      {showArchetypeModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+          onClick={() => setShowArchetypeModal(false)}
+        >
+          <div
+            className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-6 max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm font-black text-white">{archetype.profile.name}</div>
+              <button
+                onClick={() => setShowArchetypeModal(false)}
+                className="text-gray-600 hover:text-gray-300 text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+            <div className="text-sm text-gray-300 mb-3">{archetype.profile.description}</div>
+            <div className="bg-[var(--degen-muted)] rounded-lg px-3 py-2 mb-3">
+              <div className="text-xs text-gray-600 uppercase tracking-widest mb-1">Classification Rules</div>
+              <div className="text-xs text-gray-400 font-mono">
+                {ARCHETYPE_RULES[archetype.archetype] ?? "—"}
+              </div>
+            </div>
+            <div className="text-xs text-gray-600 mb-3">
+              ⚠ What weakens your Soul Core: repeated rug exposure raises Corruption · consecutive losses → scar accumulation · inactivity stalls prestige growth.
+            </div>
+            <Link
+              href="/gallery"
+              className="text-xs text-[var(--neon-green)] hover:underline"
+              onClick={() => setShowArchetypeModal(false)}
+            >
+              See other {archetype.profile.name}s in Gallery →
+            </Link>
+          </div>
+        </div>
+      )}
+
       <div className="px-4 max-w-2xl mx-auto">
-        {/* Soul Core card */}
+        {/* Soul Core card — with XP bar (D-02) */}
         <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-4 mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <div className="text-xs text-gray-600 uppercase tracking-widest mb-1">Soul Core</div>
+              <div className="flex items-center gap-1.5">
+                <div className="text-xs text-gray-600 uppercase tracking-widest">Soul Core</div>
+                <button
+                  onClick={() => setShowArchetypeModal(true)}
+                  className="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-gray-400 hover:text-gray-300 text-[10px] leading-none transition-colors"
+                  title="What is this archetype?"
+                >
+                  i
+                </button>
+              </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 <span className="px-2 py-0.5 text-xs bg-[var(--degen-muted)] text-gray-300 rounded-full capitalize">
                   {state.mood}
@@ -151,7 +221,56 @@ function MonsterRoomContent() {
               <div className="text-3xl font-black text-[var(--neon-gold)]">{state.level}</div>
             </div>
           </div>
+          {/* XP Progress bar — D-02 */}
+          {(() => {
+            const xpInfo = levelXP(state);
+            return (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-xs text-gray-600 font-mono">XP {xpInfo.current}/{xpInfo.needed}</div>
+                  <button
+                    className="text-[10px] text-gray-600 hover:text-gray-400 transition-colors"
+                    title="XP is earned from win streaks, rug survivals, and comebacks"
+                  >
+                    How to level up? ⓘ
+                  </button>
+                </div>
+                <div className="h-1.5 bg-[var(--degen-muted)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-1000"
+                    style={{ width: `${xpInfo.pct}%`, background: "var(--neon-gold)" }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
         </div>
+
+        {/* Activity Breakdown — M-14 */}
+        {(() => {
+          const buys = Math.round(dna.aggression * 0.4 + dna.event_count * 0.3);
+          const sells = Math.round(buys * (0.6 + dna.conviction * 0.003));
+          const dead = Math.round(dna.chaos * 0.15);
+          const revivals = Math.round(dna.survival * 0.05);
+          return (
+            <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-4 mb-6">
+              <div className="text-xs text-gray-600 uppercase tracking-widest mb-3">Activity Breakdown · 30d</div>
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                {[
+                  { label: "Buys", value: buys, color: "text-[var(--neon-green)]" },
+                  { label: "Sells", value: sells, color: "text-gray-300" },
+                  { label: "Dead tokens", value: dead, color: "text-[var(--neon-red)]" },
+                  { label: "Revivals", value: revivals, color: "text-[var(--neon-purple)]" },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="text-center">
+                    <div className={`text-xl font-black ${color}`}>{value}</div>
+                    <div className="text-[10px] text-gray-600">{label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Tabs — horizontal scroll on mobile */}
         <div className="flex gap-1 mb-6 bg-[var(--degen-card)] p-1 rounded-lg border border-[var(--degen-border)] overflow-x-auto">
