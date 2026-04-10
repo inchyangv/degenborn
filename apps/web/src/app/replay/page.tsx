@@ -59,21 +59,17 @@ export default function ReplayPage() {
   const [characterVisible, setCharacterVisible] = useState(false);
   const playTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [selectedPresetId, setSelectedPresetId] = useState<string>("hackathon_demo_v1");
+
   useEffect(() => {
-    const loadPreset = async () => {
-      try {
-        const resp = await fetch("/api/replay/preset");
-        if (resp.ok) {
-          const p = await resp.json() as ReplayPreset;
-          setPreset(p);
-          return;
-        }
-      } catch { /* fall through */ }
-      setPreset(EMBEDDED_PRESET);
-    };
-    loadPreset();
-    setPreset(EMBEDDED_PRESET);
-  }, []);
+    const selected = ALL_PRESETS.find((p) => p.preset_id === selectedPresetId) ?? EMBEDDED_PRESET;
+    reset();
+    setPreset(selected);
+    // reset archetype initial state to match preset
+    setArchetypeId(selected.archetype);
+    setDna({ ...PLACEHOLDER_DNA, ...selected.initial_dna, wallet_address: selected.wallet_address });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPresetId]);
 
   const reset = () => {
     if (playTimerRef.current) clearTimeout(playTimerRef.current);
@@ -180,13 +176,28 @@ export default function ReplayPage() {
         </button>
       </div>
 
-      {/* Preset info */}
-      {preset && (
-        <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-xl p-4 mb-4">
-          <div className="text-xs text-gray-600 mb-1">{preset.name}</div>
-          <div className="text-sm text-gray-400">{preset.description}</div>
+      {/* Preset selector — L-06 */}
+      <div className="mb-4">
+        <div className="text-[10px] text-gray-600 uppercase tracking-widest mb-2">Choose a story arc</div>
+        <div className="flex gap-2 flex-wrap">
+          {ALL_PRESETS.map((p) => (
+            <button
+              key={p.preset_id}
+              onClick={() => { if (selectedPresetId !== p.preset_id) setSelectedPresetId(p.preset_id); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+                selectedPresetId === p.preset_id
+                  ? "bg-[var(--neon-purple)] text-black"
+                  : "border border-[var(--degen-border)] text-gray-500 hover:border-gray-500 hover:text-gray-300"
+              }`}
+            >
+              {p.name}
+            </button>
+          ))}
         </div>
-      )}
+        {preset && (
+          <div className="text-xs text-gray-500 mt-2 italic">{preset.description}</div>
+        )}
+      </div>
 
       {/* Mini timeline */}
       {preset && (
@@ -396,22 +407,88 @@ function archetypeGlow(archetype: string): string {
   return `${base}22`;
 }
 
-// Embedded preset so replay works without any API/network
-const EMBEDDED_PRESET: ReplayPreset = {
+// All embedded presets — offline capable
+const PRESET_RUG_NECROMANCER: ReplayPreset = {
   preset_id: "hackathon_demo_v1",
-  name: "DegenBorn Hackathon Demo",
-  description: "Full story arc: Rug Necromancer — rugged, recovered, crowned",
+  name: "Rug Necromancer",
+  description: "Rugged, recovered, crowned — the undying degen arc",
   wallet_address: "0xrugnecromancer000000000000000000000000001",
   initial_dna: { aggression: 55, conviction: 45, chaos: 82, luck: 41, survival: 91 },
   archetype: "rug_necromancer",
   steps: [
-    { step: 1, label: "Wallet Connected", description: "0xrugN...0001 connected", action: "connect_wallet", delay_ms: 0 },
-    { step: 2, label: "Awakening", description: "Analyzing 10 on-chain events — chaos 82, survival 91", action: "show_dna", dna: { aggression: 55, conviction: 45, chaos: 82, luck: 41, survival: 91 }, archetype: "rug_necromancer", delay_ms: 0 },
-    { step: 3, label: "Genesis Birth", description: "You are: Rug Necromancer", action: "show_genesis", delay_ms: 0 },
-    { step: 4, label: "Win Streak ×3", description: "3 consecutive wins → Crown acquired, mood shifts to euphoria", action: "state_event", event_type: "win_streak_3", state_changes: { crown_count: 1, mood: "euphoria" as const, prestige: 10, level: 2, traits_added: ["crown"] }, caption: "Three in a row. The crown was always yours.", delay_ms: 0 },
-    { step: 5, label: "Rug Exposure", description: "DEAD3 token rugged — corruption rises, zombie eyes appear", action: "state_event", event_type: "rug_exposure", state_changes: { corruption: 40, scar_count: 1, mood: "despair" as const, traits_added: ["zombie_eyes", "bandage"] }, caption: "The rug found you. Again. The eyes never lie.", delay_ms: 0 },
-    { step: 6, label: "Comeback", description: "UNDEAD token 3x — survival streak rises, revenge aura ignites", action: "state_event", event_type: "loss_recovery", state_changes: { survival_streak: 3, mood: "revenge" as const, traits_added: ["revenge_aura"] }, caption: "Down 1400. Back 1200. The necromancer returns.", delay_ms: 0 },
-    { step: 7, label: "Mutation Diary", description: "3 entries logged — crown, zombie, revenge", action: "show_diary", delay_ms: 0 },
-    { step: 8, label: "Share Card", description: "Generate your identity card for the community", action: "show_share_card", delay_ms: 0 },
+    { step: 1, label: "Connected", description: "0xrugN...0001 connected", action: "connect_wallet", delay_ms: 0 },
+    { step: 2, label: "Awakening", description: "Chaos 82, Survival 91 — the necromancer stirs", action: "show_dna", dna: { aggression: 55, conviction: 45, chaos: 82, luck: 41, survival: 91 }, archetype: "rug_necromancer", delay_ms: 0 },
+    { step: 3, label: "Genesis", description: "You are: Rug Necromancer", action: "show_genesis", delay_ms: 0 },
+    { step: 4, label: "Win Streak ×3", description: "3 consecutive wins → Crown acquired", action: "state_event", state_changes: { crown_count: 1, mood: "euphoria" as const, prestige: 10, level: 2, traits_added: ["crown"] }, caption: "Three in a row. The crown was always yours.", delay_ms: 0 },
+    { step: 5, label: "Rug Exposure", description: "DEAD3 rugged — corruption +40, zombie eyes", action: "state_event", state_changes: { corruption: 40, scar_count: 1, mood: "despair" as const, traits_added: ["zombie_eyes", "bandage"] }, caption: "The rug found you. Again. The eyes never lie.", delay_ms: 0 },
+    { step: 6, label: "Comeback", description: "UNDEAD 3x — survival streak 3, revenge aura", action: "state_event", state_changes: { survival_streak: 3, mood: "revenge" as const, traits_added: ["revenge_aura"] }, caption: "Down 1400. Back 1200. The necromancer returns.", delay_ms: 0 },
+    { step: 7, label: "Diary", description: "3 mutations logged", action: "show_diary", delay_ms: 0 },
+    { step: 8, label: "Share Card", description: "Your identity card is ready", action: "show_share_card", delay_ms: 0 },
   ],
 };
+
+const PRESET_MAD_GAMBLER: ReplayPreset = {
+  preset_id: "mad_gambler_v1",
+  name: "Mad Gambler",
+  description: "Chaos peak — all-in every time, somehow still alive",
+  wallet_address: "0xmadgambler0000000000000000000000000000001",
+  initial_dna: { aggression: 94, conviction: 22, chaos: 88, luck: 55, survival: 48 },
+  archetype: "mad_gambler",
+  steps: [
+    { step: 1, label: "Connected", description: "0xmadG...0001 connected", action: "connect_wallet", delay_ms: 0 },
+    { step: 2, label: "Awakening", description: "Aggression 94, Chaos 88 — the gambler never sleeps", action: "show_dna", dna: { aggression: 94, conviction: 22, chaos: 88, luck: 55, survival: 48 }, archetype: "mad_gambler", delay_ms: 0 },
+    { step: 3, label: "Genesis", description: "You are: Mad Gambler", action: "show_genesis", delay_ms: 0 },
+    { step: 4, label: "Fast Flip ×5", description: "5 trades under 10 minutes — aggression maxed, crown appears", action: "state_event", state_changes: { crown_count: 1, mood: "greed" as const, prestige: 5, level: 2, traits_added: ["crown", "torn_clothes"] }, caption: "In. Out. Profit. Next. Sleep is for the convicted.", delay_ms: 0 },
+    { step: 5, label: "Big Loss", description: "CHAOS99 rugged — scar +1, mood despair", action: "state_event", state_changes: { scar_count: 1, corruption: 20, mood: "despair" as const, traits_added: ["bandage"] }, caption: "Lost it all in 3 minutes. Personal best.", delay_ms: 0 },
+    { step: 6, label: "Re-entry", description: "Immediately re-entered MOONSHOT — aggression 100", action: "state_event", state_changes: { survival_streak: 1, mood: "greed" as const, dna: { aggression: 99 } as any, traits_added: ["flame"] }, caption: "You cannot stop someone who has nothing left to lose.", delay_ms: 0 },
+    { step: 7, label: "Diary", description: "3 mutations — all within 4 hours", action: "show_diary", delay_ms: 0 },
+    { step: 8, label: "Share Card", description: "Generate identity card", action: "show_share_card", delay_ms: 0 },
+  ],
+};
+
+const PRESET_ICE_WHALE: ReplayPreset = {
+  preset_id: "ice_whale_v1",
+  name: "Ice Whale",
+  description: "Patient wins — long holds, peak exits, untouchable prestige",
+  wallet_address: "0xicewhale000000000000000000000000000000001",
+  initial_dna: { aggression: 18, conviction: 91, chaos: 12, luck: 78, survival: 85 },
+  archetype: "ice_whale",
+  steps: [
+    { step: 1, label: "Connected", description: "0xiceW...0001 connected", action: "connect_wallet", delay_ms: 0 },
+    { step: 2, label: "Awakening", description: "Conviction 91, Luck 78 — the whale surfaces", action: "show_dna", dna: { aggression: 18, conviction: 91, chaos: 12, luck: 78, survival: 85 }, archetype: "ice_whale", delay_ms: 0 },
+    { step: 3, label: "Genesis", description: "You are: Ice Whale", action: "show_genesis", delay_ms: 0 },
+    { step: 4, label: "30-day Hold", description: "Held MEME4X for 30 days — prestige +50, royal cloak appears", action: "state_event", state_changes: { prestige: 50, crown_count: 2, mood: "euphoria" as const, level: 3, traits_added: ["royal_cloak", "crown", "gold_chain"] }, caption: "The market panicked. You slept. Then you sold.", delay_ms: 0 },
+    { step: 5, label: "Peak Exit", description: "Sold at all-time high — perfect timing bonus", action: "state_event", state_changes: { prestige: 75, crown_count: 3, mood: "neutral" as const, level: 5, traits_added: ["gold_tooth"] }, caption: "They asked how. You said patience. They didn't believe you.", delay_ms: 0 },
+    { step: 6, label: "7-day Rebuy", description: "Accumulated again at the dip — conviction unshaken", action: "state_event", state_changes: { survival_streak: 2, mood: "neutral" as const }, caption: "The price went down. The thesis didn't.", delay_ms: 0 },
+    { step: 7, label: "Diary", description: "3 milestone entries over 60 days", action: "show_diary", delay_ms: 0 },
+    { step: 8, label: "Share Card", description: "Generate identity card", action: "show_share_card", delay_ms: 0 },
+  ],
+};
+
+const PRESET_GHOST_BAGHOLDER: ReplayPreset = {
+  preset_id: "ghost_bagholder_v1",
+  name: "Ghost Bagholder",
+  description: "Haunted by bags — still holding, still believing",
+  wallet_address: "0xghostbagholder00000000000000000000000001",
+  initial_dna: { aggression: 30, conviction: 87, chaos: 72, luck: 19, survival: 28 },
+  archetype: "ghost_bagholder",
+  steps: [
+    { step: 1, label: "Connected", description: "0xghos...0001 connected", action: "connect_wallet", delay_ms: 0 },
+    { step: 2, label: "Awakening", description: "Conviction 87, Luck 19 — the ghost materializes", action: "show_dna", dna: { aggression: 30, conviction: 87, chaos: 72, luck: 19, survival: 28 }, archetype: "ghost_bagholder", delay_ms: 0 },
+    { step: 3, label: "Genesis", description: "You are: Ghost Bagholder", action: "show_genesis", delay_ms: 0 },
+    { step: 4, label: "Rug ×2", description: "Two consecutive rugs — scar count 2, zombie eyes", action: "state_event", state_changes: { scar_count: 2, corruption: 60, mood: "despair" as const, traits_added: ["zombie_eyes", "bandage", "ghost"] }, caption: "The chart went to zero. Twice. The conviction did not.", delay_ms: 0 },
+    { step: 5, label: "Still Holding", description: "Hasn't sold in 90 days — prestige 0, hope eternal", action: "state_event", state_changes: { prestige: 0, mood: "despair" as const, traits_added: ["ghost"] }, caption: "The devs left. The telegram is empty. You're still here.", delay_ms: 0 },
+    { step: 6, label: "Survived", description: "Account still active after 3 months — survival streak 1", action: "state_event", state_changes: { survival_streak: 1, mood: "neutral" as const }, caption: "You haven't won. But you're still here. That's something.", delay_ms: 0 },
+    { step: 7, label: "Diary", description: "3 haunting entries", action: "show_diary", delay_ms: 0 },
+    { step: 8, label: "Share Card", description: "Generate identity card", action: "show_share_card", delay_ms: 0 },
+  ],
+};
+
+const EMBEDDED_PRESET = PRESET_RUG_NECROMANCER;
+
+const ALL_PRESETS = [
+  PRESET_RUG_NECROMANCER,
+  PRESET_MAD_GAMBLER,
+  PRESET_ICE_WHALE,
+  PRESET_GHOST_BAGHOLDER,
+];
