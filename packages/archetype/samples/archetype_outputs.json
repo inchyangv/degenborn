@@ -1,0 +1,61 @@
+{
+  "_description": "Archetype classification output examples",
+  "examples": [
+    {
+      "input_dna": { "aggression": 85, "conviction": 22, "chaos": 72, "luck": 35, "survival": 30 },
+      "output": {
+        "archetype": "mad_gambler",
+        "name": "Mad Gambler",
+        "tagline": "All-in, always.",
+        "confidence": 1.0
+      }
+    },
+    {
+      "input_dna": { "aggression": 45, "conviction": 38, "chaos": 80, "luck": 42, "survival": 88 },
+      "output": {
+        "archetype": "rug_necromancer",
+        "name": "Rug Necromancer",
+        "tagline": "Death is just a dip.",
+        "confidence": 1.0
+      }
+    },
+    {
+      "input_dna": { "aggression": 12, "conviction": 91, "chaos": 8, "luck": 85, "survival": 70 },
+      "output": {
+        "archetype": "ice_whale",
+        "name": "Ice Whale",
+        "tagline": "Patience is the trade.",
+        "confidence": 1.0
+      }
+    },
+    {
+      "input_dna": { "aggression": 80, "conviction": 20, "chaos": 30, "luck": 80, "survival": 40 },
+      "output": {
+        "archetype": "sniper_jester",
+        "name": "Sniper Jester",
+        "tagline": "In and out. Count it.",
+        "confidence": 1.0
+      }
+    },
+    {
+      "input_dna": { "aggression": 20, "conviction": 80, "chaos": 25, "luck": 20, "survival": 75 },
+      "output": {
+        "archetype": "diamond_cultist",
+        "name": "Diamond Cultist",
+        "tagline": "Still holding.",
+        "confidence": 1.0
+      }
+    },
+    {
+      "input_dna": { "aggression": 25, "conviction": 80, "chaos": 70, "luck": 30, "survival": 20 },
+      "output": {
+        "archetype": "ghost_bagholder",
+        "name": "Ghost Bagholder",
+        "tagline": "Still waiting.",
+        "confidence": 1.0
+      }
+    }
+  ],
+  "tie_breaker_policy": "When two rules score equally, priority: rug_necromancer > mad_gambler > ice_whale > sniper_jester > diamond_cultist > ghost_bagholder",
+  "fallback_policy": "If no rule matches, pick archetype by highest combined raw score"
+}
