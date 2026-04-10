@@ -1,0 +1,22 @@
+{
+  "name": "@degenborn/worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@degenborn/shared": "workspace:*",
+    "@degenborn/scoring": "workspace:*",
+    "@degenborn/archetype": "workspace:*",
+    "@degenborn/data-adapter": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.5.0"
+  }
+}
