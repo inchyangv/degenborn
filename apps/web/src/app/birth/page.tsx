@@ -16,6 +16,7 @@ interface AnalyzeResponse {
 }
 
 type Phase = "scanning" | "dna" | "reveal" | "genesis" | "mint";
+type Window = "7d" | "30d" | "180d";
 
 const SCAN_LOG_LINES = [
   "→ Connecting to BNB chain...",
@@ -88,11 +89,12 @@ function BirthContent() {
   const router = useRouter();
   const wallet = searchParams.get("wallet") ?? "";
 
-  const [status, setStatus] = useState<"loading" | "done" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "idle" | "done" | "error">("idle");
   const [data, setData] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>("scanning");
   const [genesisVisible, setGenesisVisible] = useState(false);
+  const [analysisWindow, setAnalysisWindow] = useState<Window>("30d");
   const skipRef = useRef(false);
 
   const advanceToMint = () => {
@@ -100,19 +102,17 @@ function BirthContent() {
     setPhase("mint");
   };
 
-  useEffect(() => {
-    if (!wallet) {
-      router.replace("/");
-      return;
-    }
-
-    const analyze = async () => {
-      try {
-        const resp = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wallet, window: "30d", useFixture: true }),
-        });
+  const startAnalysis = async () => {
+    setStatus("loading");
+    setError(null);
+    setPhase("scanning");
+    skipRef.current = false;
+    try {
+      const resp = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet, window: analysisWindow, useFixture: true }),
+      });
         if (!resp.ok) {
           const err = await resp.json() as { error: string };
           throw new Error(err.error ?? "Analysis failed");
@@ -136,10 +136,13 @@ function BirthContent() {
         setError(msg);
         setStatus("error");
       }
-    };
+  };
 
-    analyze();
-  }, [wallet, router]);
+  useEffect(() => {
+    if (!wallet) { router.replace("/"); return; }
+    startAnalysis();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet]);
 
   // ESC → skip to mint
   useEffect(() => {
@@ -152,6 +155,49 @@ function BirthContent() {
 
   if (!wallet) return null;
 
+  // Window selector — shown before analysis starts
+  if (status === "idle") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 gap-8">
+        <div className="text-center">
+          <div className="text-xs tracking-widest text-gray-500 uppercase mb-2">The Awakening</div>
+          <div className="text-[var(--neon-green)] font-mono text-sm mb-1">
+            {wallet.slice(0, 6)}...{wallet.slice(-4)}
+          </div>
+        </div>
+        <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-6 w-full max-w-sm">
+          <div className="text-sm text-gray-300 mb-4 text-center">Analyze window</div>
+          <div className="flex gap-2 justify-center mb-6">
+            {(["7d", "30d", "180d"] as Window[]).map((w) => (
+              <button
+                key={w}
+                onClick={() => setAnalysisWindow(w)}
+                className={`px-4 py-2 rounded-lg text-sm font-mono font-bold transition-all ${
+                  analysisWindow === w
+                    ? "bg-[var(--neon-green)] text-black"
+                    : "border border-[var(--degen-border)] text-gray-500 hover:border-gray-500 hover:text-gray-300"
+                }`}
+              >
+                {w}
+              </button>
+            ))}
+          </div>
+          <div className="text-xs text-gray-600 text-center mb-6">
+            {analysisWindow === "7d" && "Short window — captures recent aggression & spikes"}
+            {analysisWindow === "30d" && "Standard window — balanced DNA profile"}
+            {analysisWindow === "180d" && "Long window — reveals deep conviction & survival"}
+          </div>
+          <button
+            onClick={startAnalysis}
+            className="w-full py-3 bg-gradient-to-r from-[var(--neon-purple)] to-[var(--neon-green)] text-black font-black rounded-xl hover:brightness-110 transition-all"
+          >
+            Awaken →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (status === "error") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4">
@@ -159,7 +205,7 @@ function BirthContent() {
         <div className="text-gray-400 text-sm mb-6">{error}</div>
         <div className="flex gap-3">
           <button
-            onClick={() => { setStatus("loading"); setError(null); setPhase("scanning"); }}
+            onClick={startAnalysis}
             className="px-6 py-2 bg-[var(--neon-green)] text-black font-bold rounded hover:brightness-110 transition-all text-sm"
           >
             Retry
