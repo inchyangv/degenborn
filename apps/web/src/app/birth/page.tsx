@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef, Suspense } from "react";
 import { playSynthSting, playIfUnmuted } from "@/lib/sfx";
+import { analytics } from "@/lib/analytics";
 import type { PersonaDNA, ArchetypeResult } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
 import ArchetypeReveal from "@/components/ArchetypeReveal";
@@ -108,6 +109,7 @@ function BirthContent() {
     setError(null);
     setPhase("scanning");
     skipRef.current = false;
+    analytics.analysisStarted(wallet, analysisWindow);
     try {
       const resp = await fetch("/api/analyze", {
         method: "POST",
@@ -121,6 +123,7 @@ function BirthContent() {
         const result = await resp.json() as AnalyzeResponse;
         setData(result);
         setStatus("done");
+        analytics.analysisCompleted(result.archetype.archetype);
 
         if (skipRef.current) return;
         setTimeout(() => { if (!skipRef.current) setPhase("dna"); }, 500);

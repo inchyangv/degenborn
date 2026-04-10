@@ -5,6 +5,7 @@ import { ARCHETYPE_COLORS } from "@degenborn/shared";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CharacterDisplay from "@/components/CharacterDisplay";
+import { analytics } from "@/lib/analytics";
 
 interface Props {
   wallet: string;
@@ -29,6 +30,7 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
   const handleMint = async () => {
     setStatus("preparing");
     setError(null);
+    analytics.mintClicked(archetype.archetype);
 
     try {
       // Step 1: prepare metadata
