@@ -95,9 +95,26 @@ function MonsterRoomContent() {
 
   if (!data) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <div className="text-red-400">Failed to load monster data</div>
-        <Link href="/" className="text-gray-400 hover:text-white text-sm">← Back home</Link>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
+        <div className="text-[var(--neon-red)] text-lg font-mono">⚠ Failed to load monster data</div>
+        <div className="text-gray-500 text-sm text-center">This could be a network issue or an invalid wallet address.</div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => window.location.reload()}
+            className="px-5 py-2 bg-[var(--neon-green)] text-black font-bold rounded text-sm hover:brightness-110 transition-all"
+          >
+            Retry
+          </button>
+          <Link
+            href="/replay"
+            className="px-5 py-2 border border-[var(--degen-border)] text-gray-400 rounded text-sm hover:border-gray-400 transition-colors"
+          >
+            Try Replay Demo
+          </Link>
+          <Link href="/" className="px-5 py-2 border border-[var(--degen-border)] text-gray-400 rounded text-sm hover:border-gray-400 transition-colors">
+            ← Home
+          </Link>
+        </div>
       </div>
     );
   }
