@@ -49,12 +49,43 @@ export const CAPTION_BANK: Record<string, string[]> = {
   ],
 };
 
+/** Crown captions — shown when crown_count >= 1 */
+export const CAPTION_CROWN: string[] = [
+  "The crown stayed on through all of it.",
+  "Three in a row. The market owes me nothing.",
+  "Won it. Lost it. Won it again. The crown remembers.",
+  "They said the streak would break. They were wrong.",
+];
+
+/** Scar captions — shown when scar_count >= 1 and no crown */
+export const CAPTION_SCAR: string[] = [
+  "The rug left a mark. I kept the scar.",
+  "Lost it all. Built something with the wreckage.",
+  "The scars are the resume now.",
+  "Burned twice. Wiser once. Still here.",
+];
+
 /**
  * Pick a caption deterministically based on archetype + state.
+ * Priority: crown > scar > archetype defaults.
  * Same state = same caption across renders.
  */
 export function pickCaption(archetype: string, state: CharacterState): string {
+  const hasCrown = (state.crown_count ?? 0) >= 1;
+  const hasScar = (state.scar_count ?? 0) >= 1;
+
+  if (hasCrown && hasScar) {
+    // Archetype specific — has both
+    const bank = CAPTION_BANK[archetype] ?? CAPTION_CROWN;
+    return bank[state.crown_count % bank.length]!;
+  }
+  if (hasCrown) {
+    return CAPTION_CROWN[state.crown_count % CAPTION_CROWN.length]!;
+  }
+  if (hasScar) {
+    return CAPTION_SCAR[state.scar_count % CAPTION_SCAR.length]!;
+  }
   const bank = CAPTION_BANK[archetype] ?? [`I am the ${archetype.replace(/_/g, " ")}.`];
-  const idx = ((state.crown_count ?? 0) + (state.scar_count ?? 0)) % bank.length;
+  const idx = (state.level ?? 0) % bank.length;
   return bank[idx]!;
 }
