@@ -42,15 +42,18 @@ export default function ArchetypeReveal({ archetype }: Props) {
         {archetype.profile.description}
       </p>
 
+      {/* Confidence bar: 0–100% proportional, not pixel-clamped */}
       <div className="flex items-center gap-2 text-xs text-gray-600">
-        <div
-          className="h-1.5 rounded-full bg-[var(--neon-purple)]"
-          style={{ width: `${Math.round(archetype.confidence * 100)}px`, maxWidth: "120px" }}
-        />
-        <span>{confidenceLabel} ({Math.round(archetype.confidence * 100)}%)</span>
+        <div className="flex-1 max-w-[120px] h-1.5 bg-gray-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full bg-[var(--neon-purple)] transition-all duration-700"
+            style={{ width: `${Math.round(archetype.confidence * 100)}%` }}
+          />
+        </div>
+        <span className="text-gray-500">{confidenceLabel} · {Math.round(archetype.confidence * 100)}%</span>
         {archetype.runner_up && (
-          <span className="ml-2 text-gray-700">
-            runner-up: {archetype.runner_up.replace(/_/g, " ")}
+          <span className="ml-1 text-gray-700">
+            / {archetype.runner_up.replace(/_/g, " ")}
           </span>
         )}
       </div>
