@@ -7,3 +7,4 @@ export * from "./types/asset";
 export * from "./types/mutation";
 export * from "./prompts/narrative";
 export * from "./narrative/captions";
+export * from "./narrative/time";

@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import type { PersonaDNA, ArchetypeResult, CharacterState, MutationEvent, DiaryPage } from "@degenborn/shared";
-import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS, ARCHETYPE_PROFILES } from "@degenborn/shared";
+import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS, ARCHETYPE_PROFILES, relativeTime } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
 import ShareCard from "@/components/ShareCard";
 import CharacterDisplay from "@/components/CharacterDisplay";
@@ -35,14 +35,6 @@ interface MonsterData {
   state: CharacterState;
 }
 
-function relativeTime(ts: number): string {
-  const diff = Math.floor(Date.now() / 1000) - ts;
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 86400 * 30) return `${Math.floor(diff / 86400)}d ago`;
-  return new Date(ts * 1000).toLocaleDateString();
-}
 
 const DIARY_ACCENT: Record<string, string> = {
   win_streak: "border-yellow-400",
@@ -143,6 +135,12 @@ function MonsterRoomContent() {
             <span className="text-sm font-mono text-gray-500 ml-2">mutations so far</span>
           </div>
         )}
+        <Link
+          href={`/m/${wallet}`}
+          className="text-xs text-gray-600 hover:text-[var(--neon-green)] transition-colors font-mono"
+        >
+          🔗 View publicly →
+        </Link>
       </div>
 
       {/* Archetype Info Modal — M-13 */}
