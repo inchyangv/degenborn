@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { JetBrains_Mono, Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import GlobalNav from "@/components/GlobalNav";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -43,7 +44,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${jetbrainsMono.variable} ${spaceGrotesk.variable} ${inter.variable}`}>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <GlobalNav />
+          {children}
+        </Providers>
       </body>
     </html>
   );

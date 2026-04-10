@@ -10,7 +10,7 @@ const wagmiConfig = createConfig({
   chains: [bsc, bscTestnet],
   connectors: [
     injected(),
-    // walletConnect({ projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID ?? "" }),
+    walletConnect({ projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID ?? "demo" }),
   ],
   transports: {
     [bsc.id]: http(process.env.NEXT_PUBLIC_BSC_RPC ?? "https://bsc-dataseed.binance.org/"),
