@@ -1,8 +1,10 @@
 "use client";
 
 import type { PersonaDNA, ArchetypeResult } from "@degenborn/shared";
-import { useState } from "react";
+import { ARCHETYPE_COLORS } from "@degenborn/shared";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import CharacterDisplay from "@/components/CharacterDisplay";
 
 interface Props {
   wallet: string;
@@ -19,9 +21,10 @@ interface MintResponse {
 
 export default function MintButton({ wallet, dna, archetype }: Props) {
   const router = useRouter();
-  const [status, setStatus] = useState<"idle" | "preparing" | "minting" | "done" | "cancelled" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "preparing" | "minting" | "born" | "done" | "cancelled" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [mintData, setMintData] = useState<MintResponse | null>(null);
+  const [bornVisible, setBornVisible] = useState(false);
 
   const handleMint = async () => {
     setStatus("preparing");
@@ -48,10 +51,8 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
       // In production: use wagmi's writeContract with SoulCore ABI
       await simulateMint();
 
-      setStatus("done");
-      setTimeout(() => {
-        router.push(`/monster?wallet=${wallet}`);
-      }, 2000);
+      setStatus("born");
+      setTimeout(() => setBornVisible(true), 80);
     } catch (e: unknown) {
       if (e instanceof Error && e.message.includes("cancel")) {
         setStatus("cancelled");
@@ -67,11 +68,45 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
     await new Promise((r) => setTimeout(r, 1500));
   }
 
-  if (status === "done") {
+  if (status === "born" || status === "done") {
+    const glowColor = ARCHETYPE_COLORS[archetype.archetype as keyof typeof ARCHETYPE_COLORS] ?? "#9945ff";
     return (
-      <div className="text-center">
-        <div className="text-[var(--neon-green)] text-lg font-black mb-2">✓ SOUL CORE MINTED</div>
-        <div className="text-gray-400 text-sm">Entering Monster Room...</div>
+      <div
+        className={`flex flex-col items-center gap-6 transition-all duration-700 ${bornVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
+      >
+        <div
+          className="relative p-2 rounded-2xl"
+          style={{ boxShadow: `0 0 40px ${glowColor}66` }}
+        >
+          <CharacterDisplay
+            archetype={archetype.archetype as any}
+            state={{
+              wallet_address: wallet,
+              archetype: archetype.archetype as any,
+              level: 1,
+              mood: "neutral",
+              corruption: 0,
+              prestige: 0,
+              scar_count: 0,
+              crown_count: 0,
+              survival_streak: 0,
+              active_traits: [],
+            }}
+            wallet={wallet}
+            size={200}
+          />
+        </div>
+        <div className="text-center">
+          <div className="text-[var(--neon-green)] text-xl font-black mb-1">✓ SOUL CORE BORN</div>
+          <div className="text-gray-400 text-sm mb-1">"{archetype.profile.tagline}"</div>
+          <div className="text-xs text-gray-600 font-mono">Soulbound · Non-transferable · Yours alone</div>
+        </div>
+        <button
+          onClick={() => router.push(`/monster?wallet=${wallet}`)}
+          className="px-10 py-3 bg-gradient-to-r from-[var(--neon-purple)] to-[var(--neon-green)] text-black font-black rounded-xl hover:brightness-110 transition-all"
+        >
+          Enter Monster Room →
+        </button>
       </div>
     );
   }
