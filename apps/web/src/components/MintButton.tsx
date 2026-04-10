@@ -92,6 +92,11 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
 
   return (
     <div className="text-center">
+      {/* Demo mode notice */}
+      <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-yellow-900/30 border border-yellow-600/40 text-yellow-400 text-xs font-mono">
+        ⚠ Demo mode — mint is simulated
+      </div>
+
       {status === "error" && (
         <div className="text-red-500 text-sm mb-4">{error}</div>
       )}
@@ -110,7 +115,7 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
         {status === "preparing"
           ? "PREPARING..."
           : status === "minting"
-          ? "MINTING ON-CHAIN..."
+          ? "MINTING (SIMULATED)..."
           : "MINT SOUL CORE"}
       </button>
 
