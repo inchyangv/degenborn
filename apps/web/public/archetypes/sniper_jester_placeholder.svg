@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" style="background:#0a0a0f">
+  <defs>
+    <radialGradient id="g5" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd700" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#0a0a0f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" fill="#0a0a0f"/>
+  <circle cx="200" cy="200" r="180" fill="url(#g5)"/>
+  <ellipse cx="200" cy="155" rx="58" ry="68" fill="#1a1a0a" stroke="#ffd700" stroke-width="2"/>
+  <path d="M142 218 Q200 190 258 218 L272 378 Q200 398 128 378 Z" fill="#1a1a0a" stroke="#ffd700" stroke-width="2"/>
+  <!-- Jester hat -->
+  <path d="M155 120 Q175 85 200 110 Q225 85 245 120 Z" fill="#ffd700" stroke="#ffd700" stroke-width="1"/>
+  <circle cx="178" cy="148" r="12" fill="#ffd700" opacity="0.9"/>
+  <circle cx="222" cy="148" r="12" fill="#ffd700" opacity="0.9"/>
+  <!-- Crosshair on one eye -->
+  <line x1="170" y1="148" x2="186" y2="148" stroke="#ff3d3d" stroke-width="2"/>
+  <line x1="178" y1="140" x2="178" y2="156" stroke="#ff3d3d" stroke-width="2"/>
+  <text x="200" y="310" text-anchor="middle" font-size="48" fill="#ffd700" opacity="0.6">🎯</text>
+  <text x="200" y="370" text-anchor="middle" font-size="14" fill="#ffd700" font-family="monospace">SNIPER JESTER</text>
+</svg>

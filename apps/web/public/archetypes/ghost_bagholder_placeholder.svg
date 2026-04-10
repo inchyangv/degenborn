@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" style="background:#0a0a0f">
+  <defs>
+    <radialGradient id="g6" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#aaaaaa" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#0a0a0f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" fill="#0a0a0f"/>
+  <circle cx="200" cy="200" r="180" fill="url(#g6)"/>
+  <!-- Ghost form: wavy outline -->
+  <path d="M145 155 Q145 80 200 80 Q255 80 255 155 L255 300 Q240 320 220 305 Q200 290 180 305 Q160 320 145 300 Z" 
+        fill="#1a1a1a" stroke="#aaaaaa" stroke-width="2" opacity="0.8"/>
+  <!-- Haunted eyes -->
+  <circle cx="182" cy="150" r="12" fill="#aaaaaa" opacity="0.6"/>
+  <circle cx="218" cy="150" r="12" fill="#aaaaaa" opacity="0.6"/>
+  <circle cx="185" cy="152" r="5" fill="#0a0a0f"/>
+  <circle cx="221" cy="152" r="5" fill="#0a0a0f"/>
+  <text x="200" y="375" text-anchor="middle" font-size="13" fill="#aaaaaa" font-family="monospace">GHOST BAGHOLDER</text>
+</svg>

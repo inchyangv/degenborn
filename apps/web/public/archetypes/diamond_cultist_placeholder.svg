@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" style="background:#0a0a0f">
+  <defs>
+    <radialGradient id="g4" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#88ccff" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#0a0a0f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" fill="#0a0a0f"/>
+  <circle cx="200" cy="200" r="180" fill="url(#g4)"/>
+  <ellipse cx="200" cy="155" rx="58" ry="68" fill="#0a0a1a" stroke="#88ccff" stroke-width="2"/>
+  <path d="M142 218 Q200 190 258 218 L272 378 Q200 398 128 378 Z" fill="#0a0a1a" stroke="#88ccff" stroke-width="2"/>
+  <!-- Diamond symbol over head -->
+  <polygon points="200,90 220,115 200,140 180,115" fill="#88ccff" opacity="0.8"/>
+  <circle cx="182" cy="148" r="9" fill="#88ccff" opacity="0.7"/>
+  <circle cx="218" cy="148" r="9" fill="#88ccff" opacity="0.7"/>
+  <text x="200" y="310" text-anchor="middle" font-size="48" fill="#88ccff" opacity="0.6">💎</text>
+  <text x="200" y="370" text-anchor="middle" font-size="14" fill="#88ccff" font-family="monospace">DIAMOND CULTIST</text>
+</svg>

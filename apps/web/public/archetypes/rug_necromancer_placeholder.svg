@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" style="background:#0a0a0f">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#9945ff" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#0a0a0f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" fill="#0a0a0f"/>
+  <circle cx="200" cy="200" r="180" fill="url(#glow)"/>
+  <!-- Hooded figure outline -->
+  <ellipse cx="200" cy="160" rx="60" ry="70" fill="#1a0a2a" stroke="#9945ff" stroke-width="2"/>
+  <path d="M140 220 Q200 180 260 220 L280 380 Q200 400 120 380 Z" fill="#1a0a2a" stroke="#9945ff" stroke-width="2"/>
+  <!-- Zombie eyes -->
+  <circle cx="180" cy="150" r="10" fill="#00ff88" opacity="0.8"/>
+  <circle cx="220" cy="150" r="10" fill="#00ff88" opacity="0.8"/>
+  <circle cx="183" cy="150" r="4" fill="#0a0a0f"/>
+  <circle cx="223" cy="150" r="4" fill="#0a0a0f"/>
+  <!-- Skull symbol -->
+  <text x="200" y="310" text-anchor="middle" font-size="48" fill="#9945ff" opacity="0.6">💀</text>
+  <!-- Label -->
+  <text x="200" y="370" text-anchor="middle" font-size="14" fill="#9945ff" font-family="monospace">RUG NECROMANCER</text>
+</svg>
