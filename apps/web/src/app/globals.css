@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0a0a0f;
+  --card: #111118;
+  --border: #1e1e2e;
+  --neon-green: #00ff88;
+  --neon-purple: #9945ff;
+  --neon-gold: #ffd700;
+}
+
+body {
+  background: var(--bg);
+  color: #e2e8f0;
+  font-family: 'Courier New', monospace;
+  min-height: 100vh;
+}
+
+/* Scanlines overlay for retro vibe */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.05) 2px,
+    rgba(0, 0, 0, 0.05) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* DNA bar animation */
+@keyframes fill-bar {
+  from { width: 0%; }
+  to { width: var(--target-width); }
+}
+
+.dna-bar-fill {
+  animation: fill-bar 1s ease-out forwards;
+}
+
+/* Glitch text effect */
+.glitch-text {
+  position: relative;
+}
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+}
+.glitch-text::before {
+  color: #ff3d3d;
+  animation: glitch-shift 0.3s infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+}
+.glitch-text::after {
+  color: #00d4ff;
+  animation: glitch-shift 0.3s infinite reverse;
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+}
+
+@keyframes glitch-shift {
+  0% { transform: translate(0); }
+  20% { transform: translate(-3px, 1px); }
+  40% { transform: translate(3px, -1px); }
+  60% { transform: translate(-1px, 2px); }
+  80% { transform: translate(1px, -2px); }
+  100% { transform: translate(0); }
+}
