@@ -181,7 +181,7 @@ export default function LandingPage() {
             >
               <div className="text-3xl mb-3">{step.icon}</div>
               <div className="font-black text-white mb-1">{step.title}</div>
-              <div className="text-xs text-gray-500">{step.desc}</div>
+              <div className="text-sm text-gray-500">{step.desc}</div>
             </div>
           ))}
         </div>
@@ -217,7 +217,7 @@ export default function LandingPage() {
                   <div className="text-xs font-mono mb-3" style={{ color }}>"{profile.tagline}"</div>
                   <Link
                     href={`/monster?wallet=${m.wallet}`}
-                    className="block text-center py-1.5 text-xs border rounded-lg transition-colors"
+                    className="block text-center py-2 text-sm font-bold border rounded-lg transition-colors hover:brightness-125"
                     style={{ borderColor: `${color}44`, color }}
                   >
                     View Monster →

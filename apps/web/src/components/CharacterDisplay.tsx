@@ -71,7 +71,14 @@ export default function CharacterDisplay({
       >
         <img
           src={imageUrl}
-          alt={`${archetype} character`}
+          alt={[
+            archetype.replace(/_/g, " "),
+            `level ${state.level}`,
+            state.active_traits.length > 0
+              ? `traits: ${state.active_traits.map((t) => TRAIT_DEFINITIONS[t as TraitId]?.label ?? t).join(", ")}`
+              : "no traits yet",
+            `mood: ${state.mood}`,
+          ].join(", ")}
           className="w-full h-full object-cover"
         />
 

@@ -166,7 +166,7 @@ export default function GalleryPage() {
           className="bg-[var(--degen-card)] border border-dashed border-[var(--degen-border)] rounded-2xl overflow-hidden flex flex-col items-center justify-center p-6 gap-3 hover:border-[var(--neon-green)] hover:text-[var(--neon-green)] transition-all group min-h-[300px]"
         >
           <div className="text-3xl group-hover:scale-110 transition-transform">+</div>
-          <div className="text-xs text-center text-gray-600 group-hover:text-[var(--neon-green)] transition-colors">
+          <div className="text-sm text-center text-gray-600 group-hover:text-[var(--neon-green)] transition-colors">
             Want your own?<br />Connect wallet to start.
           </div>
         </Link>
@@ -238,7 +238,7 @@ function GalleryCard({ entry }: { entry: GalleryEntry }) {
         {/* CTA */}
         <Link
           href={`/monster?wallet=${entry.wallet}`}
-          className="mt-2 block text-center py-1.5 text-xs border rounded-lg transition-colors"
+          className="mt-2 block text-center py-2 text-sm font-bold border rounded-lg transition-colors hover:brightness-125"
           style={{ borderColor: `${color}44`, color }}
         >
           View Monster →

@@ -247,7 +247,7 @@ function BirthContent() {
     : "";
 
   return (
-    <div className="min-h-screen px-4 py-12 max-w-2xl mx-auto">
+    <div className="min-h-screen px-4 py-12 pb-safe max-w-2xl mx-auto">
       {/* Phase breadcrumb */}
       <div className="flex items-center justify-center gap-1 mb-8">
         {phases.map((p, i) => (
