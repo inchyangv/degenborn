@@ -1,7 +1,7 @@
 "use client";
 
 import type { CharacterState, ArchetypeId, TraitId } from "@degenborn/shared";
-import { TRAIT_DEFINITIONS } from "@degenborn/shared";
+import { TRAIT_DEFINITIONS, TRAIT_EMOJI } from "@degenborn/shared";
 import { useEffect, useRef, useState } from "react";
 
 interface Props {
@@ -21,20 +21,6 @@ const TRAIT_POSITION_CLASSES: Record<string, string> = {
   aura: "inset-0",
 };
 
-const TRAIT_EMOJI: Record<TraitId, string> = {
-  crown: "👑",
-  gold_chain: "⛓️",
-  bandage: "🩹",
-  torn_clothes: "🧥",
-  tears: "😢",
-  gold_tooth: "🦷",
-  scar: "⚔️",
-  zombie_eyes: "🧟",
-  revenge_aura: "🔥",
-  royal_cloak: "🔱",
-  ghost_form: "👻",
-  skull_ring: "💀",
-};
 
 export default function CharacterDisplay({
   archetype,

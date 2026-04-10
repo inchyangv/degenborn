@@ -21,6 +21,22 @@ export interface TraitDefinition {
   category: "head" | "body" | "accessory" | "aura" | "eyes";
 }
 
+/** Single source of truth for trait emoji — same render across all pages */
+export const TRAIT_EMOJI: Record<TraitId, string> = {
+  crown: "👑",
+  gold_chain: "⛓️",
+  bandage: "🩹",
+  torn_clothes: "🧥",
+  tears: "😢",
+  gold_tooth: "🦷",
+  scar: "⚔️",
+  zombie_eyes: "🧟",
+  revenge_aura: "🔥",
+  royal_cloak: "🔱",
+  ghost_form: "👻",
+  skull_ring: "💀",
+};
+
 export const TRAIT_DEFINITIONS: Record<TraitId, TraitDefinition> = {
   crown: {
     id: "crown",

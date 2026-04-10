@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import type { PersonaDNA, ArchetypeResult, CharacterState, MutationEvent, DiaryPage } from "@degenborn/shared";
-import { TRAIT_DEFINITIONS } from "@degenborn/shared";
+import { TRAIT_DEFINITIONS, TRAIT_EMOJI } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
 import ShareCard from "@/components/ShareCard";
 import CharacterDisplay from "@/components/CharacterDisplay";
@@ -244,12 +244,7 @@ function MonsterRoomContent() {
 }
 
 function traitEmoji(traitId: string): string {
-  const map: Record<string, string> = {
-    crown: "👑", gold_chain: "⛓️", bandage: "🩹", torn_clothes: "🧥",
-    tears: "😢", gold_tooth: "🦷", scar: "⚔️", zombie_eyes: "🧟",
-    revenge_aura: "🔥", royal_cloak: "🔱", ghost_form: "👻", skull_ring: "💀",
-  };
-  return map[traitId] ?? "✦";
+  return TRAIT_EMOJI[traitId as keyof typeof TRAIT_EMOJI] ?? "✦";
 }
 
 function archetypeGlow(archetype: string): string {
