@@ -7,6 +7,7 @@ import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS, ARCHETYPE_PROFILES, r
 import DNAPanel from "@/components/DNAPanel";
 import ShareCard from "@/components/ShareCard";
 import CharacterDisplay from "@/components/CharacterDisplay";
+import { HeroSkeleton } from "@/components/LoadingSkeleton";
 import Link from "next/link";
 
 // XP thresholds: level N requires (N * 100) XP to level up
@@ -86,8 +87,8 @@ function MonsterRoomContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-[var(--neon-green)] text-sm font-mono animate-pulse">Loading Monster Room...</div>
+      <div className="min-h-screen pb-12">
+        <HeroSkeleton />
       </div>
     );
   }
