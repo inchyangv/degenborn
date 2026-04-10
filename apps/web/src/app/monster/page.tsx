@@ -153,12 +153,20 @@ function MonsterRoomContent() {
             <span className="text-sm font-mono text-gray-500 ml-2">mutations so far</span>
           </div>
         )}
-        <Link
-          href={`/m/${wallet}`}
-          className="text-xs text-gray-600 hover:text-[var(--neon-green)] transition-colors font-mono"
-        >
-          🔗 View publicly →
-        </Link>
+        <div className="flex gap-4">
+          <Link
+            href={`/m/${wallet}`}
+            className="text-xs text-gray-600 hover:text-[var(--neon-green)] transition-colors font-mono"
+          >
+            🔗 View publicly →
+          </Link>
+          <Link
+            href={`/compare?a=${wallet}`}
+            className="text-xs text-gray-600 hover:text-[var(--neon-purple)] transition-colors font-mono"
+          >
+            ⚔ Challenge a friend →
+          </Link>
+        </div>
       </div>
 
       {/* Archetype Info Modal — M-13 */}
