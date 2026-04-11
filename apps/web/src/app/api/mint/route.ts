@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash } from "crypto";
+import { keccak256, toBytes } from "viem";
 import type { PersonaDNA, ArchetypeResult } from "@degenborn/shared";
 import { generateNarrative } from "@/lib/narrative";
 
@@ -16,10 +16,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "wallet, dna, archetype required" }, { status: 400 });
     }
 
-    // Generate deterministic DNA hash
-    const dnaHash = createHash("keccak256")
-      .update(JSON.stringify({ aggression: dna.aggression, conviction: dna.conviction, chaos: dna.chaos, luck: dna.luck, survival: dna.survival }))
-      .digest("hex");
+    // Generate deterministic DNA hash (viem keccak256 — Node.js crypto doesn't support keccak256 digest)
+    const dnaHash = keccak256(
+      toBytes(JSON.stringify({ aggression: dna.aggression, conviction: dna.conviction, chaos: dna.chaos, luck: dna.luck, survival: dna.survival }))
+    ).slice(2); // strip 0x prefix for storage
 
     // Build metadata
     const narrative = await generateNarrative(dna, archetype);
@@ -41,9 +41,9 @@ export async function POST(req: NextRequest) {
     // For demo: return the metadata and the hash needed for on-chain mint
     // In production: upload metadata to IPFS and return CID
     const metadataUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/metadata/${wallet.toLowerCase()}`;
-    const stateHash = createHash("keccak256")
-      .update(JSON.stringify({ level: 1, mood: "neutral", corruption: 0 }))
-      .digest("hex");
+    const stateHash = keccak256(
+      toBytes(JSON.stringify({ level: 1, mood: "neutral", corruption: 0 }))
+    ).slice(2);
 
     return NextResponse.json({
       metadata,
