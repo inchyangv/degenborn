@@ -1,16 +1,51 @@
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
+import * as fs from "fs";
+import * as path from "path";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  console.log("Deploying from:", deployer.address);
+  console.log("Deploying SnapshotRelic from:", deployer.address);
+  console.log("Network:", network.name);
 
   const Factory = await ethers.getContractFactory("SnapshotRelic");
   const relic = await Factory.deploy();
   await relic.waitForDeployment();
 
   const address = await relic.getAddress();
+  const deployTx = relic.deploymentTransaction();
+  const blockNumber = deployTx ? (await deployTx.wait())?.blockNumber ?? 0 : 0;
+  const txHash = deployTx?.hash ?? "";
+
   console.log("SnapshotRelic deployed to:", address);
-  console.log("Set SNAPSHOT_RELIC_ADDRESS=" + address + " in your .env");
+  console.log("Tx hash:", txHash);
+
+  // Write deployment record — merged with SoulCore record if present
+  const deploymentsDir = path.join(__dirname, "..", "deployments");
+  if (!fs.existsSync(deploymentsDir)) {
+    fs.mkdirSync(deploymentsDir, { recursive: true });
+  }
+
+  const deploymentFile = path.join(deploymentsDir, `${network.name}.json`);
+
+  let existing: Record<string, unknown> = {};
+  if (fs.existsSync(deploymentFile)) {
+    try {
+      existing = JSON.parse(fs.readFileSync(deploymentFile, "utf-8"));
+    } catch { /* start fresh */ }
+  }
+
+  const record = {
+    ...existing,
+    SnapshotRelic: address,
+    snapshotRelicTxHash: txHash,
+    snapshotRelicBlockNumber: blockNumber,
+    deployedAt: new Date().toISOString(),
+    deployer: deployer.address,
+  };
+
+  fs.writeFileSync(deploymentFile, JSON.stringify(record, null, 2));
+  console.log(`Deployment record written to: ${deploymentFile}`);
+  console.log(`\nAdd to your .env.local:\n  SNAPSHOT_RELIC_ADDRESS=${address}`);
 }
 
 main().catch((err) => {
