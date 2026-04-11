@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { keccak256, toBytes } from "viem";
+import { keccak256, toBytes, isAddress } from "viem";
 import type { PersonaDNA, ArchetypeResult } from "@degenborn/shared";
 import { generateNarrative } from "@/lib/narrative";
 
@@ -14,6 +14,10 @@ export async function POST(req: NextRequest) {
 
     if (!wallet || !dna || !archetype) {
       return NextResponse.json({ error: "wallet, dna, archetype required" }, { status: 400 });
+    }
+
+    if (!isAddress(wallet.toLowerCase())) {
+      return NextResponse.json({ error: "invalid Ethereum address" }, { status: 400 });
     }
 
     // Generate deterministic DNA hash (viem keccak256 — Node.js crypto doesn't support keccak256 digest)

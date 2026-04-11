@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAddress } from "viem";
 import { scoreDNA } from "@degenborn/scoring";
 import { classify } from "@degenborn/archetype";
 import { fetchWalletActivity } from "@degenborn/data-adapter";
@@ -20,6 +21,10 @@ export async function POST(req: NextRequest) {
     }
 
     const walletLower = wallet.toLowerCase();
+
+    if (!isAddress(walletLower)) {
+      return NextResponse.json({ error: "invalid Ethereum address" }, { status: 400 });
+    }
     let events: ActivityEvent[];
 
     if (useFixture || process.env.NODE_ENV === "development") {
