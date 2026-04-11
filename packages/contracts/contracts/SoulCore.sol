@@ -48,6 +48,7 @@ contract SoulCore is ERC721, Ownable {
     error AlreadyMinted();
     error TransferForbidden();
     error NotOwner();
+    error ArchetypeImmutable();
 
     // ─── Constructor ─────────────────────────────────────────────────────────
 
@@ -94,6 +95,11 @@ contract SoulCore is ERC721, Ownable {
     /**
      * @notice Update the character state hash and metadata URI after evolution.
      *         Only the contract owner can call this.
+     *         The archetype field is permanently set at mint and cannot be changed here.
+     *
+     * @param tokenId       Token to update
+     * @param newStateHash  keccak256 of the new off-chain character state JSON
+     * @param newTokenURI   New metadata URI (IPFS CID or hosted URL)
      */
     function updateState(
         uint256 tokenId,
@@ -101,9 +107,20 @@ contract SoulCore is ERC721, Ownable {
         string calldata newTokenURI
     ) external onlyOwner {
         _requireOwned(tokenId);
+        // NOTE: archetype (_archetypes[tokenId]) is set at mint and must not change.
+        // Any attempt to change it should call the archetype-gated function below,
+        // which will always revert (archetype is immutable by design).
         _stateHashes[tokenId] = newStateHash;
         _tokenURIs[tokenId] = newTokenURI;
         emit SoulCoreUpdated(tokenId, newStateHash, newTokenURI);
+    }
+
+    /**
+     * @notice Guard: archetype cannot be updated after mint.
+     *         Reverts always — provided as an explicit signal that this is intentional.
+     */
+    function updateArchetype(uint256 /* tokenId */, string calldata /* newArchetype */) external pure {
+        revert ArchetypeImmutable();
     }
 
     // ─── Transfer guard (Soulbound) ───────────────────────────────────────────

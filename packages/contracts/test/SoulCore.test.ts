@@ -102,6 +102,20 @@ describe("SoulCore", function () {
         soulCore.connect(wallet1).updateState(1, newStateHash, "http://evil.com"),
       ).to.be.revertedWithCustomError(soulCore, "OwnableUnauthorizedAccount");
     });
+
+    it("P1-10: updateArchetype always reverts — archetype is immutable after mint", async function () {
+      // Even the owner cannot change the archetype — it is fixed at mint time.
+      await expect(
+        soulCore.updateArchetype(1, "ice_whale"),
+      ).to.be.revertedWithCustomError(soulCore, "ArchetypeImmutable");
+    });
+
+    it("P1-10: archetype remains unchanged after updateState call", async function () {
+      const newStateHash = ethers.keccak256(ethers.toUtf8Bytes("new_state"));
+      await soulCore.updateState(1, newStateHash, "ipfs://new");
+      // Archetype must not have changed
+      expect(await soulCore.archetypeOf(1)).to.equal(ARCHETYPE);
+    });
   });
 
   describe("Views", function () {
