@@ -3,6 +3,7 @@ import { scoreDNA } from "@degenborn/scoring";
 import { classify } from "@degenborn/archetype";
 import { fetchWalletActivity } from "@degenborn/data-adapter";
 import type { ActivityEvent, TimeWindow } from "@degenborn/shared";
+import { setProfile } from "@/lib/profile-store";
 import path from "path";
 
 export async function POST(req: NextRequest) {
@@ -44,6 +45,9 @@ export async function POST(req: NextRequest) {
 
     const { dna } = scoreDNA(walletLower, events);
     const archetypeResult = classify(dna);
+
+    // Persist to profile store for metadata endpoint cache hits
+    setProfile(walletLower, dna, archetypeResult);
 
     return NextResponse.json({ dna, archetype: archetypeResult, event_count: events.length });
   } catch (err: unknown) {
