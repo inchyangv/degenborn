@@ -1,0 +1,25 @@
+{
+  "wallet_address": "0xsniper00000000000000000000000000000000001",
+  "fetched_at": 1712700000,
+  "source": "fixture",
+  "archetype_label": "sniper_jester",
+  "description": "Sniper Jester: high aggression, high luck, very short holds. Quick in-and-out with high win rate.",
+  "events": [
+    { "id": "sj001", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_fast1", "token_symbol": "FAST1", "value_usd": 1000, "pnl_delta": 0, "hold_duration_seconds": 600, "timestamp": 1712600000, "chain_id": 56 },
+    { "id": "sj002", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_fast1", "token_symbol": "FAST1", "value_usd": 2800, "pnl_delta": 1800, "hold_duration_seconds": 600, "timestamp": 1712600600, "chain_id": 56 },
+    { "id": "sj003", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_snipe2", "token_symbol": "SNIPE2", "value_usd": 500, "pnl_delta": 0, "hold_duration_seconds": 300, "timestamp": 1712601000, "chain_id": 56 },
+    { "id": "sj004", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_snipe2", "token_symbol": "SNIPE2", "value_usd": 1800, "pnl_delta": 1300, "hold_duration_seconds": 300, "timestamp": 1712601300, "chain_id": 56 },
+    { "id": "sj005", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_alpha3", "token_symbol": "ALPHA3", "value_usd": 2000, "pnl_delta": 0, "hold_duration_seconds": 900, "timestamp": 1712610000, "chain_id": 56 },
+    { "id": "sj006", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_alpha3", "token_symbol": "ALPHA3", "value_usd": 5500, "pnl_delta": 3500, "hold_duration_seconds": 900, "timestamp": 1712610900, "chain_id": 56 },
+    { "id": "sj007", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_miss1", "token_symbol": "MISS1", "value_usd": 800, "pnl_delta": 0, "hold_duration_seconds": 450, "timestamp": 1712620000, "chain_id": 56 },
+    { "id": "sj008", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_miss1", "token_symbol": "MISS1", "value_usd": 700, "pnl_delta": -100, "hold_duration_seconds": 450, "timestamp": 1712620450, "chain_id": 56 },
+    { "id": "sj009", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_fast4", "token_symbol": "FAST4", "value_usd": 3000, "pnl_delta": 0, "hold_duration_seconds": 720, "timestamp": 1712630000, "chain_id": 56 },
+    { "id": "sj010", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_fast4", "token_symbol": "FAST4", "value_usd": 7200, "pnl_delta": 4200, "hold_duration_seconds": 720, "timestamp": 1712630720, "chain_id": 56 },
+    { "id": "sj011", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_quick5", "token_symbol": "QCK5", "value_usd": 1500, "pnl_delta": 0, "hold_duration_seconds": 480, "timestamp": 1712640000, "chain_id": 56 },
+    { "id": "sj012", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_quick5", "token_symbol": "QCK5", "value_usd": 3200, "pnl_delta": 1700, "hold_duration_seconds": 480, "timestamp": 1712640480, "chain_id": 56 },
+    { "id": "sj013", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_fast1", "token_symbol": "FAST1", "value_usd": 2000, "pnl_delta": 0, "hold_duration_seconds": 600, "timestamp": 1712650000, "chain_id": 56 },
+    { "id": "sj014", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_fast1", "token_symbol": "FAST1", "value_usd": 4800, "pnl_delta": 2800, "hold_duration_seconds": 600, "timestamp": 1712650600, "chain_id": 56 },
+    { "id": "sj015", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_snipe2", "token_symbol": "SNIPE2", "value_usd": 1000, "pnl_delta": 0, "hold_duration_seconds": 360, "timestamp": 1712660000, "chain_id": 56 },
+    { "id": "sj016", "wallet_address": "0xsniper00000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_snipe2", "token_symbol": "SNIPE2", "value_usd": 2100, "pnl_delta": 1100, "hold_duration_seconds": 360, "timestamp": 1712660360, "chain_id": 56 }
+  ]
+}
