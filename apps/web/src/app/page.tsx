@@ -39,6 +39,7 @@ const SAMPLE_MONSTERS: Array<{
       crown_count: 1,
       survival_streak: 3,
       active_traits: ["zombie_eyes", "crown", "revenge_aura", "bandage"],
+      updated_at: 1712700000,
     },
   },
   {
@@ -56,6 +57,7 @@ const SAMPLE_MONSTERS: Array<{
       crown_count: 3,
       survival_streak: 2,
       active_traits: ["crown", "gold_chain", "royal_cloak", "gold_tooth"],
+      updated_at: 1712700000,
     },
   },
   {
@@ -73,6 +75,7 @@ const SAMPLE_MONSTERS: Array<{
       crown_count: 1,
       survival_streak: 0,
       active_traits: ["crown", "torn_clothes"],
+      updated_at: 1712700000,
     },
   },
 ];

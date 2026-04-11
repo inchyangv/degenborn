@@ -440,7 +440,7 @@ const PRESET_MAD_GAMBLER: ReplayPreset = {
     { step: 3, label: "Genesis", description: "You are: Mad Gambler", action: "show_genesis", delay_ms: 0 },
     { step: 4, label: "Fast Flip ×5", description: "5 trades under 10 minutes — aggression maxed, crown appears", action: "state_event", state_changes: { crown_count: 1, mood: "greed" as const, prestige: 5, level: 2, traits_added: ["crown", "torn_clothes"] }, caption: "In. Out. Profit. Next. Sleep is for the convicted.", delay_ms: 0 },
     { step: 5, label: "Big Loss", description: "CHAOS99 rugged — scar +1, mood despair", action: "state_event", state_changes: { scar_count: 1, corruption: 20, mood: "despair" as const, traits_added: ["bandage"] }, caption: "Lost it all in 3 minutes. Personal best.", delay_ms: 0 },
-    { step: 6, label: "Re-entry", description: "Immediately re-entered MOONSHOT — aggression 100", action: "state_event", state_changes: { survival_streak: 1, mood: "greed" as const, dna: { aggression: 99 } as any, traits_added: ["flame"] }, caption: "You cannot stop someone who has nothing left to lose.", delay_ms: 0 },
+    { step: 6, label: "Re-entry", description: "Immediately re-entered MOONSHOT — aggression 100", action: "state_event", state_changes: { survival_streak: 1, mood: "greed" as const, traits_added: ["flame"] }, caption: "You cannot stop someone who has nothing left to lose.", delay_ms: 0 },
     { step: 7, label: "Diary", description: "3 mutations — all within 4 hours", action: "show_diary", delay_ms: 0 },
     { step: 8, label: "Share Card", description: "Generate identity card", action: "show_share_card", delay_ms: 0 },
   ],

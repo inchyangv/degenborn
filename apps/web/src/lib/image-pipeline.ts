@@ -1,4 +1,4 @@
-import type { PersonaDNA, ArchetypeId } from "@degenborn/shared";
+import type { PersonaDNA, ArchetypeId, CharacterState } from "@degenborn/shared";
 import { createHash } from "crypto";
 
 // ── Genesis image cache ────────────────────────────────────────────────────────
@@ -44,6 +44,7 @@ export async function generateGenesisImage(
   wallet: string,
   dna: PersonaDNA,
   archetype: ArchetypeId,
+  state?: Partial<CharacterState>,
 ): Promise<GenesisImageResult> {
   // Deterministic seed from wallet + DNA
   const seedInput = `${wallet.toLowerCase()}:${archetype}:${dna.aggression}:${dna.chaos}`;
@@ -56,7 +57,7 @@ export async function generateGenesisImage(
   if (cached) return cached;
 
   const styleGuide = ARCHETYPE_STYLE_GUIDES[archetype];
-  const prompt = buildGenesisPrompt(dna, archetype, styleGuide);
+  const prompt = buildGenesisPrompt(state ?? {}, archetype, styleGuide);
 
   // Try OpenAI DALL-E 3
   if (process.env.OPENAI_API_KEY) {
@@ -78,17 +79,17 @@ export async function generateGenesisImage(
 }
 
 function buildGenesisPrompt(
-  dna: PersonaDNA,
-  archetype: ArchetypeId,
+  state: Partial<CharacterState>,
+  _archetype: ArchetypeId,
   styleGuide: string,
 ): string {
   const modifiers: string[] = [styleGuide];
 
-  if (dna.corruption > 50) modifiers.push("glowing zombie eyes");
-  if (dna.prestige > 70) modifiers.push("royal golden cloak");
-  if (dna.scar_count > 2) modifiers.push("multiple battle scars");
-  if (dna.crown_count > 0) modifiers.push("golden crown");
-  if (dna.survival_streak > 5) modifiers.push("skull accessories");
+  if ((state.corruption ?? 0) > 50) modifiers.push("glowing zombie eyes");
+  if ((state.prestige ?? 0) > 70) modifiers.push("royal golden cloak");
+  if ((state.scar_count ?? 0) > 2) modifiers.push("multiple battle scars");
+  if ((state.crown_count ?? 0) > 0) modifiers.push("golden crown");
+  if ((state.survival_streak ?? 0) > 5) modifiers.push("skull accessories");
 
   return (
     `Portrait of ${modifiers.join(", ")}, ` +

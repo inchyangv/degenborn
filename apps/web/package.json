@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:full": "pnpm -r --filter @degenborn/shared --filter @degenborn/scoring --filter @degenborn/archetype --filter @degenborn/data-adapter build && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"

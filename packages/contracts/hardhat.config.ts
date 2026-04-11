@@ -1,5 +1,18 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import * as fs from "fs";
+import * as path from "path";
+
+// Load .env.deployer if present (takes priority over env vars for PRIVATE_KEY)
+const deployerEnvPath = path.join(__dirname, ".env.deployer");
+if (fs.existsSync(deployerEnvPath)) {
+  for (const line of fs.readFileSync(deployerEnvPath, "utf-8").split("\n")) {
+    const [key, ...valueParts] = line.split("=");
+    if (key && !key.startsWith("#")) {
+      process.env[key.trim()] ??= valueParts.join("=").trim();
+    }
+  }
+}
 
 const config: HardhatUserConfig = {
   solidity: {

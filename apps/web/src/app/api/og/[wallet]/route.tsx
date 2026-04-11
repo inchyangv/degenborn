@@ -1,10 +1,9 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
-import { isAddress } from "viem";
 import { getProfileStore } from "@/lib/profile-store";
 import { ARCHETYPE_COLORS } from "@degenborn/shared";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 /**
  * GET /api/og/[wallet]
@@ -17,11 +16,12 @@ export const runtime = "edge";
 export async function GET(
   _req: NextRequest,
   { params }: { params: { wallet: string } },
-) {
+): Promise<Response> {
   const { wallet } = params;
   const walletLower = wallet.toLowerCase();
 
-  if (!isAddress(walletLower)) {
+  // Basic hex address check (avoid viem isAddress in edge route)
+  if (!/^0x[0-9a-f]{40}$/i.test(walletLower)) {
     return new Response("Invalid wallet address", { status: 400 });
   }
 

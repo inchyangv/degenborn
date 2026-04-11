@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body = await req.json() as { wallet?: string; event?: unknown };
     const { wallet, event } = body;
 
     if (!wallet || !event) {
