@@ -1,6 +1,15 @@
 import type { PersonaDNA, ArchetypeId } from "@degenborn/shared";
 import { createHash } from "crypto";
 
+// ── Genesis image cache ────────────────────────────────────────────────────────
+// In-memory: survives same process; cleared on restart.
+// For production, persist this to DB or KV store alongside the wallet profile.
+const genesisCache = new Map<string, GenesisImageResult>();
+
+function getCacheKey(wallet: string, archetype: ArchetypeId): string {
+  return `${wallet.toLowerCase()}:${archetype}`;
+}
+
 export interface GenesisImageResult {
   url: string;
   seed: number;
@@ -41,6 +50,11 @@ export async function generateGenesisImage(
   const seedHex = createHash("sha256").update(seedInput).digest("hex").slice(0, 8);
   const seed = parseInt(seedHex, 16);
 
+  // P1-07: Return cached result if available — same wallet+archetype → same image URL
+  const cacheKey = getCacheKey(wallet, archetype);
+  const cached = genesisCache.get(cacheKey);
+  if (cached) return cached;
+
   const styleGuide = ARCHETYPE_STYLE_GUIDES[archetype];
   const prompt = buildGenesisPrompt(dna, archetype, styleGuide);
 
@@ -48,15 +62,19 @@ export async function generateGenesisImage(
   if (process.env.OPENAI_API_KEY) {
     try {
       const url = await generateWithDallE(prompt, seed);
-      return { url, seed, prompt, is_placeholder: false };
+      const result: GenesisImageResult = { url, seed, prompt, is_placeholder: false };
+      genesisCache.set(cacheKey, result);
+      return result;
     } catch (err) {
       console.warn("[image-pipeline] DALL-E failed:", err);
     }
   }
 
-  // Fallback: return placeholder URL
+  // Fallback: return placeholder URL (deterministic — same wallet always gets same placeholder)
   const placeholderUrl = `/archetypes/${archetype}_placeholder.svg`;
-  return { url: placeholderUrl, seed, prompt, is_placeholder: true };
+  const fallback: GenesisImageResult = { url: placeholderUrl, seed, prompt, is_placeholder: true };
+  genesisCache.set(cacheKey, fallback);
+  return fallback;
 }
 
 function buildGenesisPrompt(
