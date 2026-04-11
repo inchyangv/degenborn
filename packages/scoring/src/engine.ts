@@ -142,7 +142,7 @@ function scoreLuck(events: ActivityEvent[]): number {
   if (events.length === 0) return 0;
 
   const sells = events.filter((e) => e.event_type === "sell");
-  if (sells.length === 0) return 30; // neutral default
+  if (sells.length === 0) return 0; // no sells → no luck evidence
 
   const profitableSells = sells.filter((e) => e.pnl_delta > 0).length;
   const profitRate = profitableSells / sells.length;
