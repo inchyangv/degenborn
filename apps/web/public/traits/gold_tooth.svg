@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Gold tooth — mouth area (~y=290-340) -->
+  <g transform="translate(256,315)">
+    <!-- Slight open mouth suggestion -->
+    <path d="M-50,-10 Q0,20 50,-10" fill="none" stroke="#333" stroke-width="3"/>
+    <!-- Bottom teeth row -->
+    <rect x="-45" y="0" width="90" height="25" rx="4" fill="#F5F0E0"/>
+    <!-- Individual teeth lines -->
+    <line x1="-20" y1="0" x2="-20" y2="25" stroke="#DDD" stroke-width="2"/>
+    <line x1="0" y1="0" x2="0" y2="25" stroke="#DDD" stroke-width="2"/>
+    <line x1="20" y1="0" x2="20" y2="25" stroke="#DDD" stroke-width="2"/>
+    <!-- Gold tooth (center-left) -->
+    <rect x="-20" y="0" width="20" height="25" rx="2" fill="#FFD700" stroke="#FFA500" stroke-width="2"/>
+    <!-- Shine on gold tooth -->
+    <rect x="-17" y="3" width="6" height="4" rx="1" fill="#FFF8AA" opacity="0.8"/>
+  </g>
+</svg>

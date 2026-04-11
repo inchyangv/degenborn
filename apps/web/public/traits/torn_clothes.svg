@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Torn clothes — body area (~y=280-480) -->
+  <g transform="translate(256,380)">
+    <!-- Main torn shirt -->
+    <path d="M-100,-80 L-120,80 L120,80 L100,-80 L60,-80 L50,-40 L-50,-40 L-60,-80 Z"
+          fill="#3A3A4A" stroke="#555566" stroke-width="3"/>
+    <!-- Torn edges on sides -->
+    <path d="M-120,80 L-130,20 L-110,40 L-120,0 L-105,20 L-115,-20 L-100,-20"
+          fill="none" stroke="#2A2A3A" stroke-width="4"/>
+    <path d="M120,80 L130,20 L110,40 L120,0 L105,20 L115,-20 L100,-20"
+          fill="none" stroke="#2A2A3A" stroke-width="4"/>
+    <!-- Rips -->
+    <path d="M-30,-50 L-10,-30 L-20,-10 L0,10" fill="none" stroke="#555" stroke-width="3"/>
+    <path d="M20,-60 L40,-35" fill="none" stroke="#555" stroke-width="3"/>
+    <!-- Exposed skin patches (darker) -->
+    <ellipse cx="-40" cy="0" rx="15" ry="20" fill="#2A1A0A" opacity="0.7"/>
+  </g>
+</svg>

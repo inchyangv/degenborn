@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Battle scar — cheek/body area -->
+  <g transform="translate(256,256)">
+    <!-- Main diagonal scar across cheek -->
+    <path d="M-80,-60 L-20,20" stroke="#8B2020" stroke-width="8" stroke-linecap="round"/>
+    <path d="M-80,-60 L-20,20" stroke="#CC4040" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+    <!-- Scar stitches -->
+    <line x1="-70" y1="-55" x2="-65" y2="-45" stroke="#8B2020" stroke-width="3"/>
+    <line x1="-60" y1="-42" x2="-55" y2="-32" stroke="#8B2020" stroke-width="3"/>
+    <line x1="-45" y1="-22" x2="-40" y2="-12" stroke="#8B2020" stroke-width="3"/>
+    <line x1="-30" y1="-2" x2="-25" y2="8" stroke="#8B2020" stroke-width="3"/>
+    <!-- Second smaller scar -->
+    <path d="M60,-40 L90,10" stroke="#8B2020" stroke-width="5" stroke-linecap="round"/>
+    <path d="M60,-40 L90,10" stroke="#CC4040" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+    <!-- Raised scar texture -->
+    <path d="M-80,-60 L-20,20" stroke="#FFAAAA" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Crown — positioned on upper head area (~y=60-160) -->
+  <g transform="translate(256,100)" fill="none">
+    <polygon points="-90,60 -90,-40 -45,10 0,-60 45,10 90,-40 90,60" fill="#FFD700" stroke="#FFA500" stroke-width="4"/>
+    <circle cx="-90" cy="-44" r="10" fill="#FF4444"/>
+    <circle cx="0" cy="-64" r="12" fill="#FF4444"/>
+    <circle cx="90" cy="-44" r="10" fill="#FF4444"/>
+    <rect x="-90" y="60" width="180" height="20" rx="4" fill="#FFD700" stroke="#FFA500" stroke-width="3"/>
+  </g>
+</svg>

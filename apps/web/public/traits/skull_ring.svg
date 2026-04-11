@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Skull ring — finger/hand accessory area (~lower right ~360,340) -->
+  <g transform="translate(340,340)">
+    <!-- Ring band -->
+    <rect x="-22" y="10" width="44" height="16" rx="8" fill="#888899" stroke="#AAAACC" stroke-width="2"/>
+    <!-- Skull face -->
+    <ellipse cx="0" cy="0" rx="28" ry="26" fill="#EEEEEE" stroke="#999" stroke-width="3"/>
+    <!-- Eye sockets -->
+    <ellipse cx="-9" cy="-4" rx="7" ry="7" fill="#1A1A1A"/>
+    <ellipse cx="9" cy="-4" rx="7" ry="7" fill="#1A1A1A"/>
+    <!-- Nose cavity -->
+    <path d="M-4,6 L0,2 L4,6 L2,12 L-2,12 Z" fill="#1A1A1A"/>
+    <!-- Teeth -->
+    <path d="M-14,16 L14,16" stroke="#999" stroke-width="2"/>
+    <line x1="-8" y1="16" x2="-8" y2="22" stroke="#CCCCCC" stroke-width="3"/>
+    <line x1="0" y1="16" x2="0" y2="22" stroke="#CCCCCC" stroke-width="3"/>
+    <line x1="8" y1="16" x2="8" y2="22" stroke="#CCCCCC" stroke-width="3"/>
+  </g>
+</svg>

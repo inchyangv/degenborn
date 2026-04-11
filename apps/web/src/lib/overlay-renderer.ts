@@ -64,8 +64,18 @@ export async function renderOverlay(
     try {
       await drawImage(ctx, assetUrl, 0, 0, size, size);
     } catch {
-      // Trait asset missing — skip silently (placeholder will serve)
+      // Trait asset missing — draw a small fallback icon instead of silent failure
       console.warn(`[overlay] Missing trait asset: ${assetUrl}`);
+      const emoji = (await import("@degenborn/shared")).TRAIT_EMOJI[traitId];
+      if (emoji) {
+        ctx.save();
+        ctx.font = `${Math.round(size * 0.15)}px serif`;
+        ctx.textAlign = "right";
+        ctx.textBaseline = "top";
+        ctx.globalAlpha = 0.7;
+        ctx.fillText(emoji, size - 8, 8);
+        ctx.restore();
+      }
     }
   }
 

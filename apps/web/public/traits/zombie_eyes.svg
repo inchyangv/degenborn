@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Zombie eyes — eye area (~y=190-250) -->
+  <g transform="translate(256,220)">
+    <!-- Left eye socket -->
+    <ellipse cx="-70" cy="0" rx="32" ry="28" fill="#1A2A1A" stroke="#3A5A3A" stroke-width="3"/>
+    <!-- Left zombie iris — sickly green -->
+    <ellipse cx="-70" cy="0" rx="20" ry="18" fill="#4A8A4A"/>
+    <ellipse cx="-70" cy="0" rx="10" ry="10" fill="#0A1A0A"/>
+    <!-- Left eye glow -->
+    <ellipse cx="-70" cy="0" rx="22" ry="20" fill="none" stroke="#44FF44" stroke-width="2" opacity="0.6"/>
+    <ellipse cx="-63" cy="-6" rx="5" ry="4" fill="#AAFFAA" opacity="0.5"/>
+
+    <!-- Right eye socket -->
+    <ellipse cx="70" cy="0" rx="32" ry="28" fill="#1A2A1A" stroke="#3A5A3A" stroke-width="3"/>
+    <!-- Right zombie iris -->
+    <ellipse cx="70" cy="0" rx="20" ry="18" fill="#4A8A4A"/>
+    <ellipse cx="70" cy="0" rx="10" ry="10" fill="#0A1A0A"/>
+    <!-- Right eye glow -->
+    <ellipse cx="70" cy="0" rx="22" ry="20" fill="none" stroke="#44FF44" stroke-width="2" opacity="0.6"/>
+    <ellipse cx="77" cy="-6" rx="5" ry="4" fill="#AAFFAA" opacity="0.5"/>
+
+    <!-- Drip effects under eyes -->
+    <path d="M-70,18 Q-68,35 -70,50" stroke="#44FF44" stroke-width="3" fill="none" opacity="0.7" stroke-linecap="round"/>
+    <path d="M70,18 Q72,35 70,50" stroke="#44FF44" stroke-width="3" fill="none" opacity="0.7" stroke-linecap="round"/>
+  </g>
+</svg>

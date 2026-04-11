@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Gold chain — neck/chest accessory area (~y=200-320) -->
+  <g transform="translate(256,260)" fill="none" stroke="#FFD700" stroke-width="6">
+    <path d="M-80,-40 Q-60,-60 -40,-40 Q-20,-20 0,-40 Q20,-60 40,-40 Q60,-20 80,-40" stroke-width="8"/>
+    <path d="M-80,-40 Q-70,-20 -60,0 Q-50,20 -40,40 Q-20,60 0,80 Q20,60 40,40 Q50,20 60,0 Q70,-20 80,-40" stroke-width="5"/>
+    <!-- Pendant -->
+    <polygon points="0,80 -15,110 15,110" fill="#FFD700" stroke="#FFA500" stroke-width="3"/>
+    <circle cx="0" cy="95" r="8" fill="#FFD700"/>
+  </g>
+</svg>
