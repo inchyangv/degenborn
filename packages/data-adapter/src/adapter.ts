@@ -9,8 +9,8 @@ export interface AdapterConfig {
   fixtureDir?: string;
 }
 
-const FOUR_MEME_ROUTER = "0x5c952063c7fc8610ffdb798152d69f0b9550762b"; // BSC
-const BSC_CHAIN_ID = 56;
+/** Four.meme router address on BSC (checksum-lower) */
+export const FOUR_MEME_ROUTER = "0x5c952063c7fc8610ffdb798152d69f0b9550762b";
 
 /**
  * Main entry point for fetching wallet activity.
@@ -44,7 +44,13 @@ async function fetchRaw(
   }
 }
 
-/** Moralis v2.2 token transfers + swaps */
+/**
+ * Moralis v2.2 — fetch ERC-20 transfers + swaps for BSC.
+ *
+ * P1-01: was using /defi/summary (returns only totals, not individual events).
+ * Now uses /erc20/transfers and a separate /swaps endpoint which return per-tx data
+ * that can be scored as buy/sell events.
+ */
 async function fetchMoralis(
   wallet: string,
   window: TimeWindow,
@@ -53,24 +59,53 @@ async function fetchMoralis(
   if (!apiKey) throw new Error("MORALIS_API_KEY is required");
 
   const fromDate = windowToFromDate(window);
-  const url =
-    `https://deep-index.moralis.io/api/v2.2/${wallet}/defi/summary` +
-    `?chain=bsc&from_date=${fromDate}`;
+  const headers = { "X-API-Key": apiKey };
 
-  const resp = await fetchWithTimeout(url, {
-    headers: { "X-API-Key": apiKey },
-  });
+  // Fetch token transfers (ERC-20) — includes swap inputs/outputs
+  const transfersUrl =
+    `https://deep-index.moralis.io/api/v2.2/${wallet}/erc20/transfers` +
+    `?chain=bsc&from_date=${fromDate}&limit=200`;
 
-  if (!resp.ok) {
-    throw new Error(`Moralis error ${resp.status}: ${await resp.text()}`);
+  // Fetch swap events — higher-level Moralis endpoint that includes method labels
+  const swapsUrl =
+    `https://deep-index.moralis.io/api/v2.2/${wallet}/swaps` +
+    `?chain=bsc&from_date=${fromDate}&limit=200&order=DESC`;
+
+  // Fetch both in parallel; ignore failures on individual endpoints
+  const [transfersResp, swapsResp] = await Promise.allSettled([
+    fetchWithTimeout(transfersUrl, { headers }),
+    fetchWithTimeout(swapsUrl, { headers }),
+  ]);
+
+  const transactions: unknown[] = [];
+
+  if (transfersResp.status === "fulfilled" && transfersResp.value.ok) {
+    const data: unknown = await transfersResp.value.json();
+    const result = (data as any)?.result ?? [];
+    // Tag each transfer with its type for the normalizer
+    for (const tx of result) {
+      transactions.push({ ...tx, _moralis_type: "transfer" });
+    }
   }
 
-  const data: unknown = await resp.json();
+  if (swapsResp.status === "fulfilled" && swapsResp.value.ok) {
+    const data: unknown = await swapsResp.value.json();
+    const result = (data as any)?.result ?? [];
+    for (const tx of result) {
+      transactions.push({ ...tx, _moralis_type: "swap" });
+    }
+  }
+
+  if (transactions.length === 0 && transfersResp.status === "rejected") {
+    // Both failed — throw first error
+    throw new Error(`Moralis error: ${(transfersResp as PromiseRejectedResult).reason}`);
+  }
+
   return {
     wallet_address: wallet,
     fetched_at: Math.floor(Date.now() / 1000),
     source: "moralis",
-    transactions: Array.isArray((data as any).result) ? (data as any).result : [],
+    transactions,
   };
 }
 
@@ -104,7 +139,6 @@ async function fetchCovalent(
 
 /** Load fixture from disk */
 async function loadFixture(wallet: string, fixtureDir: string): Promise<RawWalletActivity> {
-  // In Node.js environment
   try {
     const fs = await import("fs/promises");
     const path = await import("path");
