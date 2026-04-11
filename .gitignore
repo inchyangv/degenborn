@@ -20,3 +20,4 @@ degenborn.db
 *.db-journal
 .env.deployer
 /tmp/degenborn_diary.json
+.vercel

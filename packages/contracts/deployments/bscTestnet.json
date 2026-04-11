@@ -1,0 +1,10 @@
+{
+  "SoulCore": "0xAfD84220645Dd21A8214E30f70f0738234Ca37B6",
+  "soulCoreTxHash": "0x4c7c269b70bc7cb50925a874cfae31be7876b7d3e2f2f5a0c6c0085eb11192b8",
+  "soulCoreBlockNumber": 101060221,
+  "deployedAt": "2026-04-11T14:19:55.762Z",
+  "deployer": "0xaAaF2143E63A6ce99369C8889129C34c4fa018ab",
+  "SnapshotRelic": "0xFBdDD26861F9676376E73Cc538dFb118A0E13b46",
+  "snapshotRelicTxHash": "0x326d96f01b1f2ec70504b43a42f5d80fe10946d807012daca1ea5f4424f0e9dd",
+  "snapshotRelicBlockNumber": 101060233
+}
