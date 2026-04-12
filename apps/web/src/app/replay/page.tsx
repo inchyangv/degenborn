@@ -180,9 +180,31 @@ function ReplayContent() {
   const isFinished = preset ? currentStep >= preset.steps.length - 1 : false;
 
   const characterState: Partial<CharacterState> = state;
+  const notStarted = currentStep === -1;
+
+  // Keyboard shortcuts: Space = play/pause, ←/→ = prev/next
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.key === " " || e.code === "Space") {
+        e.preventDefault();
+        if (preset && !isFinished) setPlaying((p) => !p);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        if (!playing && preset && !isFinished) advanceStep();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (!playing) prevStep();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preset, playing, isFinished, currentStep]);
 
   return (
-    <div className="min-h-screen px-4 py-8 max-w-2xl mx-auto">
+    <>
+    <div className="min-h-screen px-4 py-8 pb-32 max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <Link href="/" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">← Home</Link>
@@ -260,6 +282,28 @@ function ReplayContent() {
                 {s.label}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Pre-start preset preview — shown when not yet started */}
+      {notStarted && preset && archProfile && (
+        <div className="flex flex-col items-center gap-3 py-6 mb-4 rounded-2xl opacity-60">
+          <div className="relative">
+            <CharacterDisplay
+              archetype={archetypeId as any}
+              state={{ level: 1, mood: "neutral", corruption: 0, prestige: 0, scar_count: 0, crown_count: 0, survival_streak: 0, active_traits: [], wallet_address: "0xreplay", archetype: archetypeId, updated_at: 0 } as CharacterState}
+              wallet="0xreplay"
+              size={200}
+            />
+            {/* Mystery overlay */}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl">
+              <span className="text-5xl font-black text-white/80">?</span>
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-sm text-gray-500 font-mono">Press ▶ Start to reveal</div>
+            <div className="text-xs text-gray-600 mt-1">{preset.description}</div>
           </div>
         </div>
       )}
@@ -382,74 +426,76 @@ function ReplayContent() {
         </div>
       )}
 
-      {/* Controls */}
-      <div className="flex flex-col items-center gap-4 mt-6">
-        <div className="flex gap-3 items-center">
-          {/* Prev */}
-          <button
-            onClick={prevStep}
-            disabled={currentStep <= 0}
-            className="px-4 py-2 border border-[var(--degen-border)] text-gray-500 text-sm rounded-lg hover:border-gray-500 transition-all disabled:opacity-30"
-          >
-            ← Prev
-          </button>
-
-          {/* Auto-play toggle */}
-          {!isFinished && preset && (
-            <button
-              onClick={() => setPlaying((p) => !p)}
-              className={`px-6 py-3 font-black rounded-lg transition-all text-sm ${
-                playing
-                  ? "bg-[var(--neon-gold)] text-black hover:brightness-90"
-                  : "bg-[var(--neon-green)] text-black hover:brightness-110"
-              }`}
-            >
-              {playing ? "⏸ Pause" : currentStep === -1 ? "▶ Start" : "▶ Auto-play"}
-            </button>
-          )}
-
-          {/* Manual next */}
-          {!playing && !isFinished && preset && currentStep < preset.steps.length - 1 && (
-            <button
-              onClick={advanceStep}
-              className="px-4 py-2 border border-[var(--neon-green)] text-[var(--neon-green)] text-sm rounded-lg hover:bg-[var(--neon-green)] hover:text-black transition-all"
-            >
-              Next →
-            </button>
-          )}
-
-          {/* Replay */}
-          {isFinished && (
-            <button
-              onClick={reset}
-              className="px-8 py-3 border border-[var(--neon-green)] text-[var(--neon-green)] font-bold rounded-lg hover:bg-[var(--neon-green)] hover:text-black transition-all"
-            >
-              ↺ Replay
-            </button>
-          )}
-        </div>
-
-        {/* Speed selector */}
-        {!isFinished && (
-          <div className="flex items-center gap-2 text-xs text-gray-600">
-            <span>Speed:</span>
-            {AUTO_DELAY_OPTIONS.map((d) => (
-              <button
-                key={d}
-                onClick={() => setAutoDelay(d)}
-                className={`px-2 py-0.5 rounded transition-colors ${autoDelay === d ? "text-[var(--neon-green)]" : "hover:text-gray-400"}`}
-              >
-                {d === 2000 ? "2s" : d === 4000 ? "4s" : "6s"}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
       <div className="text-xs text-gray-700 text-center mt-4">
         Works offline · No API calls during replay
       </div>
     </div>
+
+    {/* ─── Fixed bottom control bar ─── */}
+    <div className="fixed bottom-0 inset-x-0 z-50 bg-[#0a0a0f]/95 backdrop-blur border-t border-[var(--degen-border)] px-4 py-3">
+      <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
+        {/* Prev */}
+        <button
+          onClick={prevStep}
+          disabled={currentStep <= 0}
+          className="px-4 py-2 border border-[var(--degen-border)] text-gray-500 text-sm rounded-lg hover:border-gray-500 transition-all disabled:opacity-30 min-w-[72px]"
+        >
+          ← Prev
+        </button>
+
+        {/* Center: Play/Pause or Replay */}
+        {isFinished ? (
+          <button
+            onClick={reset}
+            className="flex-1 py-3 border border-[var(--neon-green)] text-[var(--neon-green)] font-bold rounded-lg hover:bg-[var(--neon-green)] hover:text-black transition-all text-sm"
+          >
+            ↺ Replay
+          </button>
+        ) : preset ? (
+          <button
+            onClick={() => setPlaying((p) => !p)}
+            className={`flex-1 py-3 font-black rounded-lg transition-all text-sm ${
+              playing
+                ? "bg-[var(--neon-gold)] text-black hover:brightness-90"
+                : "bg-[var(--neon-green)] text-black hover:brightness-110"
+            }`}
+          >
+            {playing ? "⏸ Pause" : currentStep === -1 ? "▶ Start" : "▶ Auto-play"}
+          </button>
+        ) : null}
+
+        {/* Next */}
+        {!playing && !isFinished && preset ? (
+          <button
+            onClick={advanceStep}
+            disabled={currentStep >= (preset?.steps.length ?? 0) - 1}
+            className="px-4 py-2 border border-[var(--neon-green)] text-[var(--neon-green)] text-sm rounded-lg hover:bg-[var(--neon-green)] hover:text-black transition-all min-w-[72px] disabled:opacity-30"
+          >
+            Next →
+          </button>
+        ) : (
+          <div className="min-w-[72px]" />
+        )}
+      </div>
+
+      {/* Speed + keyboard hint */}
+      <div className="max-w-2xl mx-auto flex items-center justify-between mt-1.5 px-0.5">
+        <div className="flex items-center gap-1.5 text-[10px] text-gray-600">
+          <span>Speed:</span>
+          {AUTO_DELAY_OPTIONS.map((d) => (
+            <button
+              key={d}
+              onClick={() => setAutoDelay(d)}
+              className={`px-1.5 py-0.5 rounded transition-colors ${autoDelay === d ? "text-[var(--neon-green)]" : "hover:text-gray-400"}`}
+            >
+              {d === 2000 ? "Fast" : d === 4000 ? "Normal" : "Slow"}
+            </button>
+          ))}
+        </div>
+        <div className="text-[10px] text-gray-700">Space · ← →</div>
+      </div>
+    </div>
+    </>
   );
 }
 
