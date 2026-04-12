@@ -20,6 +20,7 @@ export const NARRATIVE_OUTPUT_SCHEMA = {
   tagline: "string ≤ 120 chars — punchy, first-person, no investment advice",
   long_description: "2–3 sentences — dark fantasy flavor, stats woven in",
   caption: "1–2 lines — meme tone, share-card copy, no financial predictions",
+  dialogue: "1 sentence ≤ 20 words — first-person, in-character, spoken by the monster at this moment",
   tone: "one word — mood hint for image pipeline",
 } as const;
 
@@ -42,6 +43,7 @@ Return ONLY valid JSON with this exact shape:
   "tagline": "<string>",
   "long_description": "<string>",
   "caption": "<string>",
+  "dialogue": "<string>",
   "tone": "<string>"
 }`;
 }
