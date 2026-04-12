@@ -109,9 +109,9 @@ const SAMPLE_MONSTERS: Array<{
 ];
 
 const FLOW_STEPS = [
-  { label: "Wallet", color: "var(--neon-green)" },
-  { label: "Persona DNA", color: "var(--neon-purple)" },
-  { label: "Soul Core", color: "var(--neon-gold)" },
+  { label: "Connect", color: "var(--neon-green)" },
+  { label: "Analyze", color: "var(--neon-purple)" },
+  { label: "Meet Your Monster", color: "var(--neon-gold)" },
 ];
 
 function MonsterCarousel() {
@@ -159,6 +159,17 @@ function MonsterCarousel() {
         <div className="text-xs font-mono" style={{ color }}>
           &ldquo;{profile.tagline}&rdquo;
         </div>
+      </div>
+      {/* Context line */}
+      <div
+        className="text-[10px] text-gray-600 text-center mt-2 px-2 max-w-[200px] leading-relaxed transition-all duration-300"
+        style={{ opacity: visible ? 1 : 0 }}
+      >
+        {m.state.scar_count >= 2
+          ? `This trader survived ${m.state.scar_count} rugs. Now they're a ${m.archetype}.`
+          : m.state.crown_count >= 1
+          ? `${m.state.crown_count} win streak${m.state.crown_count > 1 ? "s" : ""}. This is what a ${m.archetype} looks like.`
+          : `On-chain activity, turned into a living identity.`}
       </div>
       {/* Dot indicators */}
       <div className="flex gap-1.5 mt-4">
@@ -240,7 +251,7 @@ function LandingContent() {
           </div>
 
           <p className="text-gray-400 text-base max-w-sm mb-8">
-            Your wallet tells a story. We make it a monster.
+            Connect your wallet. See what kind of trader you really are.
           </p>
 
           {/* CTA block */}
