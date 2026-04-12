@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "build": "tsc",
+    "build:full": "pnpm -r --filter @degenborn/shared --filter @degenborn/scoring --filter @degenborn/archetype --filter @degenborn/data-adapter build && pnpm build",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit"
   },

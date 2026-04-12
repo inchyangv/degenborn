@@ -32,6 +32,8 @@ pnpm exec hardhat run scripts/deploy-relic.ts --network bscTestnet
 
 ## 3. Vercel 배포 (Web App)
 
+현재 `vercel.json` 기준으로 **repo root 배포**를 사용합니다.
+
 ### 방법 A: Vercel CLI
 ```bash
 npm i -g vercel
@@ -45,7 +47,7 @@ vercel --prod
 3. Framework: Next.js (자동 감지)
 4. 아래 환경변수 입력 후 Deploy
 
-### Vercel 환경변수 (필수)
+### Vercel 환경변수
 ```
 NODE_ENV=production
 NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
@@ -53,15 +55,18 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 # WalletConnect (cloud.walletconnect.com에서 발급)
 NEXT_PUBLIC_WC_PROJECT_ID=<your_walletconnect_project_id>
 
-# BSC RPC
-NEXT_PUBLIC_BSC_RPC=https://bsc-dataseed.binance.org/
+# BSC RPC (testnet 기준)
+NEXT_PUBLIC_BSC_RPC=https://data-seed-prebsc-1-s1.binance.org:8545/
 NEXT_PUBLIC_CHAIN_ID=97
 
 # 컨트랙트 주소 (배포 후 입력)
 NEXT_PUBLIC_SOUL_CORE_ADDRESS=<from deployments/bscTestnet.json>
 
-# AI (이미지 생성, 서사 생성)
+# AI (이미지)
 OPENAI_API_KEY=<your_openai_key>
+
+# AI (서사, 선택)
+ANTHROPIC_API_KEY=<your_anthropic_key>
 
 # 데이터 소스 (둘 중 하나)
 DATA_SOURCE=moralis
@@ -79,14 +84,28 @@ MORALIS_API_KEY=<your_moralis_key>
 ## 4. Railway 배포 (Worker — 선택 사항)
 
 Worker는 현재 별도 프로세스 없이 Next.js API routes로 처리 가능.
-향후 cron job이나 이벤트 폴링이 필요해지면 Railway에 `apps/worker` 배포.
+향후 cron job이나 이벤트 폴링이 필요해지면 Railway에 Worker를 배포합니다.
+현재 `railway.toml`은 **repo root 기준**입니다.
 
 ```bash
 # Railway CLI
 npm i -g @railway/cli
 railway login
 railway init
-railway up --service worker --dir apps/worker
+railway up --service worker
+```
+
+### Railway 환경변수
+```
+DATA_SOURCE=moralis
+MORALIS_API_KEY=<your_moralis_key>
+# 또는
+# DATA_SOURCE=covalent
+# COVALENT_API_KEY=<your_covalent_key>
+
+# 콤마 구분 지갑 목록 (없으면 health endpoint만 실행)
+WORKER_WALLETS=0xabc...,0xdef...
+WORKER_INTERVAL_MS=300000
 ```
 
 ---
@@ -100,6 +119,7 @@ railway up --service worker --dir apps/worker
 - [ ] WalletConnect project ID 발급
 - [ ] Vercel 환경변수 입력
 - [ ] Vercel 배포 (`vercel --prod`)
+- [ ] (선택) Railway 환경변수 입력 후 `railway up --service worker`
 - [ ] `NEXT_PUBLIC_APP_URL` 실제 URL로 업데이트
 - [ ] BSCScan에서 tx hash 조회 확인
 - [ ] README에 tx hash 기록

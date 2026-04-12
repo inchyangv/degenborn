@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @degenborn/shared build && pnpm --filter @degenborn/scoring build && pnpm --filter @degenborn/archetype build && pnpm --filter @degenborn/data-adapter build && pnpm --filter @degenborn/web build",
+  "buildCommand": "pnpm --filter @degenborn/web build:full",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "nextjs"

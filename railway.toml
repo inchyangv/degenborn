@@ -1,6 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @degenborn/shared build && pnpm --filter @degenborn/scoring build && pnpm --filter @degenborn/archetype build && pnpm --filter @degenborn/data-adapter build && pnpm --filter @degenborn/worker build"
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @degenborn/worker build:full"
 
 [deploy]
 startCommand = "node apps/worker/dist/index.js"
