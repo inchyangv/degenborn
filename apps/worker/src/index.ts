@@ -14,6 +14,7 @@
 import { fetchWalletActivity } from "@degenborn/data-adapter";
 import { scoreDNA } from "@degenborn/scoring";
 import { classify } from "@degenborn/archetype";
+import type { PersonaDNA } from "@degenborn/shared";
 import path from "path";
 import fs from "fs";
 import { createServer } from "http";
@@ -21,14 +22,7 @@ import { createServer } from "http";
 // ── Profile persistence (mirrors web app profile-store.ts) ────────────────────
 interface WalletProfile {
   wallet_address: string;
-  dna: {
-    aggression: number;
-    conviction: number;
-    chaos: number;
-    luck: number;
-    survival: number;
-    sample_size: number;
-  };
+  dna: PersonaDNA;
   archetype: string;
   archetype_confidence: number;
   last_scored_at: number;

@@ -1,0 +1,23 @@
+{
+  "wallet_address": "0xmadgambler0000000000000000000000000000001",
+  "fetched_at": 1712700000,
+  "source": "fixture",
+  "archetype_label": "mad_gambler",
+  "events": [
+    { "id": "mg001", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_pepe", "token_symbol": "PEPE", "value_usd": 500, "pnl_delta": 0, "hold_duration_seconds": 1800, "timestamp": 1712620000, "chain_id": 56 },
+    { "id": "mg002", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_pepe", "token_symbol": "PEPE", "value_usd": 480, "pnl_delta": -20, "hold_duration_seconds": 1800, "timestamp": 1712621800, "chain_id": 56 },
+    { "id": "mg003", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_doge2", "token_symbol": "DOGE2", "value_usd": 300, "pnl_delta": 0, "hold_duration_seconds": 600, "timestamp": 1712622000, "chain_id": 56 },
+    { "id": "mg004", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_doge2", "token_symbol": "DOGE2", "value_usd": 950, "pnl_delta": 650, "hold_duration_seconds": 600, "timestamp": 1712622600, "chain_id": 56 },
+    { "id": "mg005", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_rug1", "token_symbol": "RUG1", "value_usd": 800, "pnl_delta": 0, "hold_duration_seconds": 300, "timestamp": 1712623000, "chain_id": 56 },
+    { "id": "mg006", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "rug", "token_address": "0xtoken_rug1", "token_symbol": "RUG1", "value_usd": 0, "pnl_delta": -800, "timestamp": 1712623300, "chain_id": 56 },
+    { "id": "mg007", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_moon", "token_symbol": "MOON", "value_usd": 1000, "pnl_delta": 0, "hold_duration_seconds": 900, "timestamp": 1712630000, "chain_id": 56 },
+    { "id": "mg008", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_moon", "token_symbol": "MOON", "value_usd": 1800, "pnl_delta": 800, "hold_duration_seconds": 900, "timestamp": 1712630900, "chain_id": 56 },
+    { "id": "mg009", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_pepe", "token_symbol": "PEPE", "value_usd": 200, "pnl_delta": 0, "hold_duration_seconds": 1200, "timestamp": 1712640000, "chain_id": 56 },
+    { "id": "mg010", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_pepe", "token_symbol": "PEPE", "value_usd": 190, "pnl_delta": -10, "hold_duration_seconds": 1200, "timestamp": 1712641200, "chain_id": 56 },
+    { "id": "mg011", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_rocket", "token_symbol": "ROCKET", "value_usd": 500, "pnl_delta": 0, "hold_duration_seconds": 500, "timestamp": 1712650000, "chain_id": 56 },
+    { "id": "mg012", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_rocket", "token_symbol": "ROCKET", "value_usd": 700, "pnl_delta": 200, "hold_duration_seconds": 500, "timestamp": 1712650500, "chain_id": 56 },
+    { "id": "mg013", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "rug", "token_address": "0xtoken_scam2", "token_symbol": "SCAM2", "value_usd": 0, "pnl_delta": -600, "timestamp": 1712660000, "chain_id": 56 },
+    { "id": "mg014", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_doge2", "token_symbol": "DOGE2", "value_usd": 400, "pnl_delta": 0, "hold_duration_seconds": 400, "timestamp": 1712670000, "chain_id": 56 },
+    { "id": "mg015", "wallet_address": "0xmadgambler0000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_doge2", "token_symbol": "DOGE2", "value_usd": 550, "pnl_delta": 150, "hold_duration_seconds": 400, "timestamp": 1712670400, "chain_id": 56 }
+  ]
+}

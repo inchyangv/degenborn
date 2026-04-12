@@ -1,363 +1,236 @@
-# TODO.md — DegenBorn 실제 동작하지 않는 것 전체 정리
+# TODO.md — DegenBorn 실전 감사 결과
 
-> 시니어 테크리드 관점 감사 결과. 2026-04-12 기준.
-> "데모용 시뮬레이션"이 아니라 **실제로 동작하는 제품**을 만들기 위해 고쳐야 할 모든 항목.
-
----
-
-## 범례
-
-- **[CRITICAL]** — 이것 없으면 핵심 플로우가 가짜다
-- **[HIGH]** — 기능이 존재한다고 보이지만 실제로는 안 돈다
-- **[MEDIUM]** — 인프라/품질 이슈, 프로덕션에 필요
-- **[LOW]** — 개선 사항
+> 2026-04-12 기준, 시니어 테크리드 감사.
+> 모킹/페이크/안 돌아가는 것 전부 적발. 우선순위별 정리.
 
 ---
 
-## 1. [CRITICAL] 민팅이 가짜다
+## P0-CRITICAL: 빌드 자체가 안 됨
 
-**현재 상태:** `MintButton.tsx:82` — `await new Promise((r) => setTimeout(r, 1500))` 로 1.5초 대기 후 성공 화면 표시. 실제 블록체인 트랜잭션 없음.
+현재 `pnpm build`가 실패한다. 배포도 불가능.
 
-**문제:**
-- SoulCore 컨트랙트가 BSC Testnet에 배포되어 있음 (`0xAfD84220645Dd21A8214E30f70f0738234Ca37B6`)
-- 하지만 프론트엔드에서 `writeContract` 호출이 없음
-- 메타데이터를 IPFS에 업로드하지 않음 (`mint/route.ts:47` — "In production: upload metadata to IPFS" 주석만 존재)
-- 민팅 성공 후 token ID를 받아서 화면에 반영하는 로직 없음
+### 1. Worker 타입 불일치 (`apps/worker/src/index.ts:113`)
+- **문제:** Worker 내부 `WalletProfile` 인터페이스가 `dna.sample_size`를 요구하지만, `@degenborn/shared`의 `PersonaDNA`는 `event_count`/`computed_at`를 갖고 있음
+- **증상:** `TS2741: Property 'sample_size' is missing`
+- **수정:** Worker의 로컬 `WalletProfile` 인터페이스를 shared의 `PersonaDNA` 타입에 맞게 수정
 
-**해야 할 일:**
-- [ ] wagmi `useWriteContract` 훅으로 SoulCore.mint() 호출 연결
-- [ ] SoulCore ABI를 프론트엔드에 import (packages/contracts에서)
-- [ ] 메타데이터를 IPFS (Pinata 또는 NFT.Storage)에 업로드하는 로직 추가
-- [ ] 민팅 트랜잭션 해시, token ID를 UI에 반영
-- [ ] 트랜잭션 실패/거부 시 에러 핸들링
-- [ ] 가스비 추정 및 표시
+### 2. Next.js Route Export 위반 (`apps/web/src/app/api/relic/route.ts`)
+- **문제:** `getEligibleMilestones`가 route 파일에서 named export 되어 있음. Next.js App Router는 HTTP method handler만 허용 (`GET`, `POST` 등)
+- **증상:** `next build` 실패
+- **수정:** `getEligibleMilestones`를 별도 lib 파일로 이동하거나 export 제거
 
-**관련 파일:**
-- `apps/web/src/components/MintButton.tsx`
-- `apps/web/src/app/api/mint/route.ts`
-- `packages/contracts/contracts/SoulCore.sol`
+### 3. BigInt 타겟 불일치 (`api/evolution/route.ts`, `api/relic/route.ts`)
+- **문제:** `tsconfig`이 ES2017을 타겟하지만 코드에서 BigInt 리터럴(`0n`) 사용
+- **증상:** `tsc --noEmit` 실패 (SWC 빌드는 통과할 수 있으나 타입체크 깨짐)
+- **수정:** tsconfig target을 ES2020으로 올리거나, BigInt 리터럴을 `BigInt(0)`으로 변경
 
----
-
-## 2. [CRITICAL] 지갑 데이터가 항상 가짜다
-
-**현재 상태:** `monster/page.tsx:70`, `birth/page.tsx:127` — 모든 페이지에서 `/api/analyze`를 `useFixture: true`로 호출. 실제 지갑을 연결해도 fixture 데이터 또는 `generateDemoEvents()`가 반환됨.
-
-**문제:**
-- `analyze/route.ts:31` — `useFixture || process.env.NODE_ENV === "development"` 조건에 의해 개발 환경에서는 무조건 fixture 우선
-- Moralis API 키가 `.env.local`에 존재하지만 절대 호출되지 않음
-- 사용자가 실제 지갑을 연결해도 미리 만들어둔 데모 데이터가 나옴
-
-**해야 할 일:**
-- [ ] `useFixture: true` 하드코딩을 제거하고, 실제 지갑이면 실제 데이터를 가져오도록 변경
-- [ ] fixture는 `0xmad_gambler...` 등 데모 지갑 주소에만 매칭되도록 제한
-- [ ] 실제 지갑 → Moralis API → 정규화 → 스코어링 파이프라인 검증
-- [ ] Moralis API 호출 실패 시에만 fallback 사용 (현재처럼 무조건 fixture 아님)
-- [ ] 데이터 없는 지갑(신규/활동 없음) 대응 UI 추가
-
-**관련 파일:**
-- `apps/web/src/app/monster/page.tsx` (line 70)
-- `apps/web/src/app/birth/page.tsx` (line 127)
-- `apps/web/src/app/api/analyze/route.ts` (line 31)
-- `apps/web/src/app/m/[wallet]/page.tsx` (확인 필요)
-- `apps/web/src/app/compare/page.tsx` (확인 필요)
-- `apps/web/src/app/battle/page.tsx` (확인 필요)
+### 4. Fixture 파일명-주소 불일치
+- **문제:** fixture 파일은 `0xmad_gambler.json`인데, 내부 wallet_address는 `0xmadgambler0000000000000000000000000000001`. `loadFixture`는 주소를 기반으로 파일을 찾으므로 매칭 실패
+- **증상:** Worker에서 fixture 로드 항상 실패 -> 실제 API로 폴백 -> API 키 없으면 전체 실패
+- **수정:** fixture 파일명을 내부 wallet_address와 일치시키거나, loadFixture 로직에 매핑 추가
 
 ---
 
-## 3. [CRITICAL] ANTHROPIC_API_KEY 미설정
+## P0-HIGH: 돌아가긴 하는데 가짜 데이터를 보여줌
 
-**현재 상태:** `.env.local`에 `ANTHROPIC_API_KEY`가 없음. `.env.example`에만 템플릿 존재.
+### 5. `/api/analyze`가 실패 시 조용히 가짜 데이터 반환
+- **문제:** Moralis/Covalent 호출 실패 시 `generateDemoEvents()`로 20개 합성 이벤트를 생성하여 200 OK로 반환. 응답에 실제/가짜 여부 표시 없음
+- **영향:** 유저가 자기 지갑의 진짜 분석 결과를 보고 있다고 착각
+- **수정:** 응답에 `data_source: "live" | "demo" | "fixture"` 필드 추가. UI에서 demo 모드일 때 명확히 표시
 
-**영향 범위:**
-- `/api/confession` — Claude 대신 아키타입별 고정 문자열 3개 중 랜덤 반환
-- `/api/roast` — Claude 대신 DNA 수치를 텍스트에 넣은 템플릿 반환
-- `/api/origin` — 원본 스토리 대신 fallback 텍스트
+### 6. Monster Room이 항상 Level 1에서 시작 (`apps/web/src/app/monster/page.tsx`)
+- **문제:** 매 페이지 로드마다 `createInitialState()`로 새로운 레벨 1 상태 생성. 이전 mutation/evolution 이력이 반영 안 됨
+- **영향:** 유저가 돌아와도 진화 상태가 리셋됨
+- **수정:** 서버에서 누적 state를 로드하는 로직 추가 (diary entries를 replay하여 state 재구성, 또는 profile store에 state 영속화)
 
-**해야 할 일:**
-- [ ] `.env.local`에 `ANTHROPIC_API_KEY` 추가
-- [ ] 최신 모델 ID 확인 (`claude-haiku-4-5-20251001` → 현재 유효한지 검증)
-- [ ] 각 API 엔드포인트에서 실제 Claude 응답 동작 확인
+### 7. Activity Breakdown 수치가 완전 가짜 (`apps/web/src/app/monster/page.tsx`)
+- **문제:** "Buys", "Sells", "Dead tokens", "Revivals" 수치가 DNA 점수에 임의 공식을 적용하여 생성 (`Math.round(dna.aggression * 0.4 + dna.event_count * 0.3)` 등). 실제 트랜잭션 카운트가 아님
+- **영향:** 유저에게 거짓 정보 표시
+- **수정:** analyze API 응답에서 실제 이벤트 타입별 카운트를 집계하여 전달
 
-**관련 파일:**
-- `.env.local`
-- `apps/web/src/app/api/confession/route.ts` (line 38)
-- `apps/web/src/app/api/roast/route.ts` (line 54)
-- `apps/web/src/app/api/origin/route.ts`
+### 8. 상태 캡션 버그 (`apps/web/src/lib/state-machine.ts`)
+- **문제:** `big_loss` 캡션이 `Math.abs(0)` 사용 → 항상 "Down 0 USD". `long_hold` 캡션이 `Math.floor(0 / 86400)` 사용 → 항상 "0 days held"
+- **원인:** 이벤트 객체에서 실제 손실액/보유 기간 데이터를 받지 않고 하드코딩된 0 사용
+- **수정:** `StateEvent` 타입에 `amount`/`duration` 필드 추가, 캡션 생성 시 실제 값 사용
 
----
+### 9. Birth 페이지에서 Genesis 이미지 미호출
+- **문제:** `/birth` 페이지가 `/api/genesis-image` 또는 `/api/genesis`를 호출하지 않음. 유저가 처음 보는 캐릭터가 placeholder SVG
+- **영향:** DALL-E 통합이 있음에도 Birth에서는 항상 placeholder 표시
+- **수정:** Birth 플로우의 Genesis 단계에서 이미지 생성 API 호출 추가
 
-## 4. [CRITICAL] 데이터 영속성 없음 — DB가 없다
-
-**현재 상태:**
-- `profile-store.ts:17` — `new Map<string, WalletProfile>()` 인메모리. 프로세스 재시작 시 전부 소멸.
-- `diary-store.ts:24` — 인메모리 Map. `DIARY_PERSIST_PATH` 설정 시 JSON 파일에 기록하지만 프로덕션 수준 아님.
-- 이미지 캐시, 로스트 캐시 — 전부 인메모리.
-
-**문제:**
-- 서버 재시작하면 모든 분석 결과, 다이어리, 프로필이 사라짐
-- Vercel 서버리스 환경에서는 요청마다 새 인스턴스 → 데이터 공유 불가
-- `.env.example`에 `DATABASE_URL`이 정의되어 있지만 실제 DB 연결 코드 없음
-
-**해야 할 일:**
-- [ ] Postgres (또는 최소 SQLite) 데이터베이스 설정
-- [ ] `wallet_profile` 테이블: DNA 점수, 아키타입, 시드, 마지막 분석 시각
-- [ ] `activity_event` 테이블: 정규화된 이벤트 (현재 `event-store.ts`도 인메모리)
-- [ ] `mutation_event` 테이블: 다이어리 항목
-- [ ] `generated_asset` 테이블: 생성된 이미지 URL, 프롬프트, 시드
-- [ ] `soul_core` 테이블: 민팅된 토큰 정보
-- [ ] profile-store.ts를 DB 기반으로 교체
-- [ ] diary-store.ts를 DB 기반으로 교체
-- [ ] Drizzle, Prisma, 또는 raw pg 중 택 1
-
-**관련 파일:**
-- `apps/web/src/lib/profile-store.ts`
-- `apps/web/src/lib/diary-store.ts`
-- `packages/data-adapter/src/event-store.ts`
+### 10. DALL-E 이미지 URL이 ~1시간 후 만료
+- **문제:** OpenAI가 반환하는 이미지 URL은 임시(~1시간 유효). 인메모리 캐시에만 저장. 프로세스 재시작 시 캐시 소멸, URL 만료 후 이미지 깨짐
+- **영향:** 생성된 캐릭터 이미지가 시간이 지나면 404
+- **수정:** 이미지를 S3/Cloudflare R2/Vercel Blob 등에 영구 저장. URL 대신 저장된 경로 사용
 
 ---
 
-## 5. [HIGH] 이미지 생성 — 실제 동작하지만 placeholder 폴백 가능성
+## P0-MEDIUM: 핵심 기능 결함
 
-**현재 상태:** `image-pipeline.ts:63` — `OPENAI_API_KEY`가 있으면 DALL-E 3 호출. 키는 `.env.local`에 존재함.
+### 11. 모든 상태가 인메모리 (DB 없음)
+- **문제:** `profile-store`, `diary-store`, `image-cache` 모두 인메모리 Map 또는 `/tmp` JSON 파일. Vercel 서버리스에서는 요청마다 인스턴스가 달라서 상태 공유 불가
+- **영향:** 프로필 분석, 다이어리 기록, 이미지 캐시 모두 요청 간 유실 가능
+- **수정 옵션:**
+  - (최소) Vercel KV / Upstash Redis로 state 영속화
+  - (권장) Postgres (Supabase/Neon) 도입 → PROJECT.md 설계대로
 
-**문제:**
-- DALL-E 호출이 실패하면 `/archetypes/{archetype}_placeholder.svg`로 폴백
-- placeholder SVG 파일이 실제로 `public/archetypes/`에 존재하는지 불명
-- 이미지 캐시가 인메모리 → 재시작 시 같은 지갑도 재생성 필요
-- 이미지를 영구 저장하지 않음 (CDN/S3/IPFS 없음)
+### 12. `/api/mint` 이벤트 토픽 해시가 가짜 (`apps/web/src/app/api/mint/route.ts:153`)
+- **문제:** `0x5b4e851e4f97ec3e0b1e7f0d5dfea8e1f9c5e2d0c4f8b3a2e1d0c9b8a7f6e5d4`는 실제 `SoulCoreCreated` 이벤트의 keccak256이 아님. 완전히 조작된 값
+- **영향:** 트랜잭션 로그에서 token ID 파싱 실패 → fallback 주소 매칭에 의존 (약한 휴리스틱)
+- **수정:** 실제 SoulCore 컨트랙트의 `SoulCoreCreated` 이벤트 시그니처로 keccak256 계산하여 교체
 
-**해야 할 일:**
-- [ ] placeholder SVG 6종이 실제로 존재하는지 확인
-- [ ] DALL-E 호출 성공 시 이미지를 영구 저장소(S3/Cloudinary/IPFS)에 업로드
-- [ ] 이미지 URL을 DB에 기록하여 재사용
-- [ ] DALL-E 실패 로그 모니터링 추가
-- [ ] 생성된 이미지의 일관성 검증 (같은 시드 → 유사 이미지)
+### 13. `/api/share`가 항상 placeholder SVG 사용
+- **문제:** share card의 `image_url`이 항상 `_placeholder.svg`를 사용. DALL-E로 생성된 이미지가 있어도 무시
+- **수정:** profile store에서 생성된 이미지 URL이 있으면 우선 사용
 
-**관련 파일:**
-- `apps/web/src/lib/image-pipeline.ts`
-- `apps/web/src/app/api/genesis/route.ts`
-- `apps/web/public/archetypes/` (확인 필요)
+### 14. `getPreviewUrl`이 항상 base image만 반환 (`overlay-renderer.ts`)
+- **문제:** trait overlay 합성 결과를 반환하는 대신 항상 원본 이미지 URL만 반환. 실시간 overlay 합성 결과가 노출 안 됨
+- **수정:** 비동기 합성 완료 후 결과 URL/데이터URL을 캐시하고 반환하는 로직 추가
 
----
+### 15. RPC 어댑터의 Four.meme 플래그 미작동 (`data-adapter/src/normalizer.ts:298`)
+- **문제:** `log.address`(ERC-20 Transfer에서는 토큰 컨트랙트 주소)를 Four.meme 라우터 주소와 비교. Transfer 이벤트의 `log.address`는 라우터가 아니라 토큰이므로 항상 `false`
+- **수정:** `log.topics` 또는 트랜잭션의 `to` 주소와 라우터 비교
 
-## 6. [HIGH] 랜딩 페이지 / 갤러리 / 묘지 — 전부 하드코딩
-
-**현재 상태:**
-- `page.tsx` (랜딩) — `SAMPLE_MONSTERS` 배열에 5개 몬스터 하드코딩
-- `gallery/page.tsx` — `GALLERY_SAMPLES` 배열에 6개 엔트리 하드코딩 ("In production, replace with DB query" 주석)
-- `graveyard/page.tsx` — `FLATLINED_SOULS` 배열에 6개 하드코딩
-
-**해야 할 일:**
-- [ ] DB에서 실제 민팅된/분석된 캐릭터를 조회하여 랜딩 페이지에 표시
-- [ ] 갤러리를 DB 쿼리 기반으로 전환 (아키타입 필터, 페이지네이션)
-- [ ] 묘지를 실제 "죽은" 지갑 (survival 낮음, 활동 중단) 기반으로 전환
-- [ ] 또는 최소한 fixture에서 동적으로 로드하도록 변경
-
-**관련 파일:**
-- `apps/web/src/app/page.tsx`
-- `apps/web/src/app/gallery/page.tsx`
-- `apps/web/src/app/graveyard/page.tsx`
+### 16. Covalent/RPC 소스에서 3/5 DNA 축이 무의미
+- **문제:** Covalent은 `pnl_delta: 0`, RPC는 `pnl_delta: 0` + `value_usd: 0`으로 모든 이벤트 생성. Chaos, Luck, Survival 점수가 거의 0으로 수렴
+- **영향:** Moralis만 정상 작동. 다른 소스에서는 Aggression/Conviction만 유의미
+- **수정:** (Covalent) 가격 API 연동하여 PnL 추정. (RPC) DEX 이벤트 디코딩 + 가격 오라클 추가. 또는 UI에서 데이터 소스 한계를 명시
 
 ---
 
-## 7. [HIGH] Evolution(진화)이 온체인에 반영되지 않음
+## P1: 보안 및 안정성
 
-**현재 상태:** `evolution/route.ts` — 상태 변화 감지 → 이미지 재렌더링만 수행. 블록체인 상태 업데이트 없음.
+### 17. Mint/Relic 엔드포인트에 인증/레이트리밋 없음
+- **문제:** `/api/mint`, `/api/relic` 누구나 호출 가능. 스팸 호출로 deployer 지갑의 BNB 가스비 고갈 가능
+- **수정:** 최소한 wallet signature 검증 또는 reCAPTCHA. 레이트리밋 추가 (IP 또는 지갑 기준)
 
-**문제:**
-- SoulCore 컨트랙트에 `updateState(tokenId, newStateHash, newTokenURI)` 함수 존재
-- 하지만 프론트엔드/API에서 이 함수를 호출하는 코드 없음
-- 진화가 일어나도 온체인 기록은 genesis 상태 그대로
+### 18. SoulCore `approve()`/`setApprovalForAll()` 미차단
+- **문제:** Soulbound 토큰인데 approve 함수가 정상 작동. 의미 없는 가스 소비 + 오해 유발
+- **수정:** `approve()`와 `setApprovalForAll()`을 override하여 revert 처리
 
-**해야 할 일:**
-- [ ] 주요 진화 발생 시 SoulCore.updateState() 호출 로직 추가
-- [ ] 새 메타데이터를 IPFS에 업로드 후 tokenURI 갱신
-- [ ] stateHash 갱신 트랜잭션 처리
-- [ ] 관리자(deployer) 지갑에서 서명하는 백엔드 서비스 또는 유저 서명 방식 결정
+### 19. 스마트 컨트랙트 BscScan 미인증
+- **문제:** SoulCore, SnapshotRelic 모두 BscScan에서 소스코드 미공개
+- **수정:** `npx hardhat verify --network bscTestnet <address> <constructor-args>`
 
-**관련 파일:**
-- `apps/web/src/app/api/evolution/route.ts`
-- `packages/contracts/contracts/SoulCore.sol` (updateState 함수)
-
----
-
-## 8. [HIGH] Snapshot Relic 프론트엔드 연결 없음
-
-**현재 상태:** `SnapshotRelic.sol` — BSC Testnet에 배포 완료 (`0xFBdDD26861F9676376E73Cc538dFb118A0E13b46`). 하지만 프론트엔드에서 민팅/조회하는 코드가 전혀 없음.
-
-**해야 할 일:**
-- [ ] 마일스톤 달성 시 Relic 민팅 CTA 표시
-- [ ] SnapshotRelic ABI 프론트엔드 import
-- [ ] 유저의 보유 Relic 목록 조회 UI (Monster Room에 탭 추가)
-- [ ] `.env.local`에 `NEXT_PUBLIC_SNAPSHOT_RELIC_ADDRESS` 추가
-- [ ] Relic 메타데이터 생성 및 IPFS 업로드
-
-**관련 파일:**
-- `packages/contracts/contracts/SnapshotRelic.sol`
-- `apps/web/src/app/monster/page.tsx` (Relic 탭 없음)
+### 20. deployer 키 노출 리스크
+- **문제:** `.env.local`과 `.env.deployer`에 평문 개인키 존재. `.gitignore`에는 있으나 주의 필요
+- **수정:** 메인넷 배포 전 키 로테이션 필수. 배포 시 secret manager 사용 (Vercel env vars, Railway secrets)
 
 ---
 
-## 9. [HIGH] Worker가 결과를 저장하지 않음
+## P1: 코드 품질 및 기능 완성도
 
-**현재 상태:** `apps/worker/src/index.ts` — 지갑 활동 가져오기 → DNA 스코어링 → 아키타입 분류까지 수행하지만 결과를 DB에 저장하지 않음. 콘솔 로그만 출력.
+### 21. Landing 페이지 몬스터 캐러셀이 가짜 지갑 사용
+- **문제:** `0xrugnecromancer...`, `0xicewhale...` 등 가짜 주소의 하드코딩된 샘플 몬스터 표시
+- **수정:** 실제 분석된 프로필에서 동적으로 로드하거나, 최소한 fixture 데이터와 일관성 맞추기
 
-**해야 할 일:**
-- [ ] Worker에서 스코어링 결과를 DB에 저장
-- [ ] 주기적 폴링으로 기존 지갑의 상태 변화 감지
-- [ ] 상태 변화 시 mutation event 생성
-- [ ] 필요시 evolution 트리거
+### 22. `/api/profiles`가 항상 하드코딩 fixture 프로필 반환
+- **문제:** 서버 재시작 후 인메모리 프로필 스토어가 비어있으면 6개 가짜 프로필 반환 (`is_fixture: true`)
+- **수정:** DB 도입 후 실제 분석된 프로필만 반환
 
-**관련 파일:**
-- `apps/worker/src/index.ts`
+### 23. Scan 로그 애니메이션이 코스메틱 연극 (`birth/page.tsx`)
+- **문제:** `SCAN_LOG_LINES`가 하드코딩된 문자열 배열. 실제 API 처리 진행률과 무관하게 타이머 기반 표시
+- **수정:** (최소) 실제 진행 상태 표시 불가 시 "분석 중..." 단일 스켈레톤으로 변경. (권장) SSE/WebSocket으로 실제 진행률 전달
 
----
+### 24. Unibase 통합이 완전 데드코드 (`lib/unibase-adapter.ts`)
+- **문제:** endpoint URL이 "placeholder URL"로 명시. `UNIBASE_ENABLED=false`. Cyrillic 문자 혼용 (`Unibаse`의 `а`가 키릴 문자)
+- **수정:** 실제 Unibase API가 준비될 때까지 코드 제거하거나, 명확히 disabled 상태로 격리
 
-## 10. [HIGH] RPC 어댑터 미구현
+### 25. `scoreAggression` 데드코드 (`packages/scoring/src/engine.ts:60`)
+- **문제:** `raw` 변수 계산 후 사용 안 됨. 바로 다음 줄에서 다른 공식으로 재계산
+- **수정:** 데드코드 제거
 
-**현재 상태:** `packages/data-adapter/src/adapter.ts` — `throw new Error("RPC adapter not implemented — use moralis or fixture")`
+### 26. `narrative.ts`의 금지어 필터가 과도함
+- **문제:** "buy", "sell", "invest" 등 일반 문맥에서도 정상적인 단어를 `***`로 치환. "I'd sell my soul" → "I'd *** my soul"
+- **수정:** 금융 조언 맥락에서만 필터링하도록 정규식 정교화, 또는 LLM 프롬프트에서 사전 방지
 
-**해야 할 일:**
-- [ ] BSC RPC를 통한 직접 트랜잭션 조회 구현 (ethers/viem)
-- [ ] Moralis/Covalent 모두 실패 시 fallback으로 사용
+### 27. `name.ts` 제목 임계값 오해 소지
+- **문제:** `Twice-Rugged` 타이틀이 `scar_count >= 3`에서 발동 (3번 = "두 번"?)
+- **수정:** 타이틀 이름 또는 임계값 조정
 
-**관련 파일:**
-- `packages/data-adapter/src/adapter.ts`
+### 28. SFX가 하드코딩 합성 비프음
+- **문제:** `/public/sfx/` 디렉토리 없음. Web Audio API로 오실레이터 생성하는 stub
+- **수정:** (최소) 현 상태로 유지 (해커톤 수준). (권장) 짧은 사운드 에셋 추가
 
----
+### 29. `/api/origin`, `/api/roast`의 JSON 파싱 취약
+- **문제:** LLM 출력에서 `rawText.match(/\{[\s\S]*\}/)` 사용. 중첩 JSON이나 다중 JSON 블록에서 오매칭 가능
+- **수정:** `JSON.parse` 직접 시도 → 실패 시 정규식 fallback. 또는 Anthropic structured output 사용
 
-## 11. [MEDIUM] Moralis API 실제 동작 검증 안 됨
-
-**현재 상태:** Moralis API 키가 `.env.local`에 있지만, `useFixture: true` 때문에 한 번도 호출된 적 없을 가능성 높음.
-
-**해야 할 일:**
-- [ ] Moralis API를 직접 호출하여 샘플 지갑 데이터 반환 확인
-- [ ] Four.meme 라우터(`0x5c952063c7fc8610ffdb798152d69f0b9550762b`) 필터 동작 검증
-- [ ] 정규화(normalizer) 결과가 fixture와 동일한 스키마인지 확인
-- [ ] rate limit, timeout, 에러 핸들링 실 환경 테스트
-
-**관련 파일:**
-- `packages/data-adapter/src/adapter.ts`
-- `packages/data-adapter/src/normalizer.ts`
-
----
-
-## 12. [MEDIUM] 공유 기능 — 실제 소셜 공유 불완전
-
-**현재 상태:** Share Card UI 존재. html2canvas로 이미지 생성 가능. 하지만:
-- Web Share API fallback은 있지만 실제 테스트 안 됨
-- OG 이미지(`/api/og/[wallet]`)가 placeholder 사용 가능
-- 트위터/X 공유 링크가 실제로 동작하는지 미확인
-
-**해야 할 일:**
-- [ ] OG 이미지가 실제 생성된 캐릭터를 반영하는지 확인
-- [ ] 공유 URL(`/m/[wallet]`)이 외부에서 접근 가능한지 확인 (배포 후)
-- [ ] X(Twitter) 공유 링크 동작 검증
-- [ ] 카드 다운로드 기능 검증
-
-**관련 파일:**
-- `apps/web/src/components/ShareCard.tsx`
-- `apps/web/src/components/TradingCard.tsx`
-- `apps/web/src/app/api/og/[wallet]/route.ts`
-- `apps/web/src/app/api/share/route.ts`
+### 30. `deployedAt` 타임스탬프 덮어쓰기 (`packages/contracts/deployments/bscTestnet.json`)
+- **문제:** deploy-relic 스크립트 실행 시 SoulCore의 deploy 타임스탬프가 SnapshotRelic 것으로 덮어써짐
+- **수정:** `deployedAt`를 컨트랙트별로 분리 (`soulCoreDeployedAt`, `relicDeployedAt`)
 
 ---
 
-## 13. [MEDIUM] Trait Overlay 에셋 실재 여부 불명
+## P1: 테스트 커버리지 부족
 
-**현재 상태:** CharacterDisplay에서 trait을 렌더링하지만, 실제 오버레이 이미지 에셋(왕관, 상처, 좀비 눈 등)이 존재하는지 확인 안 됨.
+### 31. `@degenborn/shared` 패키지 테스트 0개
+- **문제:** badges, horoscope, tarot, tier, lexicon, caption, dialogue 등 모든 모듈에 테스트 없음
+- **수정:** 최소 badges.evaluateBadges, computeTier, checkLexicon, pickDialogue에 단위 테스트 추가
 
-**해야 할 일:**
-- [ ] `public/` 디렉토리에 trait 에셋 파일 존재 여부 확인
-- [ ] SVG 기반 trait overlay가 실제로 base 이미지 위에 합성되는지 확인
-- [ ] 6종 이상의 trait가 시각적으로 구분 가능한지 검증
-- [ ] trait overlay + DALL-E 생성 이미지의 합성 결과물 확인
+### 32. SoulCore burn 경로 테스트 없음
+- **문제:** `_update`의 burn 브랜치 (`_walletToToken` cleanup)가 테스트 미커버
+- **수정:** burn 시 walletToToken 매핑 정리 확인 테스트 추가
 
-**관련 파일:**
-- `apps/web/src/components/CharacterDisplay.tsx`
-- `apps/web/public/` (trait 에셋 확인 필요)
+### 33. Archetype classifier 신뢰도/fallback 테스트 없음
+- **문제:** 모든 점수가 중간(35-64)일 때 fallback 경로, confidence 값 검증 없음
+- **수정:** all-mid DNA 입력 시 fallback 동작 테스트 추가
 
----
-
-## 14. [MEDIUM] 배포 환경에서의 동작 미검증
-
-**현재 상태:**
-- `vercel.json` — 웹앱 배포 설정 존재
-- `railway.toml` — 워커 배포 설정 존재
-- 하지만 실제 배포 후 동작이 검증되지 않음
-
-**해야 할 일:**
-- [ ] Vercel 배포 → 모든 API 라우트 동작 확인
-- [ ] Railway 워커 배포 → health 엔드포인트 확인
-- [ ] 환경 변수가 배포 환경에 설정되었는지 확인
-- [ ] Vercel 서버리스 환경에서 인메모리 스토어의 한계 대응 (DB 필수)
-- [ ] CORS, 도메인, SSL 설정 확인
+### 34. Scoring 엔진에서 pnl_delta=0 시나리오 테스트 없음
+- **문제:** RPC/Covalent 소스에서 현실적으로 발생하는 모든 pnl_delta=0 케이스 미테스트
+- **수정:** 전체 이벤트 pnl_delta=0 입력 시 점수 분포 테스트
 
 ---
 
-## 15. [MEDIUM] DailyDeltaBanner 모킹된 데이터
+## P2: 해커톤 이후 개선
 
-**현재 상태:** DailyDeltaBanner 컴포넌트에서 mock delta 값 사용.
+### 35. Postgres DB 도입
+- 인메모리 스토어를 Supabase/Neon Postgres로 교체
+- `wallet_profile`, `activity_event`, `mutation_event`, `generated_asset` 테이블 생성
 
-**해야 할 일:**
-- [ ] 실제 지갑의 24시간 내 상태 변화를 계산하여 표시
-- [ ] 또는 컴포넌트 제거
+### 36. 이미지 영구 저장소 (S3/R2/Vercel Blob)
+- DALL-E 생성 이미지를 영구 저장
+- tokenURI에서 안정적인 이미지 URL 제공
 
----
+### 37. Unibase 실제 연동
+- 실제 API endpoint 확보 후 adapter 연결
+- Cyrillic 문자 정리
 
-## 16. [MEDIUM] Battle/Compare — 실제 대전 큐 없음
+### 38. 다중 데이터 소스 PnL 보강
+- Covalent: CoinGecko/Moralis 가격 API 연동하여 PnL 계산
+- RPC: DEX 이벤트 디코딩 + AMM 가격 추출
 
-**현재 상태:** Battle 페이지는 두 지갑의 DNA를 비교하여 결정론적 결과를 보여줌. 실제 매칭 시스템 없음. SummoningBanner에 "incoming challenge" 표시하지만 실제 대전 요청 메커니즘 없음.
+### 39. Analytics 연동 (PostHog)
+- PostHog 키 설정 및 주요 이벤트 트래킹 활성화
 
-**해야 할 일:**
-- [ ] 현재 상태 유지 (해커톤 범위에서 P2) 또는 제거
-- [ ] SummoningBanner가 오해를 주지 않도록 문구 수정
-
----
-
-## 17. [LOW] WeeklyRecapModal — 실제 주간 이벤트 아님
-
-**현재 상태:** 월요일에 모달 표시하지만 실제 주간 활동 요약이 아닌 상태 기반 데이터 사용.
-
-**해야 할 일:**
-- [ ] 실제 주간 mutation 이벤트 기반으로 요약 생성
-- [ ] 또는 기능 비활성화
+### 40. CI/CD 파이프라인
+- GitHub Actions: lint, typecheck, test, build
+- 컨트랙트 자동 verify
+- 환경별 배포 (staging/production)
 
 ---
 
-## 18. [LOW] 보안 — 민감 정보 노출
+## 요약 대시보드
 
-**현재 상태:**
-- `.env.local`에 실제 API 키 포함 (Moralis JWT, OpenAI, WalletConnect)
-- `packages/contracts/.env.deployer`에 배포자 프라이빗 키 포함
-- `.gitignore`에 포함되어 있지만 주의 필요
+| 카테고리 | 항목 수 | 상태 |
+|----------|---------|------|
+| 빌드 깨짐 (P0-CRITICAL) | 4 | 즉시 수정 필요 |
+| 가짜 데이터 노출 (P0-HIGH) | 6 | 핵심 UX 결함 |
+| 핵심 기능 결함 (P0-MEDIUM) | 6 | 실제 동작 안 함 |
+| 보안/안정성 (P1) | 4 | 배포 전 수정 |
+| 코드 품질 (P1) | 10 | 품질 개선 |
+| 테스트 (P1) | 4 | 커버리지 확대 |
+| 해커톤 이후 (P2) | 6 | 로드맵 |
+| **전체** | **40** | |
 
-**해야 할 일:**
-- [ ] `.env.local`이 .gitignore에 포함되어 있는지 재확인
-- [ ] `.env.deployer`가 .gitignore에 포함되어 있는지 재확인
-- [ ] API 키가 git history에 커밋된 적 없는지 확인
-- [ ] 해커톤 종료 후 키 로테이션
+### TICKET.md 최종 체크리스트 현황
 
----
-
-## 요약 — 우선순위별 작업 수
-
-| 등급 | 항목 수 | 설명 |
-|------|---------|------|
-| CRITICAL | 4 | 핵심 플로우가 가짜 (민팅, 데이터, AI, DB) |
-| HIGH | 6 | 기능이 있지만 실제로 안 돈다 |
-| MEDIUM | 6 | 인프라/품질/검증 |
-| LOW | 2 | 개선 사항 |
-
-## 해커톤 제출 기준 최소 작업 (4/22 마감)
-
-아래만 해결하면 "실제로 돌아가는 데모" 가능:
-
-1. **[CRITICAL] #2** — `useFixture: true` 제거, 실제 지갑은 Moralis로 조회
-2. **[CRITICAL] #1** — 실제 SoulCore 민팅 연결 (wagmi writeContract)
-3. **[CRITICAL] #3** — ANTHROPIC_API_KEY 설정
-4. **[HIGH] #5** — 이미지 생성 동작 확인 (OPENAI_API_KEY는 이미 있음)
-5. **[MEDIUM] #11** — Moralis API 실제 호출 검증
-
-DB(#4)는 해커톤에서는 `DIARY_PERSIST_PATH`로 임시 대응 가능하지만, 제품으로서는 필수.
+| # | 기준 | 현재 상태 |
+|---|------|----------|
+| 1 | 지갑 연결 후 archetype이 30초 안에 나온다 | **부분** — Moralis 키 있으면 OK, 실패 시 가짜 데이터로 OK처럼 보임 |
+| 2 | 캐릭터가 생성되거나 placeholder로 나타난다 | **부분** — placeholder SVG만 표시, DALL-E 호출 안 함 |
+| 3 | 민팅 흐름이 한 번은 성공한다 | **OK** — BSC Testnet에 실제 배포 + 실제 트랜잭션 |
+| 4 | 거래 이벤트 재생 시 trait가 바뀐다 | **부분** — state machine은 동작하나 state 영속 안 됨 |
+| 5 | mutation diary가 보인다 | **부분** — 인메모리라 새로고침 시 유실 |
+| 6 | 공유 카드가 생성된다 | **부분** — 항상 placeholder 이미지 사용 |
+| 7 | 외부 API 죽어도 Replay Mode 돈다 | **OK** — 하드코딩 preset으로 독립 동작 |
