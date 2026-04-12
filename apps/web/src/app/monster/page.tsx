@@ -9,6 +9,7 @@ import ShareCard from "@/components/ShareCard";
 import TradingCard from "@/components/TradingCard";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import WeatherLayer from "@/components/WeatherLayer";
+import SiblingRivalPanel from "@/components/SiblingRivalPanel";
 import { HeroSkeleton } from "@/components/LoadingSkeleton";
 import Link from "next/link";
 
@@ -389,6 +390,11 @@ function MonsterRoomContent() {
         {activeTab === "card" && (
           <TradingCard dna={dna} archetype={archetype} state={state} wallet={wallet} />
         )}
+
+        {/* Sibling / Rival panel — always visible below tabs */}
+        <div className="mt-6">
+          <SiblingRivalPanel currentWallet={wallet} dna={dna} />
+        </div>
       </div>
     </div>
   );
