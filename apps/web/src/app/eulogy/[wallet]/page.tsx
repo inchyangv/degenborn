@@ -53,7 +53,7 @@ export default function EulogyPage() {
         const resp = await fetch("/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wallet, useFixture: true }),
+          body: JSON.stringify({ wallet }),
         });
         if (!resp.ok) throw new Error("Failed");
         const analyzed = await resp.json() as { dna: PersonaDNA; archetype: ArchetypeResult };

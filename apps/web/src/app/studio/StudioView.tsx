@@ -27,7 +27,7 @@ export default function StudioView({ wallet }: { wallet: string }) {
         const resp = await fetch("/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wallet, useFixture: true }),
+          body: JSON.stringify({ wallet }),
         });
         if (!resp.ok) return;
         const analyzed = (await resp.json()) as { dna: PersonaDNA; archetype: ArchetypeResult };

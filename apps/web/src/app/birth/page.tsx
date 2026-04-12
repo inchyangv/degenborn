@@ -125,7 +125,7 @@ function BirthContent() {
       const resp = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wallet, window: analysisWindow, useFixture: true }),
+        body: JSON.stringify({ wallet, window: analysisWindow }),
       });
         if (!resp.ok) {
           const err = await resp.json() as { error: string };

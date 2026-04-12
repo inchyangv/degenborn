@@ -18,7 +18,7 @@ async function loadMonster(wallet: string): Promise<MonsterData> {
   const resp = await fetch("/api/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ wallet, useFixture: true }),
+    body: JSON.stringify({ wallet }),
   });
   const analyzed = await resp.json() as { dna: PersonaDNA; archetype: ArchetypeResult };
   const { createInitialState } = await import("@/lib/state-machine");

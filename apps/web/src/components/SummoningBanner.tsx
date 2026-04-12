@@ -36,7 +36,7 @@ export default function SummoningBanner({ fromWallet, onConnect }: Props) {
         const resp = await fetch("/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ wallet: fromWallet, useFixture: true }),
+          body: JSON.stringify({ wallet: fromWallet }),
         });
         if (!resp.ok) return;
         const { dna, archetype } = (await resp.json()) as { dna: PersonaDNA; archetype: ArchetypeResult };

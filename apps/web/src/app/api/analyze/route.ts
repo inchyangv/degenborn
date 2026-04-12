@@ -28,8 +28,8 @@ export async function POST(req: NextRequest) {
     }
     let events: ActivityEvent[];
 
-    if (useFixture || process.env.NODE_ENV === "development") {
-      // Try fixture first, fall back to real API
+    if (useFixture) {
+      // Demo/replay mode: load from fixture file, fall back to deterministic demo events
       try {
         const fixtureDir = path.join(process.cwd(), "../../fixtures/wallets");
         events = await fetchWalletActivity(walletLower, timeWindow, {
@@ -37,10 +37,11 @@ export async function POST(req: NextRequest) {
           fixtureDir,
         });
       } catch {
-        // No fixture — try real API or return demo data
+        // No fixture for this wallet — generate deterministic demo events
         events = generateDemoEvents(walletLower);
       }
     } else {
+      // Real wallet: fetch live data from Moralis/Covalent, fall back to demo on error
       const source = getDataSource("moralis");
       try {
         events = await fetchWalletActivity(walletLower, timeWindow, {
@@ -49,7 +50,8 @@ export async function POST(req: NextRequest) {
           covalentApiKey: process.env.COVALENT_API_KEY,
         });
       } catch {
-        // Scenario fallback: if live data source is unavailable, keep the flow alive with demo data.
+        // Live data unavailable — keep flow alive with demo data
+        console.warn("[analyze] live data fetch failed, falling back to demo events");
         events = generateDemoEvents(walletLower);
       }
     }
