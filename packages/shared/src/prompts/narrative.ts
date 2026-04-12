@@ -2,6 +2,7 @@
  * Narrative prompt templates — deterministic builders for LLM calls.
  * These ensure consistent output format and enforce safety rules.
  */
+import { buildLexiconPromptFragment } from "../lexicon";
 
 export interface NarrativeInput {
   archetype_name: string;
@@ -33,6 +34,8 @@ Hard rules — violating any of these causes the output to be rejected:
 4. tagline MUST be ≤ 120 characters.
 5. caption MUST be 1–2 lines, meme tone, safe for public sharing.
 6. All text is FICTION about a game character, not financial commentary.
+
+${buildLexiconPromptFragment()}
 
 Return ONLY valid JSON with this exact shape:
 {

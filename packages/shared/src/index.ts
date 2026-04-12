@@ -9,3 +9,4 @@ export * from "./prompts/narrative";
 export * from "./narrative/captions";
 export * from "./narrative/time";
 export * from "./narrative/copy";
+export * from "./lexicon";
