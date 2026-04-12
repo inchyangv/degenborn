@@ -53,6 +53,21 @@ export default function ShareCard({ dna, archetype, state, wallet }: Props) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const shareToX = () => {
+    const text = encodeURIComponent(`${caption}\n\n#DegenBorn #fourmeme`);
+    const profileUrl = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${profileUrl}`, "_blank", "noopener");
+  };
+
+  const shareNative = async () => {
+    if (!navigator.share) { shareToX(); return; }
+    try {
+      await navigator.share({ title: `DegenBorn — ${archetype.profile.name}`, text: `${caption}\n\n#DegenBorn #fourmeme`, url: `${window.location.origin}/m/${wallet}` });
+    } catch {
+      // user cancelled or not supported
+    }
+  };
+
   const downloadCard = async () => {
     setDownloading(true);
     try {
@@ -227,26 +242,32 @@ export default function ShareCard({ dna, archetype, state, wallet }: Props) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={shareNative}
+          className="flex-1 min-w-[120px] py-3 text-black text-sm font-black rounded-lg hover:brightness-110 transition-all"
+          style={{ backgroundColor: borderColor }}
+        >
+          𝕏 Share to X
+        </button>
         <button
           onClick={copyCaption}
-          className="flex-1 py-3 border text-sm font-mono rounded-lg hover:opacity-80 transition-all"
+          className="flex-1 min-w-[100px] py-3 border text-sm font-mono rounded-lg hover:opacity-80 transition-all"
           style={{ borderColor, color: borderColor }}
         >
-          {copied ? "Copied ✓" : "Copy Caption"}
+          {copied ? "Copied ✓" : "Copy Text"}
         </button>
         <button
           onClick={downloadCard}
           disabled={downloading}
-          className="flex-1 py-3 text-black text-sm font-bold rounded-lg hover:brightness-110 transition-all disabled:opacity-50"
-          style={{ backgroundColor: borderColor }}
+          className="flex-1 min-w-[110px] py-3 border border-gray-700 text-gray-400 text-sm font-mono rounded-lg hover:border-gray-500 hover:text-gray-300 transition-all disabled:opacity-50"
         >
-          {downloading ? "Generating..." : "Download Card"}
+          {downloading ? "Generating..." : "Save PNG"}
         </button>
       </div>
 
       <div className="text-xs text-gray-700 text-center">
-        Share on X / Discord. Auto-posting is disabled by design.
+        Auto-posting is disabled by design — you control when to share.
       </div>
     </div>
   );
