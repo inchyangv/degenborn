@@ -1,16 +1,23 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/shared";
-import { ARCHETYPE_PROFILES, TRAIT_DEFINITIONS, ARCHETYPE_COLORS } from "@degenborn/shared";
+import { ARCHETYPE_PROFILES, TRAIT_DEFINITIONS, ARCHETYPE_COLORS, pickDialogue, deriveDialogueEvent } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import Link from "next/link";
+
+type Lang = "en" | "ko";
 
 interface ReplayStep {
   step: number;
   label: string;
   description: string;
+  /** EN subtitle for this step (what's happening) */
+  subtitle_en?: string;
+  /** KO subtitle for this step */
+  subtitle_ko?: string;
   action: string;
   delay_ms: number;
   dna?: { aggression: number; conviction: number; chaos: number; luck: number; survival: number };
@@ -43,7 +50,8 @@ const PLACEHOLDER_DNA: PersonaDNA = {
 
 const AUTO_DELAY_OPTIONS = [2000, 4000, 6000] as const;
 
-export default function ReplayPage() {
+function ReplayContent() {
+  const searchParams = useSearchParams();
   const [preset, setPreset] = useState<ReplayPreset | null>(null);
   const [currentStep, setCurrentStep] = useState(-1);
   const [playing, setPlaying] = useState(false);
@@ -57,9 +65,13 @@ export default function ReplayPage() {
   const [captions, setCaptions] = useState<string[]>([]);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [characterVisible, setCharacterVisible] = useState(false);
+  const [lang, setLang] = useState<Lang>("en");
   const playTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [selectedPresetId, setSelectedPresetId] = useState<string>("hackathon_demo_v1");
+
+  // ?autoplay=1 → start playing after preset loads
+  const autoplayParam = searchParams.get("autoplay") === "1";
 
   useEffect(() => {
     const selected = ALL_PRESETS.find((p) => p.preset_id === selectedPresetId) ?? EMBEDDED_PRESET;
@@ -68,6 +80,10 @@ export default function ReplayPage() {
     // reset archetype initial state to match preset
     setArchetypeId(selected.archetype);
     setDna({ ...PLACEHOLDER_DNA, ...selected.initial_dna, wallet_address: selected.wallet_address });
+    // Auto-start if ?autoplay=1
+    if (autoplayParam) {
+      setTimeout(() => setPlaying(true), 500);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPresetId]);
 
@@ -171,9 +187,25 @@ export default function ReplayPage() {
       <div className="flex items-center justify-between mb-6">
         <Link href="/" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">← Home</Link>
         <div className="text-xs tracking-widest text-[var(--neon-purple)] uppercase">Replay Mode</div>
-        <button onClick={reset} className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
-          Reset ↺
-        </button>
+        <div className="flex items-center gap-2">
+          {/* EN/KO toggle */}
+          <div className="flex rounded overflow-hidden border border-gray-700">
+            {(["en", "ko"] as Lang[]).map((l) => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                className={`px-2 py-0.5 text-[10px] font-bold transition-all ${
+                  lang === l ? "bg-[var(--neon-purple)] text-black" : "text-gray-500 hover:text-gray-300"
+                }`}
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
+          <button onClick={reset} className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
+            Reset ↺
+          </button>
+        </div>
       </div>
 
       {/* Preset selector — L-06 */}
@@ -253,13 +285,32 @@ export default function ReplayPage() {
         </div>
       )}
 
-      {/* Current action */}
+      {/* Subtitle block — 2 lines: what's happening + character dialogue */}
       {currentStepData && (
         <div className="bg-[var(--degen-card)] border border-[var(--neon-purple)] rounded-xl p-4 mb-4 text-center">
+          {/* Line 1: step label + what's happening */}
           <div className="text-xs text-[var(--neon-purple)] uppercase tracking-widest mb-1">
             Step {currentStepData.step}: {currentStepData.label}
           </div>
-          <div className="text-sm text-gray-300">{currentStepData.description}</div>
+          <div className="text-sm text-gray-300 mb-2">
+            {lang === "ko"
+              ? (currentStepData.subtitle_ko ?? currentStepData.description)
+              : (currentStepData.subtitle_en ?? currentStepData.description)}
+          </div>
+          {/* Line 2: character dialogue derived from current state */}
+          {currentStep >= 2 && (() => {
+            const eventType = deriveDialogueEvent(characterState as CharacterState);
+            const line = pickDialogue(archetypeId as any, eventType, currentStep);
+            const text = lang === "ko" ? line.ko : line.en;
+            return (
+              <div
+                className="text-xs font-mono italic px-3 py-1 rounded-lg inline-block"
+                style={{ background: "rgba(153,69,255,0.08)", color: "var(--neon-purple)" }}
+              >
+                "{text}"
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -407,6 +458,14 @@ function archetypeGlow(archetype: string): string {
   return `${base}22`;
 }
 
+export default function ReplayPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-600 text-xs">Loading replay…</div>}>
+      <ReplayContent />
+    </Suspense>
+  );
+}
+
 // All embedded presets — offline capable
 const PRESET_RUG_NECROMANCER: ReplayPreset = {
   preset_id: "hackathon_demo_v1",
@@ -416,14 +475,14 @@ const PRESET_RUG_NECROMANCER: ReplayPreset = {
   initial_dna: { aggression: 55, conviction: 45, chaos: 82, luck: 41, survival: 91 },
   archetype: "rug_necromancer",
   steps: [
-    { step: 1, label: "Connected", description: "0xrugN...0001 connected", action: "connect_wallet", delay_ms: 0 },
-    { step: 2, label: "Awakening", description: "Chaos 82, Survival 91 — the necromancer stirs", action: "show_dna", dna: { aggression: 55, conviction: 45, chaos: 82, luck: 41, survival: 91 }, archetype: "rug_necromancer", delay_ms: 0 },
-    { step: 3, label: "Genesis", description: "You are: Rug Necromancer", action: "show_genesis", delay_ms: 0 },
-    { step: 4, label: "Win Streak ×3", description: "3 consecutive wins → Crown acquired", action: "state_event", state_changes: { crown_count: 1, mood: "euphoria" as const, prestige: 10, level: 2, traits_added: ["crown"] }, caption: "Three in a row. The crown was always yours.", delay_ms: 0 },
-    { step: 5, label: "Rug Exposure", description: "DEAD3 rugged — corruption +40, zombie eyes", action: "state_event", state_changes: { corruption: 40, scar_count: 1, mood: "despair" as const, traits_added: ["zombie_eyes", "bandage"] }, caption: "The rug found you. Again. The eyes never lie.", delay_ms: 0 },
-    { step: 6, label: "Comeback", description: "UNDEAD 3x — survival streak 3, revenge aura", action: "state_event", state_changes: { survival_streak: 3, mood: "revenge" as const, traits_added: ["revenge_aura"] }, caption: "Down 1400. Back 1200. The necromancer returns.", delay_ms: 0 },
-    { step: 7, label: "Diary", description: "3 mutations logged", action: "show_diary", delay_ms: 0 },
-    { step: 8, label: "Share Card", description: "Your identity card is ready", action: "show_share_card", delay_ms: 0 },
+    { step: 1, label: "Connected", description: "0xrugN...0001 connected", subtitle_en: "Wallet connected. Soul record loading…", subtitle_ko: "지갑 연결됨. 소울 기록 로딩 중…", action: "connect_wallet", delay_ms: 0 },
+    { step: 2, label: "Awakening", description: "Chaos 82, Survival 91 — the necromancer stirs", subtitle_en: "Chaos 82 · Survival 91 — DNA awakened", subtitle_ko: "카오스 82 · 생존 91 — DNA가 깨어났다", action: "show_dna", dna: { aggression: 55, conviction: 45, chaos: 82, luck: 41, survival: 91 }, archetype: "rug_necromancer", delay_ms: 0 },
+    { step: 3, label: "Genesis", description: "You are: Rug Necromancer", subtitle_en: "You are: Rug Necromancer. Death is just a dip.", subtitle_ko: "당신은: 럭 네크로맨서. 죽음은 그냥 딥이다.", action: "show_genesis", delay_ms: 0 },
+    { step: 4, label: "Win Streak ×3", description: "3 consecutive wins → Crown acquired", subtitle_en: "3 consecutive wins — Crown trait unlocked", subtitle_ko: "3연승 — 왕관 특성 해금", action: "state_event", state_changes: { crown_count: 1, mood: "euphoria" as const, prestige: 10, level: 2, traits_added: ["crown"] }, caption: "Three in a row. The crown was always yours.", delay_ms: 0 },
+    { step: 5, label: "Rug Exposure", description: "DEAD3 rugged — corruption +40, zombie eyes", subtitle_en: "DEAD3 rug pull — Corruption +40, Zombie Eyes appear", subtitle_ko: "DEAD3 러그풀 — 오염 +40, 좀비 눈 등장", action: "state_event", state_changes: { corruption: 40, scar_count: 1, mood: "despair" as const, traits_added: ["zombie_eyes", "bandage"] }, caption: "The rug found you. Again. The eyes never lie.", delay_ms: 0 },
+    { step: 6, label: "Comeback", description: "UNDEAD 3x — survival streak 3, revenge aura", subtitle_en: "Recovery — Survival Streak ×3, Revenge Aura unlocked", subtitle_ko: "복귀 — 생존 스트릭 ×3, 복수 오라 해금", action: "state_event", state_changes: { survival_streak: 3, mood: "revenge" as const, traits_added: ["revenge_aura"] }, caption: "Down 1400. Back 1200. The necromancer returns.", delay_ms: 0 },
+    { step: 7, label: "Diary", description: "3 mutations logged", subtitle_en: "Mutation Diary — 3 soul changes recorded", subtitle_ko: "변이 일지 — 소울 변화 3개 기록됨", action: "show_diary", delay_ms: 0 },
+    { step: 8, label: "Share Card", description: "Your identity card is ready", subtitle_en: "Identity card generated — share your soul", subtitle_ko: "정체성 카드 생성됨 — 소울을 공유하라", action: "show_share_card", delay_ms: 0 },
   ],
 };
 
@@ -435,14 +494,14 @@ const PRESET_MAD_GAMBLER: ReplayPreset = {
   initial_dna: { aggression: 94, conviction: 22, chaos: 88, luck: 55, survival: 48 },
   archetype: "mad_gambler",
   steps: [
-    { step: 1, label: "Connected", description: "0xmadG...0001 connected", action: "connect_wallet", delay_ms: 0 },
-    { step: 2, label: "Awakening", description: "Aggression 94, Chaos 88 — the gambler never sleeps", action: "show_dna", dna: { aggression: 94, conviction: 22, chaos: 88, luck: 55, survival: 48 }, archetype: "mad_gambler", delay_ms: 0 },
-    { step: 3, label: "Genesis", description: "You are: Mad Gambler", action: "show_genesis", delay_ms: 0 },
-    { step: 4, label: "Fast Flip ×5", description: "5 trades under 10 minutes — aggression maxed, crown appears", action: "state_event", state_changes: { crown_count: 1, mood: "greed" as const, prestige: 5, level: 2, traits_added: ["crown", "torn_clothes"] }, caption: "In. Out. Profit. Next. Sleep is for the convicted.", delay_ms: 0 },
-    { step: 5, label: "Big Loss", description: "CHAOS99 rugged — scar +1, mood despair", action: "state_event", state_changes: { scar_count: 1, corruption: 20, mood: "despair" as const, traits_added: ["bandage"] }, caption: "Lost it all in 3 minutes. Personal best.", delay_ms: 0 },
-    { step: 6, label: "Re-entry", description: "Immediately re-entered MOONSHOT — aggression 100", action: "state_event", state_changes: { survival_streak: 1, mood: "greed" as const, traits_added: ["flame"] }, caption: "You cannot stop someone who has nothing left to lose.", delay_ms: 0 },
-    { step: 7, label: "Diary", description: "3 mutations — all within 4 hours", action: "show_diary", delay_ms: 0 },
-    { step: 8, label: "Share Card", description: "Generate identity card", action: "show_share_card", delay_ms: 0 },
+    { step: 1, label: "Connected", description: "0xmadG...0001 connected", subtitle_en: "Wallet connected. Chaos incoming.", subtitle_ko: "지갑 연결됨. 카오스가 온다.", action: "connect_wallet", delay_ms: 0 },
+    { step: 2, label: "Awakening", description: "Aggression 94, Chaos 88 — the gambler never sleeps", subtitle_en: "Aggression 94 · Chaos 88 — the gambler awakens", subtitle_ko: "공격성 94 · 카오스 88 — 갬블러가 깨어났다", action: "show_dna", dna: { aggression: 94, conviction: 22, chaos: 88, luck: 55, survival: 48 }, archetype: "mad_gambler", delay_ms: 0 },
+    { step: 3, label: "Genesis", description: "You are: Mad Gambler", subtitle_en: "You are: Mad Gambler. All-in, always.", subtitle_ko: "당신은: 매드 갬블러. 항상 올인.", action: "show_genesis", delay_ms: 0 },
+    { step: 4, label: "Fast Flip ×5", description: "5 trades under 10 minutes — aggression maxed, crown appears", subtitle_en: "5 flips in 10 min — Crown + Torn Clothes unlocked", subtitle_ko: "10분 안에 5번 플립 — 왕관 + 찢어진 옷 해금", action: "state_event", state_changes: { crown_count: 1, mood: "greed" as const, prestige: 5, level: 2, traits_added: ["crown", "torn_clothes"] }, caption: "In. Out. Profit. Next. Sleep is for the convicted.", delay_ms: 0 },
+    { step: 5, label: "Big Loss", description: "CHAOS99 rugged — scar +1, mood despair", subtitle_en: "CHAOS99 rug — Scar acquired, mood shifts to despair", subtitle_ko: "CHAOS99 러그 — 흉터 획득, 기분이 절망으로", action: "state_event", state_changes: { scar_count: 1, corruption: 20, mood: "despair" as const, traits_added: ["bandage"] }, caption: "Lost it all in 3 minutes. Personal best.", delay_ms: 0 },
+    { step: 6, label: "Re-entry", description: "Immediately re-entered MOONSHOT — aggression 100", subtitle_en: "Instant re-entry on MOONSHOT — survival streak starts", subtitle_ko: "MOONSHOT 즉시 재진입 — 생존 스트릭 시작", action: "state_event", state_changes: { survival_streak: 1, mood: "greed" as const, traits_added: ["flame"] }, caption: "You cannot stop someone who has nothing left to lose.", delay_ms: 0 },
+    { step: 7, label: "Diary", description: "3 mutations — all within 4 hours", subtitle_en: "Mutation Diary — 3 entries, 4 hour window", subtitle_ko: "변이 일지 — 3개 항목, 4시간 이내", action: "show_diary", delay_ms: 0 },
+    { step: 8, label: "Share Card", description: "Generate identity card", subtitle_en: "Identity card ready — share your monster", subtitle_ko: "정체성 카드 준비됨 — 몬스터를 공유하라", action: "show_share_card", delay_ms: 0 },
   ],
 };
 
@@ -454,14 +513,14 @@ const PRESET_ICE_WHALE: ReplayPreset = {
   initial_dna: { aggression: 18, conviction: 91, chaos: 12, luck: 78, survival: 85 },
   archetype: "ice_whale",
   steps: [
-    { step: 1, label: "Connected", description: "0xiceW...0001 connected", action: "connect_wallet", delay_ms: 0 },
-    { step: 2, label: "Awakening", description: "Conviction 91, Luck 78 — the whale surfaces", action: "show_dna", dna: { aggression: 18, conviction: 91, chaos: 12, luck: 78, survival: 85 }, archetype: "ice_whale", delay_ms: 0 },
-    { step: 3, label: "Genesis", description: "You are: Ice Whale", action: "show_genesis", delay_ms: 0 },
-    { step: 4, label: "30-day Hold", description: "Held MEME4X for 30 days — prestige +50, royal cloak appears", action: "state_event", state_changes: { prestige: 50, crown_count: 2, mood: "euphoria" as const, level: 3, traits_added: ["royal_cloak", "crown", "gold_chain"] }, caption: "The market panicked. You slept. Then you sold.", delay_ms: 0 },
-    { step: 5, label: "Peak Exit", description: "Sold at all-time high — perfect timing bonus", action: "state_event", state_changes: { prestige: 75, crown_count: 3, mood: "neutral" as const, level: 5, traits_added: ["gold_tooth"] }, caption: "They asked how. You said patience. They didn't believe you.", delay_ms: 0 },
-    { step: 6, label: "7-day Rebuy", description: "Accumulated again at the dip — conviction unshaken", action: "state_event", state_changes: { survival_streak: 2, mood: "neutral" as const }, caption: "The price went down. The thesis didn't.", delay_ms: 0 },
-    { step: 7, label: "Diary", description: "3 milestone entries over 60 days", action: "show_diary", delay_ms: 0 },
-    { step: 8, label: "Share Card", description: "Generate identity card", action: "show_share_card", delay_ms: 0 },
+    { step: 1, label: "Connected", description: "0xiceW...0001 connected", subtitle_en: "Wallet connected. The depths stir.", subtitle_ko: "지갑 연결됨. 심연이 움직인다.", action: "connect_wallet", delay_ms: 0 },
+    { step: 2, label: "Awakening", description: "Conviction 91, Luck 78 — the whale surfaces", subtitle_en: "Conviction 91 · Luck 78 — the whale surfaces", subtitle_ko: "확신 91 · 운 78 — 웨일이 떠오른다", action: "show_dna", dna: { aggression: 18, conviction: 91, chaos: 12, luck: 78, survival: 85 }, archetype: "ice_whale", delay_ms: 0 },
+    { step: 3, label: "Genesis", description: "You are: Ice Whale", subtitle_en: "You are: Ice Whale. Patience is the trade.", subtitle_ko: "당신은: 아이스 웨일. 인내가 거래다.", action: "show_genesis", delay_ms: 0 },
+    { step: 4, label: "30-day Hold", description: "Held MEME4X for 30 days — prestige +50, royal cloak appears", subtitle_en: "30-day hold — Prestige +50, Royal Cloak unlocked", subtitle_ko: "30일 홀드 — 위신 +50, 왕실 망토 해금", action: "state_event", state_changes: { prestige: 50, crown_count: 2, mood: "euphoria" as const, level: 3, traits_added: ["royal_cloak", "crown", "gold_chain"] }, caption: "The market panicked. You slept. Then you sold.", delay_ms: 0 },
+    { step: 5, label: "Peak Exit", description: "Sold at all-time high — perfect timing bonus", subtitle_en: "Exit at ATH — Triple Crown, Prestige 75", subtitle_ko: "역대 최고가 매도 — 트리플 왕관, 위신 75", action: "state_event", state_changes: { prestige: 75, crown_count: 3, mood: "neutral" as const, level: 5, traits_added: ["gold_tooth"] }, caption: "They asked how. You said patience. They didn't believe you.", delay_ms: 0 },
+    { step: 6, label: "7-day Rebuy", description: "Accumulated again at the dip — conviction unshaken", subtitle_en: "Dip rebuy — conviction thesis intact", subtitle_ko: "딥 재매수 — 확신 테제 유지", action: "state_event", state_changes: { survival_streak: 2, mood: "neutral" as const }, caption: "The price went down. The thesis didn't.", delay_ms: 0 },
+    { step: 7, label: "Diary", description: "3 milestone entries over 60 days", subtitle_en: "Mutation Diary — 3 milestones across 60 days", subtitle_ko: "변이 일지 — 60일간 3개 마일스톤", action: "show_diary", delay_ms: 0 },
+    { step: 8, label: "Share Card", description: "Generate identity card", subtitle_en: "Identity card ready — share your monster", subtitle_ko: "정체성 카드 준비됨 — 몬스터를 공유하라", action: "show_share_card", delay_ms: 0 },
   ],
 };
 
@@ -473,14 +532,14 @@ const PRESET_GHOST_BAGHOLDER: ReplayPreset = {
   initial_dna: { aggression: 30, conviction: 87, chaos: 72, luck: 19, survival: 28 },
   archetype: "ghost_bagholder",
   steps: [
-    { step: 1, label: "Connected", description: "0xghos...0001 connected", action: "connect_wallet", delay_ms: 0 },
-    { step: 2, label: "Awakening", description: "Conviction 87, Luck 19 — the ghost materializes", action: "show_dna", dna: { aggression: 30, conviction: 87, chaos: 72, luck: 19, survival: 28 }, archetype: "ghost_bagholder", delay_ms: 0 },
-    { step: 3, label: "Genesis", description: "You are: Ghost Bagholder", action: "show_genesis", delay_ms: 0 },
-    { step: 4, label: "Rug ×2", description: "Two consecutive rugs — scar count 2, zombie eyes", action: "state_event", state_changes: { scar_count: 2, corruption: 60, mood: "despair" as const, traits_added: ["zombie_eyes", "bandage", "ghost"] }, caption: "The chart went to zero. Twice. The conviction did not.", delay_ms: 0 },
-    { step: 5, label: "Still Holding", description: "Hasn't sold in 90 days — prestige 0, hope eternal", action: "state_event", state_changes: { prestige: 0, mood: "despair" as const, traits_added: ["ghost"] }, caption: "The devs left. The telegram is empty. You're still here.", delay_ms: 0 },
-    { step: 6, label: "Survived", description: "Account still active after 3 months — survival streak 1", action: "state_event", state_changes: { survival_streak: 1, mood: "neutral" as const }, caption: "You haven't won. But you're still here. That's something.", delay_ms: 0 },
-    { step: 7, label: "Diary", description: "3 haunting entries", action: "show_diary", delay_ms: 0 },
-    { step: 8, label: "Share Card", description: "Generate identity card", action: "show_share_card", delay_ms: 0 },
+    { step: 1, label: "Connected", description: "0xghos...0001 connected", subtitle_en: "Wallet connected. A familiar silence returns.", subtitle_ko: "지갑 연결됨. 익숙한 침묵이 돌아온다.", action: "connect_wallet", delay_ms: 0 },
+    { step: 2, label: "Awakening", description: "Conviction 87, Luck 19 — the ghost materializes", subtitle_en: "Conviction 87 · Luck 19 — the ghost materializes", subtitle_ko: "확신 87 · 운 19 — 유령이 실체화된다", action: "show_dna", dna: { aggression: 30, conviction: 87, chaos: 72, luck: 19, survival: 28 }, archetype: "ghost_bagholder", delay_ms: 0 },
+    { step: 3, label: "Genesis", description: "You are: Ghost Bagholder", subtitle_en: "You are: Ghost Bagholder. Still waiting.", subtitle_ko: "당신은: 고스트 백홀더. 아직 기다리고 있다.", action: "show_genesis", delay_ms: 0 },
+    { step: 4, label: "Rug ×2", description: "Two consecutive rugs — scar count 2, zombie eyes", subtitle_en: "Two rugs — Scars ×2, Zombie Eyes, Corruption 60", subtitle_ko: "러그 2회 — 흉터 ×2, 좀비 눈, 오염 60", action: "state_event", state_changes: { scar_count: 2, corruption: 60, mood: "despair" as const, traits_added: ["zombie_eyes", "bandage", "ghost"] }, caption: "The chart went to zero. Twice. The conviction did not.", delay_ms: 0 },
+    { step: 5, label: "Still Holding", description: "Hasn't sold in 90 days — prestige 0, hope eternal", subtitle_en: "90 days — still holding. Prestige 0. Ghost trait added.", subtitle_ko: "90일 — 아직 홀딩. 위신 0. 유령 특성 추가.", action: "state_event", state_changes: { prestige: 0, mood: "despair" as const, traits_added: ["ghost"] }, caption: "The devs left. The telegram is empty. You're still here.", delay_ms: 0 },
+    { step: 6, label: "Survived", description: "Account still active after 3 months — survival streak 1", subtitle_en: "3 months later — still active. Survival Streak ×1.", subtitle_ko: "3개월 후 — 아직 활동 중. 생존 스트릭 ×1.", action: "state_event", state_changes: { survival_streak: 1, mood: "neutral" as const }, caption: "You haven't won. But you're still here. That's something.", delay_ms: 0 },
+    { step: 7, label: "Diary", description: "3 haunting entries", subtitle_en: "Mutation Diary — 3 haunting entries remain", subtitle_ko: "변이 일지 — 3개의 음산한 항목이 남아 있다", action: "show_diary", delay_ms: 0 },
+    { step: 8, label: "Share Card", description: "Generate identity card", subtitle_en: "Identity card ready — share your ghost", subtitle_ko: "정체성 카드 준비됨 — 유령을 공유하라", action: "show_share_card", delay_ms: 0 },
   ],
 };
 
