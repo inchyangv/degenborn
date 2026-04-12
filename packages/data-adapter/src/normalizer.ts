@@ -24,6 +24,8 @@ export function normalizeEvents(raw: RawWalletActivity): ActivityEvent[] {
         return (raw as any).events as ActivityEvent[];
       }
       return normalizeCovalent(raw); // fallback
+    case "rpc" as any:
+      return normalizeRpc(raw);
     default:
       return [];
   }
@@ -262,6 +264,54 @@ function deterministicId(wallet: string, txHash: string): string {
     .update(`${wallet.toLowerCase()}:${txHash.toLowerCase()}`)
     .digest("hex")
     .slice(0, 16);
+}
+
+// ─── RPC log normalizer ──────────────────────────────────────────────────────
+
+/**
+ * Normalizes raw eth_getLogs Transfer events into ActivityEvent[].
+ *
+ * Each log has:
+ *  - topics[1]: from address (padded)
+ *  - topics[2]: to address (padded)
+ *  - _rpc_direction: "in" | "out" (tagged by adapter)
+ *
+ * No USD value available without price oracle → value_usd = 0.
+ * Scoring engine uses counts/ratios so zero-value events still contribute.
+ */
+function normalizeRpc(raw: RawWalletActivity): ActivityEvent[] {
+  const logs = raw.transactions as any[];
+  const events: ActivityEvent[] = [];
+
+  for (const log of logs) {
+    const direction: "in" | "out" = log._rpc_direction ?? "in";
+    const eventType: EventType = direction === "in" ? "buy" : "sell";
+    const tokenAddress: string = (log.address ?? "0x").toLowerCase();
+    const txHash: string = log.transactionHash ?? log.blockNumber ?? "";
+    const blockNum: number = parseInt(log.blockNumber ?? "0", 16);
+
+    // Rough timestamp from block number (BSC genesis ~1595241600, ~3s blocks)
+    const BSC_GENESIS = 1595241600;
+    const BSC_BLOCK_TIME = 3;
+    const timestamp = BSC_GENESIS + blockNum * BSC_BLOCK_TIME;
+
+    const isFourMeme = (log.address ?? "").toLowerCase() === FOUR_MEME_ROUTER.toLowerCase();
+
+    const id = deterministicId(raw.wallet_address, `${txHash}:${log.logIndex ?? "0"}:${direction}`);
+    events.push({
+      id,
+      wallet_address: raw.wallet_address,
+      event_type: eventType,
+      token_address: tokenAddress,
+      value_usd: 0,
+      pnl_delta: 0,
+      timestamp,
+      raw_payload: { ...log, four_meme: isFourMeme },
+      chain_id: 56,
+    });
+  }
+
+  return deduplicateEvents(events);
 }
 
 function deduplicateEvents(events: ActivityEvent[]): ActivityEvent[] {

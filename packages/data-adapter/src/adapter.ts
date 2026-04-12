@@ -38,7 +38,7 @@ async function fetchRaw(
     case "fixture":
       return loadFixture(walletAddress, config.fixtureDir ?? "./fixtures/wallets");
     case "rpc":
-      throw new Error("RPC adapter not implemented — use moralis or fixture");
+      return fetchRpc(walletAddress, window, config.rpcUrl ?? "https://bsc-dataseed.binance.org/");
     default:
       throw new Error(`Unknown source: ${(config as AdapterConfig).source}`);
   }
@@ -135,6 +135,124 @@ async function fetchCovalent(
     source: "covalent",
     transactions: items,
   };
+}
+
+/**
+ * RPC fallback adapter — reads ERC-20 Transfer events directly from BSC node.
+ *
+ * Strategy:
+ *  1. eth_getLogs for Transfer(from=wallet) — outbound = sells
+ *  2. eth_getLogs for Transfer(to=wallet)   — inbound = buys
+ *  3. Merge, deduplicate, and return as RawWalletActivity
+ *
+ * Limitation: no USD value without a price oracle. value_usd = 0 for all events.
+ * The scoring engine tolerates this — it uses counts/ratios, not USD sums.
+ */
+async function fetchRpc(
+  wallet: string,
+  window: TimeWindow,
+  rpcUrl: string,
+): Promise<RawWalletActivity> {
+  const fromBlock = await windowToFromBlock(window, rpcUrl);
+  const walletTopic = `0x000000000000000000000000${wallet.slice(2).toLowerCase()}`;
+
+  // ERC-20 Transfer event signature
+  const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
+  // Parallel: transfers out (sells) and transfers in (buys)
+  const [outResult, inResult] = await Promise.allSettled([
+    rpcLogs(rpcUrl, {
+      fromBlock: `0x${fromBlock.toString(16)}`,
+      toBlock: "latest",
+      topics: [TRANSFER_TOPIC, walletTopic], // from=wallet
+    }),
+    rpcLogs(rpcUrl, {
+      fromBlock: `0x${fromBlock.toString(16)}`,
+      toBlock: "latest",
+      topics: [TRANSFER_TOPIC, null, walletTopic], // to=wallet
+    }),
+  ]);
+
+  const outLogs: RpcLog[] = outResult.status === "fulfilled" ? outResult.value : [];
+  const inLogs: RpcLog[]  = inResult.status  === "fulfilled" ? inResult.value  : [];
+
+  if (outLogs.length === 0 && inLogs.length === 0 && outResult.status === "rejected") {
+    throw new Error(`RPC error: ${(outResult as PromiseRejectedResult).reason}`);
+  }
+
+  // Tag logs
+  const transactions: unknown[] = [
+    ...outLogs.map((l) => ({ ...l, _rpc_direction: "out" })),
+    ...inLogs.map((l)  => ({ ...l, _rpc_direction: "in"  })),
+  ];
+
+  return {
+    wallet_address: wallet,
+    fetched_at: Math.floor(Date.now() / 1000),
+    source: "rpc" as any,
+    transactions,
+  };
+}
+
+interface RpcLog {
+  address: string;
+  topics: string[];
+  data: string;
+  blockNumber: string;
+  transactionHash: string;
+  transactionIndex: string;
+  blockHash: string;
+  logIndex: string;
+  removed: boolean;
+}
+
+async function rpcLogs(rpcUrl: string, filter: {
+  fromBlock: string;
+  toBlock: string;
+  topics: (string | null)[];
+}): Promise<RpcLog[]> {
+  const resp = await fetchWithTimeout(rpcUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "eth_getLogs",
+      params: [filter],
+    }),
+  });
+
+  if (!resp.ok) throw new Error(`RPC HTTP ${resp.status}`);
+
+  const json = (await resp.json()) as { result?: RpcLog[]; error?: { message: string } };
+  if (json.error) throw new Error(`RPC error: ${json.error.message}`);
+  return json.result ?? [];
+}
+
+async function windowToFromBlock(window: TimeWindow, rpcUrl: string): Promise<number> {
+  const days = { "7d": 7, "30d": 30, "180d": 180 }[window];
+  // BSC produces ~3 second blocks → ~28800 blocks/day
+  const BLOCKS_PER_DAY = 28800;
+  const approxBlocks = days * BLOCKS_PER_DAY;
+
+  try {
+    const resp = await fetchWithTimeout(rpcUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "eth_blockNumber",
+        params: [],
+      }),
+    });
+    const json = (await resp.json()) as { result?: string };
+    const latest = parseInt(json.result ?? "0", 16);
+    if (latest > 0) return Math.max(0, latest - approxBlocks);
+  } catch {
+    // Ignore — use a safe default
+  }
+  return 0;
 }
 
 /** Load fixture from disk */
