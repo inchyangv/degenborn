@@ -1,11 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import CharacterDisplay from "@/components/CharacterDisplay";
+import SummoningBanner from "@/components/SummoningBanner";
 import type { CharacterState, ArchetypeId } from "@degenborn/shared";
 import { ARCHETYPE_PROFILES, ARCHETYPE_COLORS } from "@degenborn/shared";
 
@@ -99,12 +100,15 @@ const STEPS = [
 ];
 
 
-export default function LandingPage() {
+function LandingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { address, isConnected } = useAccount();
   const { connect, isPending } = useConnect();
   const { disconnect } = useDisconnect();
   const [analyzeLoading, setAnalyzeLoading] = useState(false);
+
+  const fromWallet = searchParams.get("from");
 
   const handleConnect = () => {
     connect({ connector: injected() });
@@ -118,6 +122,15 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center px-4 py-16 relative">
+      {/* Summoning banner — shown when visitor arrives via challenge link */}
+      {fromWallet && (
+        <div className="w-full max-w-md mb-8">
+          <SummoningBanner
+            fromWallet={fromWallet}
+            onConnect={!isConnected ? handleConnect : undefined}
+          />
+        </div>
+      )}
       {/* Hero */}
       <div className="text-center mb-10">
         <div className="text-xs tracking-[0.4em] text-[var(--neon-purple)] mb-4 uppercase">
@@ -277,5 +290,13 @@ export default function LandingPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <Suspense fallback={null}>
+      <LandingContent />
+    </Suspense>
   );
 }

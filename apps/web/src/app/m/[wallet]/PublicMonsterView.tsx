@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { PersonaDNA, ArchetypeResult, CharacterState, MutationEvent, DiaryPage } from "@degenborn/shared";
-import { ARCHETYPE_COLORS } from "@degenborn/shared";
+import { ARCHETYPE_COLORS, ARCHETYPE_PROFILES } from "@degenborn/shared";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import ShareCard from "@/components/ShareCard";
+import { buildSoulShareLink } from "@/lib/challenge-link";
 import Link from "next/link";
 
 interface MonsterData {
@@ -17,6 +19,8 @@ export default function PublicMonsterView({ wallet }: { wallet: string }) {
   const [data, setData] = useState<MonsterData | null>(null);
   const [diary, setDiary] = useState<MutationEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const fromWallet = searchParams.get("from");
 
   useEffect(() => {
     if (!wallet) return;
@@ -72,6 +76,18 @@ export default function PublicMonsterView({ wallet }: { wallet: string }) {
           👁 Public view · {wallet.slice(0, 6)}...{wallet.slice(-4)}
         </span>
       </div>
+
+      {/* Challenge banner — shown when visitor arrived via ?from= link */}
+      {fromWallet && fromWallet !== wallet.toLowerCase() && (
+        <div className="flex justify-center py-2 px-4 border-b border-[var(--degen-border)]" style={{ background: `${glowBase}10` }}>
+          <span className="text-xs font-mono" style={{ color: glowBase }}>
+            ⚔ {fromWallet.slice(0, 6)}...{fromWallet.slice(-4)} has challenged you to reveal your soul →{" "}
+            <Link href={`/?from=${fromWallet}`} className="underline opacity-80 hover:opacity-100">
+              Connect your wallet
+            </Link>
+          </span>
+        </div>
+      )}
 
       {/* Character hero */}
       <div
