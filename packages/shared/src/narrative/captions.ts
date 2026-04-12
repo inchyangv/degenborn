@@ -1,5 +1,7 @@
 import type { CharacterState } from "../types/state";
 
+export type ShareCardMode = "flex" | "roast";
+
 /**
  * Caption bank: archetype × mood/state combinations.
  * 4+ variants per archetype — picked deterministically from state so same state = same caption.
@@ -64,6 +66,122 @@ export const CAPTION_SCAR: string[] = [
   "The scars are the resume now.",
   "Burned twice. Wiser once. Still here.",
 ];
+
+// ---------------------------------------------------------------------------
+// Flex captions — triumphant, crown/prestige forward, gold frame energy
+// ---------------------------------------------------------------------------
+export const CAPTION_FLEX_BANK: Record<string, string[]> = {
+  mad_gambler: [
+    "All-in and won. Again. They said I was ngmi.",
+    "Chaos theory: if you ape fast enough, luck appears.",
+    "Three in a row. I don't even check charts anymore.",
+    "Risk is just opportunity wearing a scary mask.",
+    "The market is my casino and I am the house.",
+  ],
+  ice_whale: [
+    "The position held. The market blinked first.",
+    "Patience was the trade. Every time.",
+    "They called it luck. I call it six months of waiting.",
+    "The floor I set is the floor that held.",
+    "I didn't beat the market. I outlasted it.",
+  ],
+  rug_necromancer: [
+    "Rugged three times and I'm the one still here.",
+    "They wrote my obituary. I ignored it.",
+    "The scars are the proof. I survived every single one.",
+    "Death was just a level. I leveled up.",
+    "More corruption, more power. This is fine.",
+  ],
+  diamond_cultist: [
+    "The bags didn't move. The conviction never broke.",
+    "Red became green. As the prophecy foretold.",
+    "Diamond hands don't talk. They hold and win.",
+    "I averaged down 12 times. All 12 paid off.",
+    "The cult was right. It's always the cult.",
+  ],
+  sniper_jester: [
+    "In and out before you read the chart.",
+    "100% win rate on patience trades. Which is: none.",
+    "They FOMO'd in. I was already out.",
+    "Fast hands. No remorse. Full green.",
+    "Called it, timed it, cashed it. Bow down.",
+  ],
+  ghost_bagholder: [
+    "The bag mooned. I was too haunted to sell.",
+    "Long enough to win. That's the whole strategy.",
+    "They said ghost bags don't pump. Mine did.",
+    "Patience of the damned. Profits of the blessed.",
+    "I forget the price. The price remembered me.",
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// Roast captions — self-deprecating, scar/corruption forward, red frame energy
+// ---------------------------------------------------------------------------
+export const CAPTION_ROAST_BANK: Record<string, string[]> = {
+  mad_gambler: [
+    "Rugged twice today. It's 9am.",
+    "My portfolio is a speedrun of failure. PB: 4 mins.",
+    "Risk/reward: ∞ risk, -100% reward.",
+    "Ape in, ape out, ape into another rug.",
+    "I have a system. It doesn't work. I use it anyway.",
+  ],
+  ice_whale: [
+    "I've been patient for 300 days. Still red.",
+    "The conviction didn't pay. I'm still here though.",
+    "Floor price: I am the floor. I am stuck.",
+    "Patience is a virtue. Losses are a reality.",
+    "Slow and steady wins the race. I am in last place.",
+  ],
+  rug_necromancer: [
+    "Six rugs this month. I'm not okay.",
+    "The necromancer keeps dying on purpose at this point.",
+    "Corruption 90. Survival streak: somehow 4.",
+    "I can't be rugged, I'm already rugged.",
+    "Death is my home now. I've decorated it.",
+  ],
+  diamond_cultist: [
+    "Still holding from 2022. This is not a joke.",
+    "I averaged down so much I own the whole project.",
+    "Diamond hands. Empty wallet. Full faith.",
+    "The dip I bought is now 90% down. I'm buying more.",
+    "Not selling. Ever. (Please someone buy this bag.)",
+  ],
+  sniper_jester: [
+    "Missed the entry. Caught the rug. Classic.",
+    "Fast in, faster out, instantly rekt.",
+    "Sniper accuracy: 0%. Jester energy: 100%.",
+    "I hit every top and bought every bottom wrong.",
+    "The jester is the joke today.",
+  ],
+  ghost_bagholder: [
+    "I don't check the price. The price is bad.",
+    "Bagheld so long I became the bag.",
+    "The ghost is haunted by its own portfolio.",
+    "I'm still here. That's literally all I have.",
+    "Scar count: too many to count. Hope: still somehow 1.",
+  ],
+};
+
+/**
+ * Pick a Flex mode caption (triumphant tone).
+ * Deterministic: same state → same caption.
+ */
+export function pickFlexCaption(archetype: string, state: CharacterState): string {
+  const bank = CAPTION_FLEX_BANK[archetype] ?? CAPTION_BANK[archetype] ?? CAPTION_CROWN;
+  const idx = (state.crown_count + state.prestige) % bank.length;
+  return bank[idx]!;
+}
+
+/**
+ * Pick a Roast mode caption (self-deprecating tone).
+ * Deterministic: same state → same caption.
+ */
+export function pickRoastCaption(archetype: string, state: CharacterState): string {
+  const bank = CAPTION_ROAST_BANK[archetype] ?? CAPTION_BANK[archetype] ?? CAPTION_SCAR;
+  const idx = (state.scar_count + state.corruption) % bank.length;
+  return bank[idx]!;
+}
 
 /**
  * Pick a caption deterministically based on archetype + state.
