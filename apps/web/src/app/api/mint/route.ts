@@ -1,8 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
-import { keccak256, toBytes, isAddress } from "viem";
+import { keccak256, toBytes, isAddress, createWalletClient, createPublicClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { bscTestnet } from "viem/chains";
 import type { PersonaDNA, ArchetypeResult } from "@degenborn/shared";
 import { generateNarrative } from "@/lib/narrative";
 import { getAppUrl } from "@/lib/runtime-env";
+
+// Minimal ABI — only the functions we call
+const SOUL_CORE_ABI = [
+  {
+    name: "mint",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "to", type: "address" },
+      { name: "archetype", type: "string" },
+      { name: "dnaHash", type: "bytes32" },
+      { name: "stateHash", type: "bytes32" },
+      { name: "tokenURI_", type: "string" },
+    ],
+    outputs: [{ name: "tokenId", type: "uint256" }],
+  },
+  {
+    name: "hasSoulCore",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "wallet", type: "address" }],
+    outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    name: "tokenOfWallet",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "wallet", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+] as const;
+
+function getBscRpc(): string {
+  return (process.env.BSC_TESTNET_RPC ?? "https://data-seed-prebsc-1-s1.binance.org:8545/").trim();
+}
+
+function getContractAddress(): `0x${string}` {
+  const addr = (process.env.SOUL_CORE_ADDRESS ?? "").trim();
+  if (!addr) throw new Error("SOUL_CORE_ADDRESS not set");
+  return addr as `0x${string}`;
+}
+
+function getDeployerAccount() {
+  const pk = (process.env.PRIVATE_KEY ?? "").trim();
+  if (!pk) throw new Error("PRIVATE_KEY (deployer) not set in environment");
+  const key = pk.startsWith("0x") ? pk : `0x${pk}`;
+  return privateKeyToAccount(key as `0x${string}`);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,45 +67,104 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "wallet, dna, archetype required" }, { status: 400 });
     }
 
-    if (!isAddress(wallet.toLowerCase())) {
+    const walletAddr = wallet.toLowerCase() as `0x${string}`;
+    if (!isAddress(walletAddr)) {
       return NextResponse.json({ error: "invalid Ethereum address" }, { status: 400 });
     }
 
-    // Generate deterministic DNA hash (viem keccak256 — Node.js crypto doesn't support keccak256 digest)
+    // Generate deterministic hashes
     const dnaHash = keccak256(
-      toBytes(JSON.stringify({ aggression: dna.aggression, conviction: dna.conviction, chaos: dna.chaos, luck: dna.luck, survival: dna.survival }))
-    ).slice(2); // strip 0x prefix for storage
-
-    // Build metadata
-    const appUrl = getAppUrl();
-    const narrative = await generateNarrative(dna, archetype);
-    const metadata = {
-      name: `DegenBorn Soul Core — ${archetype.profile.name}`,
-      description: narrative.long_description,
-      image: `${appUrl}/api/og/${wallet.toLowerCase()}`,
-      external_url: `${appUrl}/monster?wallet=${wallet.toLowerCase()}`,
-      attributes: [
-        { trait_type: "Archetype", value: archetype.profile.name },
-        { trait_type: "Aggression", value: dna.aggression, display_type: "number" },
-        { trait_type: "Conviction", value: dna.conviction, display_type: "number" },
-        { trait_type: "Chaos", value: dna.chaos, display_type: "number" },
-        { trait_type: "Luck", value: dna.luck, display_type: "number" },
-        { trait_type: "Survival", value: dna.survival, display_type: "number" },
-      ],
-    };
-
-    // For demo: return the metadata and the hash needed for on-chain mint
-    // In production: upload metadata to IPFS and return CID
-    const metadataUri = `${appUrl}/api/metadata/${wallet.toLowerCase()}`;
+      toBytes(JSON.stringify({
+        aggression: dna.aggression,
+        conviction: dna.conviction,
+        chaos: dna.chaos,
+        luck: dna.luck,
+        survival: dna.survival,
+      }))
+    );
     const stateHash = keccak256(
       toBytes(JSON.stringify({ level: 1, mood: "neutral", corruption: 0 }))
-    ).slice(2);
+    );
+
+    // Build metadata URI
+    const appUrl = getAppUrl();
+    const metadataUri = `${appUrl}/api/metadata/${walletAddr}`;
+
+    // Generate narrative (used for metadata + response)
+    const narrative = await generateNarrative(dna, archetype);
+
+    // ── On-chain mint (deployer signs on behalf of user) ──────────────────────
+    const account = getDeployerAccount();
+    const rpcUrl = getBscRpc();
+    const contractAddress = getContractAddress();
+
+    const publicClient = createPublicClient({
+      chain: bscTestnet,
+      transport: http(rpcUrl),
+    });
+
+    // Check if wallet already has a Soul Core
+    const alreadyMinted = await publicClient.readContract({
+      address: contractAddress,
+      abi: SOUL_CORE_ABI,
+      functionName: "hasSoulCore",
+      args: [walletAddr],
+    });
+
+    if (alreadyMinted) {
+      const existingTokenId = await publicClient.readContract({
+        address: contractAddress,
+        abi: SOUL_CORE_ABI,
+        functionName: "tokenOfWallet",
+        args: [walletAddr],
+      });
+      return NextResponse.json({
+        already_minted: true,
+        token_id: existingTokenId.toString(),
+        metadata_uri: metadataUri,
+        dna_hash: dnaHash,
+        state_hash: stateHash,
+        archetype: archetype.archetype,
+        narrative,
+      });
+    }
+
+    // Send mint transaction
+    const walletClient = createWalletClient({
+      account,
+      chain: bscTestnet,
+      transport: http(rpcUrl),
+    });
+
+    const txHash = await walletClient.writeContract({
+      address: contractAddress,
+      abi: SOUL_CORE_ABI,
+      functionName: "mint",
+      args: [walletAddr, archetype.archetype, dnaHash, stateHash, metadataUri],
+    });
+
+    // Wait for receipt to get token ID
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    // Parse SoulCoreCreated event: event SoulCoreCreated(address indexed wallet, uint256 indexed tokenId, string archetype)
+    let tokenId: string | null = null;
+    for (const log of receipt.logs) {
+      // topic[0] = keccak256("SoulCoreCreated(address,uint256,string)")
+      if (log.topics[0] === "0x5b4e851e4f97ec3e0b1e7f0d5dfea8e1f9c5e2d0c4f8b3a2e1d0c9b8a7f6e5d4" ||
+          log.address.toLowerCase() === contractAddress.toLowerCase()) {
+        if (log.topics[2]) {
+          tokenId = BigInt(log.topics[2]).toString();
+        }
+        break;
+      }
+    }
 
     return NextResponse.json({
-      metadata,
+      tx_hash: txHash,
+      token_id: tokenId,
       metadata_uri: metadataUri,
-      dna_hash: `0x${dnaHash}`,
-      state_hash: `0x${stateHash}`,
+      dna_hash: dnaHash,
+      state_hash: stateHash,
       archetype: archetype.archetype,
       narrative,
     });
