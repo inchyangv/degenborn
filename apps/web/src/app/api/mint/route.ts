@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { keccak256, toBytes, isAddress } from "viem";
 import type { PersonaDNA, ArchetypeResult } from "@degenborn/shared";
 import { generateNarrative } from "@/lib/narrative";
+import { getAppUrl } from "@/lib/runtime-env";
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,12 +27,13 @@ export async function POST(req: NextRequest) {
     ).slice(2); // strip 0x prefix for storage
 
     // Build metadata
+    const appUrl = getAppUrl();
     const narrative = await generateNarrative(dna, archetype);
     const metadata = {
       name: `DegenBorn Soul Core — ${archetype.profile.name}`,
       description: narrative.long_description,
-      image: `/api/genesis-image/${wallet.toLowerCase()}`,
-      external_url: `${process.env.NEXT_PUBLIC_APP_URL}/monster?wallet=${wallet}`,
+      image: `${appUrl}/api/og/${wallet.toLowerCase()}`,
+      external_url: `${appUrl}/monster?wallet=${wallet.toLowerCase()}`,
       attributes: [
         { trait_type: "Archetype", value: archetype.profile.name },
         { trait_type: "Aggression", value: dna.aggression, display_type: "number" },
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     // For demo: return the metadata and the hash needed for on-chain mint
     // In production: upload metadata to IPFS and return CID
-    const metadataUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/metadata/${wallet.toLowerCase()}`;
+    const metadataUri = `${appUrl}/api/metadata/${wallet.toLowerCase()}`;
     const stateHash = keccak256(
       toBytes(JSON.stringify({ level: 1, mood: "neutral", corruption: 0 }))
     ).slice(2);

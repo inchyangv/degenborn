@@ -12,6 +12,12 @@ import { classify } from "@degenborn/archetype";
 import path from "path";
 import { createServer } from "http";
 
+function getWorkerDataSource(): "moralis" | "covalent" {
+  const raw = (process.env.DATA_SOURCE ?? "").trim().toLowerCase();
+  if (raw === "covalent") return "covalent";
+  return "moralis";
+}
+
 async function processWallet(walletAddress: string): Promise<void> {
   console.log(`[worker] Processing ${walletAddress}`);
 
@@ -26,7 +32,7 @@ async function processWallet(walletAddress: string): Promise<void> {
     });
     console.log(`[worker] Loaded ${events.length} events from fixture`);
   } catch {
-    const source = (process.env.DATA_SOURCE as "moralis" | "covalent") ?? "moralis";
+    const source = getWorkerDataSource();
     events = await fetchWalletActivity(walletAddress, "30d", {
       source,
       moralisApiKey: process.env.MORALIS_API_KEY,

@@ -7,7 +7,8 @@
  * and renders the EulogyCard. If the wallet is active (not flatlined),
  * shows a "still alive" message. Resurrection stamp if came back.
  */
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/shared";
 import Link from "next/link";
 import EulogyCard from "@/components/EulogyCard";
@@ -22,8 +23,9 @@ interface MonsterData {
 // Fixture: flatlined wallet for demo
 const FLATLINE_FIXTURE_WALLET = "0xflatlineddemo00000000000000000000000001";
 
-export default function EulogyPage({ params }: { params: Promise<{ wallet: string }> }) {
-  const { wallet } = use(params);
+export default function EulogyPage() {
+  const params = useParams<{ wallet: string }>();
+  const wallet = params.wallet ?? "";
   const [data, setData] = useState<MonsterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -36,7 +38,16 @@ export default function EulogyPage({ params }: { params: Promise<{ wallet: strin
   const isFlatlined = deriveFlatlineStatus(lastActiveAt);
   const resurrected = false; // would be true if wallet re-activated since eulogy was indexed
 
+  if (!wallet) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600 font-mono text-sm">Invalid wallet</div>
+      </div>
+    );
+  }
+
   useEffect(() => {
+    if (!wallet) return;
     const load = async () => {
       try {
         const resp = await fetch("/api/analyze", {

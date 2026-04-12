@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAddress } from "viem";
 import { getMutationDiary } from "@/lib/diary-store";
 import { getProfileStore } from "@/lib/profile-store";
+import { getAppUrl } from "@/lib/runtime-env";
 
 /**
  * GET /api/metadata/[wallet]
@@ -55,7 +56,7 @@ export async function GET(
     }
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = getAppUrl();
   const archetypeName = archetype
     .split("_")
     .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -64,7 +65,7 @@ export async function GET(
   const metadata = {
     name: `DegenBorn Soul Core — ${archetypeName}`,
     description: `A soulbound NFT representing the on-chain identity of ${walletLower}. Born from Four.meme wallet activity. Archetype: ${archetypeName}.`,
-    image: `${appUrl}/api/genesis-image/${walletLower}`,
+    image: `${appUrl}/api/og/${walletLower}`,
     external_url: `${appUrl}/monster?wallet=${walletLower}`,
     attributes,
   };

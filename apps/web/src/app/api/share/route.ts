@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/shared";
+import { getAppUrl } from "@/lib/runtime-env";
 
 interface ShareRequest {
   wallet: string;
@@ -25,11 +26,12 @@ export async function POST(req: NextRequest) {
     const caption = generateShareCaption(dna, archetype, state);
 
     // Card metadata for OG/Twitter cards
+    const appUrl = getAppUrl();
     const cardMeta = {
       title: `${archetype.profile.name} — DegenBorn Soul Core`,
       description: caption,
       image_url: `/archetypes/${archetype.archetype}_placeholder.svg`,
-      card_url: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/monster?wallet=${wallet}`,
+      card_url: `${appUrl}/monster?wallet=${wallet.toLowerCase()}`,
     };
 
     // Detect spam-like patterns (auto-post guard)

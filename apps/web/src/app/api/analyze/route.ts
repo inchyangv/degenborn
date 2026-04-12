@@ -5,6 +5,7 @@ import { classify } from "@degenborn/archetype";
 import { fetchWalletActivity } from "@degenborn/data-adapter";
 import type { ActivityEvent, TimeWindow } from "@degenborn/shared";
 import { setProfile } from "@/lib/profile-store";
+import { getDataSource } from "@/lib/runtime-env";
 import path from "path";
 
 export async function POST(req: NextRequest) {
@@ -40,12 +41,17 @@ export async function POST(req: NextRequest) {
         events = generateDemoEvents(walletLower);
       }
     } else {
-      const source = (process.env.DATA_SOURCE as "moralis" | "covalent") ?? "moralis";
-      events = await fetchWalletActivity(walletLower, timeWindow, {
-        source,
-        moralisApiKey: process.env.MORALIS_API_KEY,
-        covalentApiKey: process.env.COVALENT_API_KEY,
-      });
+      const source = getDataSource("moralis");
+      try {
+        events = await fetchWalletActivity(walletLower, timeWindow, {
+          source,
+          moralisApiKey: process.env.MORALIS_API_KEY,
+          covalentApiKey: process.env.COVALENT_API_KEY,
+        });
+      } catch {
+        // Scenario fallback: if live data source is unavailable, keep the flow alive with demo data.
+        events = generateDemoEvents(walletLower);
+      }
     }
 
     const { dna } = scoreDNA(walletLower, events);

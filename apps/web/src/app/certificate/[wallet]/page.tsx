@@ -6,6 +6,7 @@
  */
 import type { Metadata } from "next";
 import CertificateView from "./CertificateView";
+import { getAppUrl } from "@/lib/runtime-env";
 
 interface Props {
   params: Promise<{ wallet: string }>;
@@ -14,7 +15,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { wallet } = await params;
   const short = `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = getAppUrl();
   const ogImage = `${appUrl}/api/og/${wallet.toLowerCase()}`;
 
   return {

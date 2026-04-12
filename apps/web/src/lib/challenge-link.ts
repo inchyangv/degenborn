@@ -1,3 +1,5 @@
+import { getAppUrl } from "@/lib/runtime-env";
+
 /**
  * T-INV-01 — Challenge link utilities.
  *
@@ -5,7 +7,7 @@
  * The `from` param is always the sender's own wallet address.
  */
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
+const APP_URL = getAppUrl();
 
 /**
  * Build a challenge/share link for a wallet.
