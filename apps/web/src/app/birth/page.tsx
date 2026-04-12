@@ -347,7 +347,7 @@ function BirthContent() {
           </button>
         </div>
       )}
-      {(phase === "reveal" || phase === "genesis") && phase !== "mint" && (
+      {(phase === "reveal" || phase === "genesis") && (
         <div className="text-center mt-4">
           <button onClick={advanceToMint} className="text-xs text-gray-500 hover:text-gray-300 transition-colors border border-gray-700 px-4 py-1.5 rounded">
             Skip to Mint →

@@ -57,7 +57,7 @@ function MonsterRoomContent() {
   const [data, setData] = useState<MonsterData | null>(null);
   const [diary, setDiary] = useState<MutationEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"stats" | "traits" | "diary" | "share" | "card">("stats");
+  const [activeTab, setActiveTab] = useState<"dna" | "traits" | "diary" | "share">("dna");
   const [showArchetypeModal, setShowArchetypeModal] = useState(false);
 
   useEffect(() => {
@@ -287,7 +287,7 @@ function MonsterRoomContent() {
           const revivals = Math.round(dna.survival * 0.05);
           return (
             <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-4 mb-6">
-              <div className="text-xs text-gray-600 uppercase tracking-widest mb-3">Activity Breakdown · 30d</div>
+              <div className="text-xs text-gray-600 uppercase tracking-widest mb-3">Activity Breakdown · 30d <span className="text-[10px] text-gray-700 normal-case tracking-normal ml-1">(Estimated from DNA)</span></div>
               <div className="grid grid-cols-4 gap-3 mb-4">
                 {[
                   { label: "Buys", value: buys, color: "text-[var(--neon-green)]" },
@@ -307,23 +307,28 @@ function MonsterRoomContent() {
 
         {/* Tabs — horizontal scroll on mobile */}
         <div className="flex gap-1 mb-6 bg-[var(--degen-card)] p-1 rounded-lg border border-[var(--degen-border)] overflow-x-auto">
-          {(["stats", "traits", "diary", "share", "card"] as const).map((tab) => (
+          {([
+            { id: "dna", label: "DNA" },
+            { id: "traits", label: "Traits" },
+            { id: "diary", label: "Diary" },
+            { id: "share", label: "Share" },
+          ] as const).map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-shrink-0 flex-1 min-w-[60px] py-2 text-xs font-mono uppercase tracking-wider rounded-md transition-colors ${
-                activeTab === tab
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 flex-1 min-w-[64px] py-2 text-xs font-mono uppercase tracking-wider rounded-md transition-colors ${
+                activeTab === tab.id
                   ? "bg-[var(--neon-purple)] text-black font-bold"
                   : "text-gray-500 hover:text-gray-300"
               }`}
             >
-              {tab}
+              {tab.label}
             </button>
           ))}
         </div>
 
         {/* Tab content */}
-        {activeTab === "stats" && <DNAPanel dna={dna} />}
+        {activeTab === "dna" && <DNAPanel dna={dna} />}
 
         {activeTab === "traits" && (
           <div className="space-y-3">
@@ -390,11 +395,13 @@ function MonsterRoomContent() {
         )}
 
         {activeTab === "share" && (
-          <ShareCard dna={dna} archetype={archetype} state={state} wallet={wallet} />
-        )}
-
-        {activeTab === "card" && (
-          <TradingCard dna={dna} archetype={archetype} state={state} wallet={wallet} />
+          <div className="space-y-8">
+            <ShareCard dna={dna} archetype={archetype} state={state} wallet={wallet} />
+            <div className="border-t border-[var(--degen-border)] pt-6">
+              <div className="text-xs text-gray-600 uppercase tracking-widest mb-4">Trading Card</div>
+              <TradingCard dna={dna} archetype={archetype} state={state} wallet={wallet} />
+            </div>
+          </div>
         )}
 
         {/* Sibling / Rival panel — always visible below tabs */}
