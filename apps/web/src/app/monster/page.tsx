@@ -6,6 +6,7 @@ import type { PersonaDNA, ArchetypeResult, CharacterState, MutationEvent, DiaryP
 import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS, ARCHETYPE_PROFILES, relativeTime } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
 import ShareCard from "@/components/ShareCard";
+import TradingCard from "@/components/TradingCard";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import { HeroSkeleton } from "@/components/LoadingSkeleton";
 import Link from "next/link";
@@ -52,7 +53,7 @@ function MonsterRoomContent() {
   const [data, setData] = useState<MonsterData | null>(null);
   const [diary, setDiary] = useState<MutationEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"stats" | "traits" | "diary" | "share">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "traits" | "diary" | "share" | "card">("stats");
   const [showArchetypeModal, setShowArchetypeModal] = useState(false);
 
   useEffect(() => {
@@ -298,7 +299,7 @@ function MonsterRoomContent() {
 
         {/* Tabs — horizontal scroll on mobile */}
         <div className="flex gap-1 mb-6 bg-[var(--degen-card)] p-1 rounded-lg border border-[var(--degen-border)] overflow-x-auto">
-          {(["stats", "traits", "diary", "share"] as const).map((tab) => (
+          {(["stats", "traits", "diary", "share", "card"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -380,6 +381,10 @@ function MonsterRoomContent() {
 
         {activeTab === "share" && (
           <ShareCard dna={dna} archetype={archetype} state={state} wallet={wallet} />
+        )}
+
+        {activeTab === "card" && (
+          <TradingCard dna={dna} archetype={archetype} state={state} wallet={wallet} />
         )}
       </div>
     </div>
