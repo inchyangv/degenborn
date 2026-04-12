@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "invalid Ethereum address" }, { status: 400 });
     }
     let events: ActivityEvent[];
+    let dataSource: "live" | "demo" | "fixture" = "live";
 
     if (useFixture) {
       // Demo/replay mode: load from fixture file, fall back to deterministic demo events
@@ -36,9 +37,11 @@ export async function POST(req: NextRequest) {
           source: "fixture",
           fixtureDir,
         });
+        dataSource = "fixture";
       } catch {
         // No fixture for this wallet — generate deterministic demo events
         events = generateDemoEvents(walletLower);
+        dataSource = "demo";
       }
     } else {
       // Real wallet: fetch live data from Moralis/Covalent, fall back to demo on error
@@ -49,20 +52,36 @@ export async function POST(req: NextRequest) {
           moralisApiKey: process.env.MORALIS_API_KEY,
           covalentApiKey: process.env.COVALENT_API_KEY,
         });
+        dataSource = "live";
       } catch {
         // Live data unavailable — keep flow alive with demo data
         console.warn("[analyze] live data fetch failed, falling back to demo events");
         events = generateDemoEvents(walletLower);
+        dataSource = "demo";
       }
     }
 
     const { dna } = scoreDNA(walletLower, events);
     const archetypeResult = classify(dna);
 
+    // Real event type counts for Activity Breakdown
+    const activity_counts = {
+      buys: events.filter((e) => e.event_type === "buy").length,
+      sells: events.filter((e) => e.event_type === "sell").length,
+      dead_tokens: events.filter((e) => e.event_type === "rug").length,
+      revivals: events.filter((e) => e.event_type === "recovery").length,
+    };
+
     // Persist to profile store for metadata endpoint cache hits
     setProfile(walletLower, dna, archetypeResult);
 
-    return NextResponse.json({ dna, archetype: archetypeResult, event_count: events.length });
+    return NextResponse.json({
+      dna,
+      archetype: archetypeResult,
+      event_count: events.length,
+      activity_counts,
+      data_source: dataSource,
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[analyze]", message);

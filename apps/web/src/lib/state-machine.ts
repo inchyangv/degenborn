@@ -146,14 +146,17 @@ export function generateTransitionCaption(transition: StateTransition): string {
   const { event, traits_added } = transition;
   const { state_after } = transition;
 
+  const lossAmount = Math.abs(Number(event.payload?.amount ?? 0));
+  const holdDays = Math.floor(Number(event.payload?.duration ?? 0) / 86400);
+
   const captions: Record<StateEventType, string> = {
     win_streak_3: `Three in a row. Crown ${state_after.crown_count}. The market bows.`,
-    big_loss: `Down ${Math.abs(0)} USD. Scar ${state_after.scar_count} added. Still breathing.`,
+    big_loss: `Down ${lossAmount > 0 ? `${lossAmount.toFixed(0)}` : "?"} USD. Scar ${state_after.scar_count} added. Still breathing.`,
     loss_recovery: `Came back from the edge. Survival streak: ${state_after.survival_streak}.`,
     rug_exposure: `Rugged. Corruption now ${state_after.corruption}. The eyes never lie.`,
     sustained_profit: `Prestige ${state_after.prestige}. The throne is getting closer.`,
     mega_win: `That trade. The chart still doesn't believe it.`,
-    long_hold: `${Math.floor(0 / 86400)} days held. Conviction is a lifestyle.`,
+    long_hold: `${holdDays > 0 ? holdDays : "?"} days held. Conviction is a lifestyle.`,
     multi_rug: `Three rugs. One ghost. Corruption ${state_after.corruption}.`,
     comeback: `Wrote them off. Wrote you off. Survival ${state_after.survival_streak}.`,
   };

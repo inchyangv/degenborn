@@ -36,10 +36,19 @@ const ARCHETYPE_RULES: Record<string, string> = {
   ghost_bagholder: "Conviction high · Chaos high · Survival low",
 };
 
+interface ActivityCounts {
+  buys: number;
+  sells: number;
+  dead_tokens: number;
+  revivals: number;
+}
+
 interface MonsterData {
   dna: PersonaDNA;
   archetype: ArchetypeResult;
   state: CharacterState;
+  activity_counts: ActivityCounts;
+  data_source: "live" | "demo" | "fixture";
 }
 
 
@@ -73,12 +82,23 @@ function MonsterRoomContent() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ wallet }),
         });
-        const analyzed = await resp.json() as { dna: PersonaDNA; archetype: ArchetypeResult };
+        const analyzed = await resp.json() as {
+          dna: PersonaDNA;
+          archetype: ArchetypeResult;
+          activity_counts?: ActivityCounts;
+          data_source?: "live" | "demo" | "fixture";
+        };
 
         const { createInitialState } = await import("@/lib/state-machine");
         const state = createInitialState(wallet.toLowerCase(), analyzed.archetype.archetype as any);
 
-        setData({ dna: analyzed.dna, archetype: analyzed.archetype, state });
+        setData({
+          dna: analyzed.dna,
+          archetype: analyzed.archetype,
+          state,
+          activity_counts: analyzed.activity_counts ?? { buys: 0, sells: 0, dead_tokens: 0, revivals: 0 },
+          data_source: analyzed.data_source ?? "live",
+        });
 
         const diaryResp = await fetch(`/api/diary?wallet=${wallet.toLowerCase()}`);
         if (diaryResp.ok) {
@@ -127,7 +147,7 @@ function MonsterRoomContent() {
     );
   }
 
-  const { dna, archetype, state } = data;
+  const { dna, archetype, state, activity_counts, data_source } = data;
 
   return (
     <div className="min-h-screen pb-12 relative">
@@ -283,30 +303,29 @@ function MonsterRoomContent() {
         </div>
 
         {/* Activity Breakdown — M-14 */}
-        {(() => {
-          const buys = Math.round(dna.aggression * 0.4 + dna.event_count * 0.3);
-          const sells = Math.round(buys * (0.6 + dna.conviction * 0.003));
-          const dead = Math.round(dna.chaos * 0.15);
-          const revivals = Math.round(dna.survival * 0.05);
-          return (
-            <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-4 mb-6">
-              <div className="text-xs text-gray-600 uppercase tracking-widest mb-3">Activity Breakdown · 30d <span className="text-[10px] text-gray-700 normal-case tracking-normal ml-1">(Estimated from DNA)</span></div>
-              <div className="grid grid-cols-4 gap-3 mb-4">
-                {[
-                  { label: "Buys", value: buys, color: "text-[var(--neon-green)]" },
-                  { label: "Sells", value: sells, color: "text-gray-300" },
-                  { label: "Dead tokens", value: dead, color: "text-[var(--neon-red)]" },
-                  { label: "Revivals", value: revivals, color: "text-[var(--neon-purple)]" },
-                ].map(({ label, value, color }) => (
-                  <div key={label} className="text-center">
-                    <div className={`text-xl font-black ${color}`}>{value}</div>
-                    <div className="text-[10px] text-gray-600">{label}</div>
-                  </div>
-                ))}
+        <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-4 mb-6">
+          <div className="text-xs text-gray-600 uppercase tracking-widest mb-3">
+            Activity Breakdown · 30d
+            {data_source !== "live" && (
+              <span className="text-[10px] text-yellow-600 normal-case tracking-normal ml-2">
+                [{data_source === "demo" ? "Demo data" : "Fixture data"}]
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            {[
+              { label: "Buys", value: activity_counts.buys, color: "text-[var(--neon-green)]" },
+              { label: "Sells", value: activity_counts.sells, color: "text-gray-300" },
+              { label: "Dead tokens", value: activity_counts.dead_tokens, color: "text-[var(--neon-red)]" },
+              { label: "Revivals", value: activity_counts.revivals, color: "text-[var(--neon-purple)]" },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="text-center">
+                <div className={`text-xl font-black ${color}`}>{value}</div>
+                <div className="text-[10px] text-gray-600">{label}</div>
               </div>
-            </div>
-          );
-        })()}
+            ))}
+          </div>
+        </div>
 
         {/* Tabs — horizontal scroll on mobile */}
         <div className="flex gap-1 mb-6 bg-[var(--degen-card)] p-1 rounded-lg border border-[var(--degen-border)] overflow-x-auto">
