@@ -36,12 +36,21 @@ export default function GlobalNav() {
         </Link>
 
         {/* Links */}
-        <div className="flex items-center gap-4">
-          <Link href="/replay" className="text-xs text-gray-500 hover:text-gray-300 transition-colors font-mono uppercase tracking-wider">
+        <div className="flex items-center gap-3 overflow-x-auto">
+          <Link href="/replay" className="text-xs text-gray-500 hover:text-gray-300 transition-colors font-mono uppercase tracking-wider whitespace-nowrap">
             Replay
           </Link>
-          <Link href="/gallery" className="text-xs text-gray-500 hover:text-gray-300 transition-colors font-mono uppercase tracking-wider">
+          <Link href="/gallery" className="text-xs text-gray-500 hover:text-gray-300 transition-colors font-mono uppercase tracking-wider whitespace-nowrap">
             Gallery
+          </Link>
+          <Link href="/quiz" className="text-xs text-gray-500 hover:text-[var(--neon-purple)] transition-colors font-mono uppercase tracking-wider whitespace-nowrap">
+            Quiz
+          </Link>
+          <Link href="/battle" className="text-xs text-gray-500 hover:text-[var(--neon-gold)] transition-colors font-mono uppercase tracking-wider whitespace-nowrap">
+            Battle
+          </Link>
+          <Link href="/stickers" className="text-xs text-gray-500 hover:text-[var(--neon-green)] transition-colors font-mono uppercase tracking-wider whitespace-nowrap">
+            Stickers
           </Link>
         </div>
 
