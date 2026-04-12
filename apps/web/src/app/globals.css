@@ -106,3 +106,146 @@ body::before {
   80% { transform: translate(1px, -2px); }
   100% { transform: translate(0); }
 }
+
+/* ═══ Monster Room Weather — T-ATM-01 ═══════════════════════════════════════ */
+
+/* Weather layer — sits behind content */
+.weather-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 500ms ease, background 500ms ease;
+}
+
+/* neutral — calm dot grid */
+.weather-neutral {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 1;
+}
+
+/* euphoria — golden particles rising */
+@keyframes particle-rise {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
+  50%  { transform: translateY(-40vh) translateX(10px) scale(0.8); opacity: 0.8; }
+  100% { transform: translateY(-80vh) translateX(-5px) scale(0.3); opacity: 0; }
+}
+.weather-euphoria::before,
+.weather-euphoria::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #ffd700;
+  animation: particle-rise 4s ease-in infinite;
+}
+.weather-euphoria::before { left: 20%; animation-delay: 0s; }
+.weather-euphoria::after  { left: 70%; animation-delay: 2s; }
+.weather-euphoria {
+  background: radial-gradient(ellipse at 50% 120%, rgba(255,215,0,0.08), transparent 60%);
+}
+
+/* despair — blue-grey rain */
+@keyframes rain-fall {
+  0%   { transform: translateY(-10%) scaleY(0.8); opacity: 0; }
+  10%  { opacity: 0.4; }
+  90%  { opacity: 0.3; }
+  100% { transform: translateY(110%) scaleY(1); opacity: 0; }
+}
+.weather-despair {
+  background: repeating-linear-gradient(
+    175deg,
+    transparent,
+    transparent 3px,
+    rgba(100,130,200,0.06) 3px,
+    rgba(100,130,200,0.06) 4px
+  );
+  animation: rain-fall 1.8s linear infinite;
+}
+
+/* revenge — red flicker + slow pulse */
+@keyframes revenge-pulse {
+  0%, 100% { opacity: 0.07; }
+  50%       { opacity: 0.15; }
+}
+@keyframes flicker {
+  0%, 95%, 100% { opacity: 1; }
+  96%            { opacity: 0.6; }
+  97%            { opacity: 0.9; }
+}
+.weather-revenge {
+  background: radial-gradient(ellipse at 50% 50%, rgba(255,61,61,0.12), transparent 70%);
+  animation: revenge-pulse 2.5s ease-in-out infinite, flicker 8s linear infinite;
+}
+
+/* greed — gold scan lines scrolling up */
+@keyframes scanline-scroll {
+  from { background-position: 0 0; }
+  to   { background-position: 0 -80px; }
+}
+.weather-greed {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 38px,
+    rgba(255,215,0,0.05) 38px,
+    rgba(255,215,0,0.05) 40px
+  );
+  animation: scanline-scroll 3s linear infinite;
+}
+
+/* ghost — dense fog + blurry glow */
+@keyframes fog-drift {
+  0%, 100% { transform: scale(1) translate(0, 0); }
+  33%       { transform: scale(1.05) translate(-10px, 5px); }
+  66%       { transform: scale(0.97) translate(8px, -3px); }
+}
+.weather-ghost {
+  background: radial-gradient(ellipse at 40% 50%, rgba(170,170,170,0.1), transparent 60%),
+              radial-gradient(ellipse at 70% 60%, rgba(150,150,200,0.07), transparent 50%);
+  filter: blur(8px);
+  animation: fog-drift 12s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weather-layer,
+  .weather-despair,
+  .weather-revenge,
+  .weather-greed,
+  .weather-ghost,
+  .weather-euphoria::before,
+  .weather-euphoria::after {
+    animation: none !important;
+  }
+}
+
+/* Awakening Ritual — T-ATM-02 */
+@keyframes dust-assemble {
+  0%   { opacity: 0; filter: blur(20px); transform: scale(0.6); }
+  60%  { opacity: 0.7; filter: blur(4px); transform: scale(1.05); }
+  100% { opacity: 1; filter: blur(0); transform: scale(1); }
+}
+@keyframes glyph-disintegrate {
+  0%   { opacity: 1; letter-spacing: normal; filter: blur(0); }
+  100% { opacity: 0; letter-spacing: 1em; filter: blur(6px); }
+}
+@keyframes typewriter-blink {
+  0%, 100% { border-right-color: var(--neon-green); }
+  50%       { border-right-color: transparent; }
+}
+.ritual-dust-assemble {
+  animation: dust-assemble 1s ease-out forwards;
+}
+.ritual-glyph-out {
+  animation: glyph-disintegrate 0.8s ease-in forwards;
+}
+.ritual-typewriter {
+  border-right: 2px solid var(--neon-green);
+  animation: typewriter-blink 0.6s linear infinite;
+  white-space: nowrap;
+  overflow: hidden;
+}
