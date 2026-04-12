@@ -92,7 +92,7 @@ Worker는 현재 별도 프로세스 없이 Next.js API routes로 처리 가능.
 npm i -g @railway/cli
 railway login
 railway init
-railway up --service worker
+railway up --service degenborn-worker
 ```
 
 ### Railway 환경변수
@@ -119,7 +119,7 @@ WORKER_INTERVAL_MS=300000
 - [ ] WalletConnect project ID 발급
 - [ ] Vercel 환경변수 입력
 - [ ] Vercel 배포 (`vercel --prod`)
-- [ ] (선택) Railway 환경변수 입력 후 `railway up --service worker`
+- [ ] (선택) Railway 환경변수 입력 후 `railway up --service degenborn-worker`
 - [ ] `NEXT_PUBLIC_APP_URL` 실제 URL로 업데이트
 - [ ] BSCScan에서 tx hash 조회 확인
 - [ ] README에 tx hash 기록
