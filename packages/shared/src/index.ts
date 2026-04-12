@@ -10,5 +10,6 @@ export * from "./narrative/captions";
 export * from "./narrative/time";
 export * from "./narrative/copy";
 export * from "./narrative/dialogue";
+export * from "./narrative/horoscope";
 export * from "./lexicon";
 export * from "./badges";
