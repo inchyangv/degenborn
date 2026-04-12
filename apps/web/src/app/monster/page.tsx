@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import type { PersonaDNA, ArchetypeResult, CharacterState, MutationEvent, DiaryPage } from "@degenborn/shared";
 import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS, ARCHETYPE_PROFILES, relativeTime } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
@@ -57,7 +58,9 @@ function MonsterRoomContent() {
   const [data, setData] = useState<MonsterData | null>(null);
   const [diary, setDiary] = useState<MutationEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"dna" | "traits" | "diary" | "share">("dna");
+  const [activeTab, setActiveTab] = useState<"dna" | "traits" | "diary" | "share" | "relics">("dna");
+  const [relicMinting, setRelicMinting] = useState<Record<number, "idle" | "minting" | "done" | "error">>({});
+  const [relicTxHashes, setRelicTxHashes] = useState<Record<number, string>>({});
   const [showArchetypeModal, setShowArchetypeModal] = useState(false);
 
   useEffect(() => {
@@ -312,6 +315,7 @@ function MonsterRoomContent() {
             { id: "traits", label: "Traits" },
             { id: "diary", label: "Diary" },
             { id: "share", label: "Share" },
+            { id: "relics", label: "Relics" },
           ] as const).map((tab) => (
             <button
               key={tab.id}
@@ -404,10 +408,141 @@ function MonsterRoomContent() {
           </div>
         )}
 
+        {activeTab === "relics" && (
+          <RelicsPanel wallet={wallet} state={state} relicMinting={relicMinting} setRelicMinting={setRelicMinting} relicTxHashes={relicTxHashes} setRelicTxHashes={setRelicTxHashes} />
+        )}
+
         {/* Sibling / Rival panel — always visible below tabs */}
         <div className="mt-6">
           <SiblingRivalPanel currentWallet={wallet} dna={dna} />
         </div>
+      </div>
+    </div>
+  );
+}
+
+const MILESTONE_NAMES: Record<number, string> = {
+  0: "First Crowned Win",
+  1: "Rug Survivor",
+  2: "Seven-Day Resurrection",
+  3: "Chaos Ascension",
+  4: "Diamond Hands",
+  5: "Ghost Awakening",
+};
+
+const MILESTONE_DESCRIPTIONS: Record<number, string> = {
+  0: "Earned your first 3-win streak crown",
+  1: "Survived 3+ rug pull events",
+  2: "Made a comeback within 7 days of a major loss",
+  3: "Reached Corruption 80+",
+  4: "Held for 30+ days with profit (Prestige 50+)",
+  5: "Entered ghost mood and recovered",
+};
+
+function getEligibleMilestones(state: CharacterState): number[] {
+  const eligible: number[] = [];
+  if (state.crown_count >= 1) eligible.push(0);
+  if (state.scar_count >= 3) eligible.push(1);
+  if (state.survival_streak >= 1) eligible.push(2);
+  if (state.corruption >= 80) eligible.push(3);
+  if (state.prestige >= 50) eligible.push(4);
+  if (state.mood === "ghost" || state.survival_streak >= 2) eligible.push(5);
+  return eligible;
+}
+
+interface RelicsPanelProps {
+  wallet: string;
+  state: CharacterState;
+  relicMinting: Record<number, "idle" | "minting" | "done" | "error">;
+  setRelicMinting: Dispatch<SetStateAction<Record<number, "idle" | "minting" | "done" | "error">>>;
+  relicTxHashes: Record<number, string>;
+  setRelicTxHashes: Dispatch<SetStateAction<Record<number, string>>>;
+}
+
+function RelicsPanel({ wallet, state, relicMinting, setRelicMinting, relicTxHashes, setRelicTxHashes }: RelicsPanelProps) {
+  const eligible = getEligibleMilestones(state);
+
+  const handleMintRelic = async (milestoneType: number) => {
+    setRelicMinting((prev) => ({ ...prev, [milestoneType]: "minting" }));
+    try {
+      const resp = await fetch("/api/relic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet, milestone_type: milestoneType, state }),
+      });
+      const data = await resp.json() as { tx_hash?: string; already_minted?: boolean; error?: string };
+      if (!resp.ok) throw new Error(data.error ?? "Mint failed");
+      if (data.tx_hash) setRelicTxHashes((prev) => ({ ...prev, [milestoneType]: data.tx_hash! }));
+      setRelicMinting((prev) => ({ ...prev, [milestoneType]: "done" }));
+    } catch {
+      setRelicMinting((prev) => ({ ...prev, [milestoneType]: "error" }));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="text-xs text-gray-600 uppercase tracking-widest mb-2">Snapshot Relics — Earned Milestones</div>
+      {eligible.length === 0 ? (
+        <div className="text-gray-600 text-sm text-center py-8">
+          No milestones reached yet. Keep trading to unlock Snapshot Relics.
+        </div>
+      ) : (
+        eligible.map((milestoneType) => {
+          const mintStatus = relicMinting[milestoneType] ?? "idle";
+          const txHash = relicTxHashes[milestoneType];
+          return (
+            <div
+              key={milestoneType}
+              className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-xl p-4"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="text-sm font-bold text-[var(--neon-gold)] mb-0.5">
+                    {MILESTONE_NAMES[milestoneType]}
+                  </div>
+                  <div className="text-xs text-gray-500">{MILESTONE_DESCRIPTIONS[milestoneType]}</div>
+                  {txHash && (
+                    <a
+                      href={`https://testnet.bscscan.com/tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-[var(--neon-purple)] hover:brightness-125 underline decoration-dotted mt-1 inline-block"
+                    >
+                      View on BSCScan →
+                    </a>
+                  )}
+                </div>
+                <div className="shrink-0">
+                  {mintStatus === "done" ? (
+                    <div className="text-xs text-[var(--neon-green)] font-mono">✓ Minted</div>
+                  ) : mintStatus === "error" ? (
+                    <button
+                      onClick={() => handleMintRelic(milestoneType)}
+                      className="text-xs text-red-400 hover:text-red-300 border border-red-800 rounded px-2 py-1"
+                    >
+                      Retry
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleMintRelic(milestoneType)}
+                      disabled={mintStatus === "minting"}
+                      className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{
+                        background: "linear-gradient(135deg, var(--neon-purple), var(--neon-gold))",
+                        color: "#000",
+                      }}
+                    >
+                      {mintStatus === "minting" ? "Minting..." : "Mint Relic"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })
+      )}
+      <div className="text-xs text-gray-700 text-center mt-4">
+        Snapshot Relics are tradeable NFTs on BSC Testnet · Contract: {process.env.NEXT_PUBLIC_SNAPSHOT_RELIC_ADDRESS?.slice(0, 10) ?? "0xFBdDD268..."}…
       </div>
     </div>
   );
