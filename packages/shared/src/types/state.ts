@@ -1,5 +1,6 @@
 import type { ArchetypeId } from "./archetype";
 import type { TraitId } from "./trait";
+import type { BadgeId } from "../badges";
 
 export type Mood = "neutral" | "euphoria" | "despair" | "revenge" | "greed" | "ghost";
 
@@ -43,4 +44,6 @@ export interface StateTransition {
   state_after: CharacterState;
   traits_added: TraitId[];
   traits_removed: TraitId[];
+  /** Badges newly earned by this transition (not present in state_before) */
+  badges_earned: BadgeId[];
 }

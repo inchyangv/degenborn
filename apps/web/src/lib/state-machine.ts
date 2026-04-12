@@ -7,7 +7,7 @@ import type {
   ArchetypeId,
   Mood,
 } from "@degenborn/shared";
-import { TRAIT_DEFINITIONS } from "@degenborn/shared";
+import { TRAIT_DEFINITIONS, diffBadges } from "@degenborn/shared";
 
 /** Compute which traits should be active given the current state */
 export function computeActiveTraits(state: CharacterState): TraitId[] {
@@ -129,12 +129,15 @@ export function applyStateEvent(
   const removedTraits = before.active_traits.filter((t) => !newTraits.includes(t));
   next.active_traits = newTraits;
 
+  const badges_earned = diffBadges(before, next);
+
   return {
     event,
     state_before: before,
     state_after: next,
     traits_added: addedTraits,
     traits_removed: removedTraits,
+    badges_earned,
   };
 }
 
