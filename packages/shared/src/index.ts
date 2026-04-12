@@ -6,6 +6,7 @@ export * from "./types/trait";
 export * from "./types/asset";
 export * from "./types/mutation";
 export * from "./prompts/narrative";
+export * from "./prompts/roast";
 export * from "./narrative/captions";
 export * from "./narrative/time";
 export * from "./narrative/copy";

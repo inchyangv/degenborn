@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.88.0",
     "@degenborn/archetype": "workspace:*",
     "@degenborn/data-adapter": "workspace:*",
     "@degenborn/scoring": "workspace:*",
