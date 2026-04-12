@@ -11,6 +11,7 @@ import CharacterDisplay from "@/components/CharacterDisplay";
 import WeatherLayer from "@/components/WeatherLayer";
 import SiblingRivalPanel from "@/components/SiblingRivalPanel";
 import WeeklyRecapModal from "@/components/WeeklyRecapModal";
+import TypewriterText from "@/components/TypewriterText";
 import { HeroSkeleton } from "@/components/LoadingSkeleton";
 import Link from "next/link";
 
@@ -373,7 +374,9 @@ function MonsterRoomContent() {
                         {relativeTime(entry.timestamp)}
                       </div>
                     </div>
-                    <div className="text-sm text-gray-300 italic mb-2">"{entry.generated_caption}"</div>
+                    <div className="text-sm text-gray-300 italic mb-2">
+                      &ldquo;<TypewriterText text={entry.generated_caption} speed={35} />&rdquo;
+                    </div>
                     {entry.trait_delta.added.length > 0 && (
                       <div className="text-xs text-[var(--neon-green)]">
                         +{entry.trait_delta.added.map((t) => TRAIT_DEFINITIONS[t]?.label ?? t).join(", ")}
