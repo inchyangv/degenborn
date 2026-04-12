@@ -35,26 +35,25 @@ export default function GlobalNav() {
           DEGENBORN
         </Link>
 
-        {/* Links */}
-        <div className="flex items-center gap-3 overflow-x-auto">
+        {/* Links — core 3 only */}
+        <div className="flex items-center gap-3">
           <Link href="/replay" className="text-xs text-gray-500 hover:text-gray-300 transition-colors font-mono uppercase tracking-wider whitespace-nowrap">
             Replay
           </Link>
           <Link href="/gallery" className="text-xs text-gray-500 hover:text-gray-300 transition-colors font-mono uppercase tracking-wider whitespace-nowrap">
             Gallery
           </Link>
-          <Link href="/quiz" className="text-xs text-gray-500 hover:text-[var(--neon-purple)] transition-colors font-mono uppercase tracking-wider whitespace-nowrap">
-            Quiz
-          </Link>
-          <Link href="/battle" className="text-xs text-gray-500 hover:text-[var(--neon-gold)] transition-colors font-mono uppercase tracking-wider whitespace-nowrap">
-            Battle
-          </Link>
-          <Link href="/stickers" className="text-xs text-gray-500 hover:text-[var(--neon-green)] transition-colors font-mono uppercase tracking-wider whitespace-nowrap">
-            Stickers
-          </Link>
+          {isConnected && address && (
+            <Link
+              href={`/monster?wallet=${address}`}
+              className="text-xs text-[var(--neon-green)] hover:brightness-125 transition-all font-mono uppercase tracking-wider whitespace-nowrap border border-[var(--neon-green)]/30 px-2 py-0.5 rounded"
+            >
+              My Monster
+            </Link>
+          )}
         </div>
 
-        {/* Wallet chip */}
+        {/* Right: wallet chip or Awaken CTA */}
         {isConnected && address ? (
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 px-2 py-1 bg-[var(--degen-muted)] rounded-full border border-[var(--degen-border)]">
@@ -68,7 +67,12 @@ export default function GlobalNav() {
             </div>
           </div>
         ) : (
-          <div className="w-24" />
+          <Link
+            href="/"
+            className="px-3 py-1 text-xs font-black bg-[var(--neon-green)] text-black rounded hover:brightness-110 transition-all whitespace-nowrap"
+          >
+            Awaken →
+          </Link>
         )}
       </nav>
     </>
