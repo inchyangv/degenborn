@@ -104,6 +104,17 @@ function BirthContent() {
     setPhase("mint");
   };
 
+  const advancePhase = () => {
+    // Advance one phase at a time: dna → reveal → genesis → mint
+    skipRef.current = true;
+    setPhase((prev) => {
+      if (prev === "dna") return "reveal";
+      if (prev === "reveal") return "genesis";
+      if (prev === "genesis") { setGenesisVisible(true); return "genesis"; }
+      return "mint";
+    });
+  };
+
   const startAnalysis = async () => {
     setStatus("loading");
     setError(null);
@@ -322,11 +333,24 @@ function BirthContent() {
         </div>
       )}
 
-      {/* Skip shortcut hint */}
-      {phase !== "mint" && phase !== "scanning" && (
+      {/* Phase advance controls */}
+      {phase === "dna" && data && (
+        <div className="text-center mt-6 flex flex-col items-center gap-2">
+          <button
+            onClick={advancePhase}
+            className="px-6 py-2 border border-[var(--neon-purple)] text-[var(--neon-purple)] text-sm font-bold rounded-lg hover:bg-[var(--neon-purple)] hover:text-black transition-all"
+          >
+            Continue → View Archetype
+          </button>
+          <button onClick={advanceToMint} className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
+            Skip to Mint
+          </button>
+        </div>
+      )}
+      {(phase === "reveal" || phase === "genesis") && phase !== "mint" && (
         <div className="text-center mt-4">
-          <button onClick={advanceToMint} className="text-[10px] text-gray-800 hover:text-gray-600 transition-colors">
-            ESC or click to skip
+          <button onClick={advanceToMint} className="text-xs text-gray-500 hover:text-gray-300 transition-colors border border-gray-700 px-4 py-1.5 rounded">
+            Skip to Mint →
           </button>
         </div>
       )}
