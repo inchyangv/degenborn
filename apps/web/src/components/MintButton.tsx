@@ -5,6 +5,7 @@ import { ARCHETYPE_COLORS } from "@degenborn/shared";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CharacterDisplay from "@/components/CharacterDisplay";
+import AwakeningRitual from "@/components/AwakeningRitual";
 import { analytics } from "@/lib/analytics";
 
 interface Props {
@@ -26,10 +27,12 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [mintData, setMintData] = useState<MintResponse | null>(null);
   const [bornVisible, setBornVisible] = useState(false);
+  const [ritualVisible, setRitualVisible] = useState(false);
 
   const handleMint = async () => {
     setStatus("preparing");
     setError(null);
+    setRitualVisible(true);
     analytics.mintClicked(archetype.archetype);
 
     try {
@@ -54,8 +57,9 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
       await simulateMint();
 
       setStatus("born");
-      setTimeout(() => setBornVisible(true), 80);
+      // ritual completes → setBornVisible
     } catch (e: unknown) {
+      setRitualVisible(false);
       if (e instanceof Error && e.message.includes("cancel")) {
         setStatus("cancelled");
       } else {
@@ -65,14 +69,37 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
     }
   };
 
+  const handleRitualComplete = () => {
+    setRitualVisible(false);
+    setTimeout(() => setBornVisible(true), 80);
+  };
+
+  const handleRitualSkip = () => {
+    setRitualVisible(false);
+    if (status === "born") setTimeout(() => setBornVisible(true), 80);
+  };
+
   // Simulate mint for demo
   async function simulateMint() {
     await new Promise((r) => setTimeout(r, 1500));
   }
 
+  // Ritual overlay — fires during mint
+  const ritual = (
+    <AwakeningRitual
+      visible={ritualVisible}
+      wallet={wallet}
+      archetype={archetype}
+      onSkip={handleRitualSkip}
+      onComplete={handleRitualComplete}
+    />
+  );
+
   if (status === "born" || status === "done") {
     const glowColor = ARCHETYPE_COLORS[archetype.archetype as keyof typeof ARCHETYPE_COLORS] ?? "#9945ff";
     return (
+      <>
+        {ritual}
       <div
         className={`flex flex-col items-center gap-6 transition-all duration-700 ${bornVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
       >
@@ -111,6 +138,7 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
           Enter Monster Room →
         </button>
       </div>
+      </>
     );
   }
 
@@ -129,6 +157,8 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
   }
 
   return (
+    <>
+      {ritual}
     <div className="text-center">
       {/* Demo mode notice */}
       <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full bg-yellow-900/30 border border-yellow-600/40 text-yellow-400 text-xs font-mono">
@@ -179,5 +209,6 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
         </button>
       </div>
     </div>
+    </>
   );
 }
