@@ -10,6 +10,7 @@ import TradingCard from "@/components/TradingCard";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import WeatherLayer from "@/components/WeatherLayer";
 import SiblingRivalPanel from "@/components/SiblingRivalPanel";
+import WeeklyRecapModal from "@/components/WeeklyRecapModal";
 import { HeroSkeleton } from "@/components/LoadingSkeleton";
 import Link from "next/link";
 
@@ -128,6 +129,8 @@ function MonsterRoomContent() {
     <div className="min-h-screen pb-12 relative">
       {/* Mood-driven weather background */}
       <WeatherLayer mood={state.mood} />
+      {/* Weekly recap — shown on Mondays if state changed */}
+      <WeeklyRecapModal wallet={wallet} state={state} />
       {/* Global nav */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--degen-border)] mb-0">
         <Link href="/" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">← Home</Link>
