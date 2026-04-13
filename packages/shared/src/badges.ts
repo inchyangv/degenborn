@@ -23,7 +23,10 @@ export type BadgeId =
   | "the_flatline"
   | "resurrection"
   | "zero_hour"
-  | "four_meme_native";
+  | "four_meme_native"
+  | "token_creator"     // TF-05: launched ≥ 1 token on Four.meme
+  | "kingmaker"         // TF-05: launched a token that took off
+  | "fallen_creator";   // TF-05: launched a token that went to zero
 
 export type BadgeRarity = "common" | "uncommon" | "rare" | "epic" | "mythic";
 
@@ -161,6 +164,31 @@ export const BADGE_CATALOG: BadgeDefinition[] = [
     emoji: "⚡",
     rarity: "mythic",
     check: (s) => s.corruption >= 20 && s.survival_streak >= 3 && s.crown_count >= 1,
+  },
+  // TF-05: Creator badges
+  {
+    id: "token_creator",
+    name: "Token Creator",
+    description: "Launched a token on Four.meme. Beyond trading — you built.",
+    emoji: "🏗️",
+    rarity: "uncommon",
+    check: (s) => (s.tokens_created ?? 0) >= 1,
+  },
+  {
+    id: "kingmaker",
+    name: "Kingmaker",
+    description: "Your token found its community. The market remembered your name.",
+    emoji: "🤴",
+    rarity: "epic",
+    check: (s) => (s.kingmaker_tokens ?? 0) >= 1,
+  },
+  {
+    id: "fallen_creator",
+    name: "Fallen Creator",
+    description: "You launched. It died. The scar of ambition is still a scar.",
+    emoji: "🪦",
+    rarity: "uncommon",
+    check: (s) => (s.fallen_creator_tokens ?? 0) >= 1,
   },
 ];
 

@@ -74,6 +74,17 @@ export async function POST(req: NextRequest) {
       revivals: events.filter((e) => e.event_type === "recovery").length,
     };
 
+    // TF-05: Creator stats
+    const creatorEvents = events.filter((e) => e.event_type === "token_created");
+    const creator_stats = {
+      tokens_created: creatorEvents.length,
+      created_tokens: creatorEvents.map((e) => ({
+        address: e.token_address,
+        symbol: e.token_symbol,
+        timestamp: e.timestamp,
+      })),
+    };
+
     // Persist to profile store for metadata endpoint cache hits
     setProfile(walletLower, dna, archetypeResult);
 
@@ -113,6 +124,7 @@ export async function POST(req: NextRequest) {
       loyalty,
       derived_state: derivedState,
       data_source: dataSource,
+      creator_stats,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -201,6 +213,14 @@ function deriveCharacterState(
         wallet_address: wallet,
         timestamp: event.timestamp,
         payload: { duration: event.hold_duration_seconds ?? 0, token: event.token_address },
+      };
+    } else if (event.event_type === "token_created") {
+      // TF-05: token creation via Four.meme Factory
+      stateEvent = {
+        type: "token_created",
+        wallet_address: wallet,
+        timestamp: event.timestamp,
+        payload: { token: event.token_address, symbol: event.token_symbol },
       };
     }
 

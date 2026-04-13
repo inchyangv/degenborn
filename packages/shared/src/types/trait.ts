@@ -1,17 +1,20 @@
 /** All available visual traits */
 export type TraitId =
-  | "crown"          // crown_count ≥ 1
-  | "gold_chain"     // crown_count ≥ 3
-  | "bandage"        // scar_count ≥ 1
-  | "torn_clothes"   // scar_count ≥ 2
-  | "tears"          // mood = despair
-  | "gold_tooth"     // prestige ≥ 30
-  | "scar"           // scar_count ≥ 3
-  | "zombie_eyes"    // corruption ≥ 50
-  | "revenge_aura"   // mood = revenge
-  | "royal_cloak"    // prestige ≥ 70
-  | "ghost_form"     // mood = ghost
-  | "skull_ring";    // survival_streak ≥ 5
+  | "crown"              // crown_count ≥ 1
+  | "gold_chain"         // crown_count ≥ 3
+  | "bandage"            // scar_count ≥ 1
+  | "torn_clothes"       // scar_count ≥ 2
+  | "tears"              // mood = despair
+  | "gold_tooth"         // prestige ≥ 30
+  | "scar"               // scar_count ≥ 3
+  | "zombie_eyes"        // corruption ≥ 50
+  | "revenge_aura"       // mood = revenge
+  | "royal_cloak"        // prestige ≥ 70
+  | "ghost_form"         // mood = ghost
+  | "skull_ring"         // survival_streak ≥ 5
+  | "creator_badge"      // TF-05: launched ≥ 1 token on Four.meme
+  | "kingmaker_crown"    // TF-05: launched token with high trading volume
+  | "fallen_creator_mark"; // TF-05: launched token that went to zero
 
 export interface TraitDefinition {
   id: TraitId;
@@ -35,6 +38,9 @@ export const TRAIT_EMOJI: Record<TraitId, string> = {
   royal_cloak: "🔱",
   ghost_form: "👻",
   skull_ring: "💀",
+  creator_badge: "🏗️",
+  kingmaker_crown: "🤴",
+  fallen_creator_mark: "🪦",
 };
 
 export const TRAIT_DEFINITIONS: Record<TraitId, TraitDefinition> = {
@@ -121,5 +127,26 @@ export const TRAIT_DEFINITIONS: Record<TraitId, TraitDefinition> = {
     description: "Survived 5+ consecutive losses",
     asset_path: "traits/skull_ring.svg",
     category: "accessory",
+  },
+  creator_badge: {
+    id: "creator_badge",
+    label: "Creator Badge",
+    description: "Launched a token on Four.meme — a builder among degens",
+    asset_path: "traits/creator_badge.svg",
+    category: "accessory",
+  },
+  kingmaker_crown: {
+    id: "kingmaker_crown",
+    label: "Kingmaker Crown",
+    description: "Launched a token that achieved significant trading volume",
+    asset_path: "traits/kingmaker_crown.svg",
+    category: "head",
+  },
+  fallen_creator_mark: {
+    id: "fallen_creator_mark",
+    label: "Fallen Creator Mark",
+    description: "Launched a token that went to zero — the scar of ambition",
+    asset_path: "traits/fallen_creator_mark.svg",
+    category: "body",
   },
 };

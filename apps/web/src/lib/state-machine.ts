@@ -25,6 +25,10 @@ export function computeActiveTraits(state: CharacterState): TraitId[] {
   if (state.prestige >= 70) traits.push("royal_cloak");
   if (state.mood === "ghost") traits.push("ghost_form");
   if (state.survival_streak >= 5) traits.push("skull_ring");
+  // TF-05: creator traits
+  if ((state.tokens_created ?? 0) >= 1) traits.push("creator_badge");
+  if ((state.kingmaker_tokens ?? 0) >= 1) traits.push("kingmaker_crown");
+  if ((state.fallen_creator_tokens ?? 0) >= 1) traits.push("fallen_creator_mark");
 
   return traits;
 }
@@ -46,6 +50,11 @@ export function createInitialState(
     survival_streak: 0,
     active_traits: [],
     updated_at: Math.floor(Date.now() / 1000),
+    // TF-05: creator fields
+    tokens_created: 0,
+    creator_badge: false,
+    kingmaker_tokens: 0,
+    fallen_creator_tokens: 0,
   };
   state.active_traits = computeActiveTraits(state);
   return state;
@@ -116,6 +125,29 @@ export function applyStateEvent(
       next.mood = "revenge";
       next.corruption = Math.max(0, next.corruption - 10);
       break;
+
+    // TF-05: Creator state transitions
+    case "token_created":
+      next.tokens_created = (next.tokens_created ?? 0) + 1;
+      next.creator_badge = true;
+      // First launch: mood shifts to greed (ambition unlocked)
+      if (!before.creator_badge) {
+        if (next.mood === "neutral" || next.mood === "despair") next.mood = "greed";
+      }
+      break;
+
+    case "creator_success":
+      next.kingmaker_tokens = (next.kingmaker_tokens ?? 0) + 1;
+      next.prestige = Math.min(100, next.prestige + 20);
+      next.crown_count += 1;
+      next.mood = "euphoria";
+      break;
+
+    case "creator_failure":
+      next.fallen_creator_tokens = (next.fallen_creator_tokens ?? 0) + 1;
+      next.scar_count += 1;
+      if (next.mood !== "ghost") next.mood = "despair";
+      break;
   }
 
   // Level up when prestige or survival milestone reached
@@ -159,6 +191,10 @@ export function generateTransitionCaption(transition: StateTransition): string {
     long_hold: `${holdDays > 0 ? holdDays : "?"} days held. Conviction is a lifestyle.`,
     multi_rug: `Three rugs. One ghost. Corruption ${state_after.corruption}.`,
     comeback: `Wrote them off. Wrote you off. Survival ${state_after.survival_streak}.`,
+    // TF-05
+    token_created: `A new token launched on Four.meme. Creator #${state_after.tokens_created ?? 1} unlocked.`,
+    creator_success: `The token took off. Kingmaker status: confirmed. Crown ${state_after.crown_count}.`,
+    creator_failure: `The token went to zero. The Fallen Creator mark burns. Scar ${state_after.scar_count}.`,
   };
 
   let caption = captions[event.type as StateEventType] ?? `State changed: ${event.type}`;

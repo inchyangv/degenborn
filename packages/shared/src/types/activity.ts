@@ -1,5 +1,5 @@
 /** Raw event type from on-chain activity */
-export type EventType = "buy" | "sell" | "hold" | "rug" | "recovery" | "transfer_in" | "transfer_out";
+export type EventType = "buy" | "sell" | "hold" | "rug" | "recovery" | "transfer_in" | "transfer_out" | "token_created";
 
 /** Normalized activity event — source-agnostic */
 export interface ActivityEvent {

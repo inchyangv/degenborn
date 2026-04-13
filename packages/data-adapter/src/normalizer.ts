@@ -1,6 +1,6 @@
 import type { ActivityEvent, EventType, RawWalletActivity } from "@degenborn/shared";
 import { createHash } from "crypto";
-import { FOUR_MEME_ROUTER } from "./adapter";
+import { FOUR_MEME_ROUTER, FOUR_MEME_FACTORY } from "./adapter";
 
 /**
  * Normalize raw adapter responses into ActivityEvent[].
@@ -36,6 +36,28 @@ function normalizeMoralis(raw: RawWalletActivity): ActivityEvent[] {
   const events: ActivityEvent[] = [];
 
   for (const tx of txs) {
+    // TF-05: detect token creation before inferring buy/sell type
+    if (isFourMemeTokenCreation(tx, raw.wallet_address)) {
+      const id = deterministicId(
+        raw.wallet_address,
+        `creator:${tx.hash ?? tx.transaction_hash ?? String(tx.block_number)}`,
+      );
+      const tokenAddr = extractCreatedTokenAddress(tx) ?? tx.token_address ?? "0x";
+      events.push({
+        id,
+        wallet_address: raw.wallet_address,
+        event_type: "token_created",
+        token_address: tokenAddr,
+        token_symbol: tx.token_symbol ?? undefined,
+        value_usd: parseFloat(tx.usd_value ?? tx.value_usd ?? "0") || 0,
+        pnl_delta: 0,
+        timestamp: Math.floor(new Date(tx.block_timestamp ?? tx.timestamp ?? 0).getTime() / 1000),
+        raw_payload: { ...tx, four_meme: true, creator: true },
+        chain_id: 56,
+      });
+      continue; // don't also add as buy/sell
+    }
+
     const eventType = inferEventTypeMoralis(tx, raw.wallet_address);
     if (!eventType) continue;
 
@@ -67,6 +89,26 @@ function normalizeCovalent(raw: RawWalletActivity): ActivityEvent[] {
   const events: ActivityEvent[] = [];
 
   for (const tx of txs) {
+    // TF-05: detect token creation before inferring buy/sell type
+    if (isFourMemeTokenCreation(tx, raw.wallet_address)) {
+      const id = deterministicId(raw.wallet_address, `creator:${tx.tx_hash ?? tx.transaction_hash ?? ""}`);
+      const timestamp = Math.floor(new Date(tx.block_signed_at ?? 0).getTime() / 1000);
+      const tokenAddr = extractCreatedTokenAddressCovalent(tx) ?? extractTokenAddressCovalent(tx);
+      events.push({
+        id,
+        wallet_address: raw.wallet_address,
+        event_type: "token_created",
+        token_address: tokenAddr,
+        token_symbol: extractTokenSymbolCovalent(tx),
+        value_usd: tx.value_quote ?? 0,
+        pnl_delta: 0,
+        timestamp,
+        raw_payload: { ...tx, four_meme: true, creator: true },
+        chain_id: 56,
+      });
+      continue;
+    }
+
     const eventType = inferEventTypeCovalent(tx, raw.wallet_address);
     if (!eventType) continue;
 
@@ -94,7 +136,7 @@ function normalizeCovalent(raw: RawWalletActivity): ActivityEvent[] {
   return deduplicateEvents(withRecovery);
 }
 
-// ─── FOUR_MEME_ROUTER filter ─────────────────────────────────────────────────
+// ─── FOUR_MEME_ROUTER / FACTORY filters ─────────────────────────────────────
 
 /** P1-03: Returns true if the transaction involves the Four.meme router. */
 function isFourMemeTransaction(tx: any): boolean {
@@ -102,6 +144,42 @@ function isFourMemeTransaction(tx: any): boolean {
   const toAddr = (tx.to_address ?? tx.to ?? "").toLowerCase();
   const fromAddr = (tx.from_address ?? tx.from ?? "").toLowerCase();
   return toAddr === router || fromAddr === router;
+}
+
+/**
+ * TF-05: Returns true if the transaction is a token creation via Four.meme Factory.
+ *
+ * Detection criteria:
+ *  1. Transaction `to` targets the Four.meme factory contract, OR
+ *  2. Transaction logs contain a TokenCreated event from the factory, OR
+ *  3. Transaction creates a contract (to === null/0x) where method suggests factory call.
+ *
+ * In Moralis/Covalent responses the wallet's FROM address triggers this.
+ */
+function isFourMemeTokenCreation(tx: any, walletAddress: string): boolean {
+  const factory = FOUR_MEME_FACTORY.toLowerCase();
+  const wallet = walletAddress.toLowerCase();
+
+  const toAddr = (tx.to_address ?? tx.to ?? "").toLowerCase();
+  const fromAddr = (tx.from_address ?? tx.from ?? "").toLowerCase();
+
+  // Direct factory call from wallet
+  if (toAddr === factory && fromAddr === wallet) return true;
+
+  // Check log events for TokenCreated from factory
+  const logs: any[] = tx.log_events ?? [];
+  for (const log of logs) {
+    const logAddr = (log.sender_address ?? log.address ?? "").toLowerCase();
+    const eventName = (log.decoded?.name ?? "").toLowerCase();
+    if (logAddr === factory && (eventName === "tokencreated" || eventName === "token_created")) {
+      // Verify creator matches wallet
+      const params: any[] = log.decoded?.params ?? [];
+      const creator = (params.find((p: any) => p.name === "creator")?.value ?? "").toLowerCase();
+      if (!creator || creator === wallet) return true;
+    }
+  }
+
+  return false;
 }
 
 // ─── Moralis event inference ─────────────────────────────────────────────────
@@ -323,4 +401,37 @@ function deduplicateEvents(events: ActivityEvent[]): ActivityEvent[] {
     seen.add(e.id);
     return true;
   });
+}
+
+// ─── TF-05: Creator token address extraction ─────────────────────────────────
+
+/**
+ * Extract the newly created token address from a Moralis tx.
+ * For factory-pattern token launches, the created contract address is often
+ * returned in the tx receipt or in a log's `to` field.
+ */
+function extractCreatedTokenAddress(tx: any): string | null {
+  // Moralis may expose receipt.contractAddress for contract-creation txs
+  if (tx.receipt_contract_address) return tx.receipt_contract_address.toLowerCase();
+  // Or log events may include the deployed token address
+  const logs: any[] = tx.log_events ?? [];
+  for (const log of logs) {
+    const params: any[] = log.decoded?.params ?? [];
+    const tokenParam = params.find((p: any) => p.name === "token" || p.name === "tokenAddress");
+    if (tokenParam?.value) return tokenParam.value.toLowerCase();
+  }
+  return null;
+}
+
+/**
+ * Extract the newly created token address from a Covalent tx.
+ */
+function extractCreatedTokenAddressCovalent(tx: any): string | null {
+  const logs: any[] = tx.log_events ?? [];
+  for (const log of logs) {
+    const params: any[] = log.decoded?.params ?? [];
+    const tokenParam = params.find((p: any) => p.name === "token" || p.name === "tokenAddress");
+    if (tokenParam?.value) return tokenParam.value.toLowerCase();
+  }
+  return null;
 }

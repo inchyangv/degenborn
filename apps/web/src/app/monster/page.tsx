@@ -44,6 +44,17 @@ interface ActivityCounts {
   revivals: number;
 }
 
+interface CreatedToken {
+  address: string;
+  symbol?: string;
+  timestamp: number;
+}
+
+interface CreatorStats {
+  tokens_created: number;
+  created_tokens: CreatedToken[];
+}
+
 interface MonsterData {
   dna: PersonaDNA;
   archetype: ArchetypeResult;
@@ -51,6 +62,7 @@ interface MonsterData {
   activity_counts: ActivityCounts;
   loyalty: LoyaltyScore | null;
   data_source: "live" | "demo" | "fixture";
+  creator_stats: CreatorStats | null;
 }
 
 
@@ -69,7 +81,7 @@ function MonsterRoomContent() {
   const [data, setData] = useState<MonsterData | null>(null);
   const [diary, setDiary] = useState<MutationEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"dna" | "traits" | "diary" | "share" | "relics">("dna");
+  const [activeTab, setActiveTab] = useState<"dna" | "traits" | "diary" | "share" | "relics" | "creator">("dna");
   const [relicMinting, setRelicMinting] = useState<Record<number, "idle" | "minting" | "done" | "error">>({});
   const [relicTxHashes, setRelicTxHashes] = useState<Record<number, string>>({});
   const [showArchetypeModal, setShowArchetypeModal] = useState(false);
@@ -92,6 +104,7 @@ function MonsterRoomContent() {
           loyalty?: LoyaltyScore;
           derived_state?: CharacterState;
           data_source?: "live" | "demo" | "fixture";
+          creator_stats?: CreatorStats;
         };
 
         const { createInitialState } = await import("@/lib/state-machine");
@@ -105,6 +118,7 @@ function MonsterRoomContent() {
           activity_counts: analyzed.activity_counts ?? { buys: 0, sells: 0, dead_tokens: 0, revivals: 0 },
           loyalty: analyzed.loyalty ?? null,
           data_source: analyzed.data_source ?? "live",
+          creator_stats: analyzed.creator_stats ?? null,
         });
 
         const diaryResp = await fetch(`/api/diary?wallet=${wallet.toLowerCase()}`);
@@ -154,7 +168,7 @@ function MonsterRoomContent() {
     );
   }
 
-  const { dna, archetype, state, activity_counts, loyalty, data_source } = data;
+  const { dna, archetype, state, activity_counts, loyalty, data_source, creator_stats } = data;
 
   return (
     <div className="min-h-screen pb-12 relative">
@@ -525,6 +539,7 @@ function MonsterRoomContent() {
             { id: "diary", label: "Diary" },
             { id: "share", label: "Share" },
             { id: "relics", label: "Relics" },
+            { id: "creator", label: "🏗️" },
           ] as const).map((tab) => (
             <button
               key={tab.id}
@@ -619,6 +634,10 @@ function MonsterRoomContent() {
 
         {activeTab === "relics" && (
           <RelicsPanel wallet={wallet} state={state} relicMinting={relicMinting} setRelicMinting={setRelicMinting} relicTxHashes={relicTxHashes} setRelicTxHashes={setRelicTxHashes} />
+        )}
+
+        {activeTab === "creator" && (
+          <CreatorPanel state={state} creatorStats={creator_stats} wallet={wallet} archetype={archetype.archetype} />
         )}
 
         {/* Sibling / Rival panel — always visible below tabs */}
@@ -753,6 +772,173 @@ function RelicsPanel({ wallet, state, relicMinting, setRelicMinting, relicTxHash
       <div className="text-xs text-gray-700 text-center mt-4">
         Snapshot Relics are tradeable NFTs on BSC Testnet · Contract: {process.env.NEXT_PUBLIC_SNAPSHOT_RELIC_ADDRESS?.slice(0, 10) ?? "0xFBdDD268..."}…
       </div>
+    </div>
+  );
+}
+
+// ─── TF-05: Creator Panel ────────────────────────────────────────────────────
+
+interface CreatorPanelProps {
+  state: CharacterState;
+  creatorStats: { tokens_created: number; created_tokens: { address: string; symbol?: string; timestamp: number }[] } | null;
+  wallet: string;
+  archetype: string;
+}
+
+function CreatorPanel({ state, creatorStats, wallet, archetype }: CreatorPanelProps) {
+  const tokensCreated = state.tokens_created ?? 0;
+  const isCreator = tokensCreated > 0 || (creatorStats?.tokens_created ?? 0) > 0;
+  const actualCount = Math.max(tokensCreated, creatorStats?.tokens_created ?? 0);
+  const kingmaker = state.kingmaker_tokens ?? 0;
+  const fallenCreator = state.fallen_creator_tokens ?? 0;
+  const createdTokens = creatorStats?.created_tokens ?? [];
+
+  return (
+    <div className="space-y-4">
+      <div className="text-xs text-gray-600 uppercase tracking-widest mb-2">Token Creator — Four.meme</div>
+
+      {!isCreator ? (
+        <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-6 text-center">
+          <div className="text-4xl mb-3">🏗️</div>
+          <div className="text-sm text-gray-400 mb-2">No token launches detected on Four.meme</div>
+          <div className="text-xs text-gray-600 mb-4">
+            Launch a token on Four.meme to unlock the Creator Badge and shape your monster&apos;s destiny.
+          </div>
+          <a
+            href="https://four.meme"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border text-xs font-bold transition-all hover:brightness-125"
+            style={{ borderColor: "var(--neon-green)", color: "var(--neon-green)", background: "rgba(0,255,136,0.06)" }}
+          >
+            <span>⚡</span>
+            Launch a token on Four.meme
+          </a>
+        </div>
+      ) : (
+        <>
+          {/* Creator stats overview */}
+          <div className="bg-[var(--degen-card)] border border-[var(--neon-blue,#00d4ff)] rounded-2xl p-5" style={{ borderColor: "#00d4ff" }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="text-3xl">🏗️</div>
+              <div>
+                <div className="text-sm font-black text-white">Token Creator</div>
+                <div className="text-xs text-[#00d4ff]">Four.meme Builder</div>
+              </div>
+              <div className="ml-auto text-right">
+                <div className="text-2xl font-black text-[#00d4ff]">{actualCount}</div>
+                <div className="text-[10px] text-gray-600">token{actualCount !== 1 ? "s" : ""} launched</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="bg-[var(--degen-muted)] rounded-lg p-3">
+                <div className="text-xl font-black text-[var(--neon-gold)]">{kingmaker}</div>
+                <div className="text-[10px] text-gray-600">Kingmaker</div>
+                <div className="text-[10px] text-[var(--neon-gold)]">🤴 Success</div>
+              </div>
+              <div className="bg-[var(--degen-muted)] rounded-lg p-3">
+                <div className="text-xl font-black text-[var(--neon-red)]">{fallenCreator}</div>
+                <div className="text-[10px] text-gray-600">Fallen</div>
+                <div className="text-[10px] text-[var(--neon-red)]">🪦 Failed</div>
+              </div>
+              <div className="bg-[var(--degen-muted)] rounded-lg p-3">
+                <div className="text-xl font-black text-gray-300">{actualCount - kingmaker - fallenCreator}</div>
+                <div className="text-[10px] text-gray-600">Unknown</div>
+                <div className="text-[10px] text-gray-500">⏳ Ongoing</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Creator traits unlocked */}
+          {state.creator_badge && (
+            <div className="flex items-center gap-3 bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-lg px-4 py-3" style={{ borderLeftWidth: 3, borderLeftColor: "#00d4ff" }}>
+              <div className="text-2xl">🏗️</div>
+              <div>
+                <div className="text-sm font-bold text-white">Creator Badge</div>
+                <div className="text-xs text-gray-500">Launched a token on Four.meme — a builder among degens</div>
+              </div>
+              <div className="ml-auto text-[10px] text-[#00d4ff] font-mono">accessory</div>
+            </div>
+          )}
+          {kingmaker >= 1 && (
+            <div className="flex items-center gap-3 bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-lg px-4 py-3" style={{ borderLeftWidth: 3, borderLeftColor: "var(--neon-gold)" }}>
+              <div className="text-2xl">🤴</div>
+              <div>
+                <div className="text-sm font-bold text-white">Kingmaker Crown</div>
+                <div className="text-xs text-gray-500">Launched a token that achieved significant trading volume</div>
+              </div>
+              <div className="ml-auto text-[10px] text-[var(--neon-gold)] font-mono">head</div>
+            </div>
+          )}
+          {fallenCreator >= 1 && (
+            <div className="flex items-center gap-3 bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-lg px-4 py-3" style={{ borderLeftWidth: 3, borderLeftColor: "var(--neon-red)" }}>
+              <div className="text-2xl">🪦</div>
+              <div>
+                <div className="text-sm font-bold text-white">Fallen Creator Mark</div>
+                <div className="text-xs text-gray-500">Launched a token that went to zero — the scar of ambition</div>
+              </div>
+              <div className="ml-auto text-[10px] text-[var(--neon-red)] font-mono">body</div>
+            </div>
+          )}
+
+          {/* Token list */}
+          {createdTokens.length > 0 && (
+            <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-4">
+              <div className="text-xs text-gray-600 uppercase tracking-widest mb-3">Launched Tokens</div>
+              <div className="space-y-2">
+                {createdTokens.map((token) => (
+                  <div key={token.address} className="flex items-center gap-3 py-2 border-b border-[var(--degen-border)] last:border-b-0">
+                    <div className="text-lg">🪙</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-white">{token.symbol ?? "Unknown Token"}</div>
+                      <div className="text-[10px] text-gray-600 font-mono truncate">{token.address}</div>
+                    </div>
+                    <div className="text-[10px] text-gray-600 whitespace-nowrap">
+                      {new Date(token.timestamp * 1000).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* CTA */}
+          <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-xl p-4 flex items-center gap-3">
+            <div className="text-2xl">⚡</div>
+            <div className="flex-1">
+              <div className="text-xs font-bold text-white">Keep building on Four.meme</div>
+              <div className="text-[10px] text-gray-600">Every token launch shapes your creator identity</div>
+            </div>
+            <a
+              href="https://four.meme"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-bold px-3 py-1.5 rounded-lg border transition-all hover:brightness-125 whitespace-nowrap"
+              style={{ borderColor: "var(--neon-green)", color: "var(--neon-green)" }}
+            >
+              Launch →
+            </a>
+          </div>
+
+          {/* X share */}
+          <button
+            onClick={() => {
+              const text = encodeURIComponent(
+                `I've launched ${actualCount} token${actualCount !== 1 ? "s" : ""} on @four_meme 🏗️\n` +
+                (kingmaker > 0 ? `🤴 Kingmaker status unlocked\n` : "") +
+                `My DegenBorn soul carries the Creator Badge\n#DegenBorn #fourmeme #creator`
+              );
+              const url = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
+              window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
+            }}
+            className="w-full py-2.5 text-xs font-black rounded-xl transition-all hover:brightness-110 text-black"
+            style={{ background: "#00d4ff" }}
+          >
+            𝕏 Share My Creator Status
+          </button>
+        </>
+      )}
     </div>
   );
 }

@@ -13,6 +13,14 @@ export interface AdapterConfig {
 export const FOUR_MEME_ROUTER = "0x5c952063c7fc8610ffdb798152d69f0b9550762b";
 
 /**
+ * Four.meme token factory/deployer contract on BSC.
+ * This contract emits TokenCreated(address creator, address token, ...) when
+ * a new meme token is launched via the Four.meme platform.
+ * TF-05: used to detect token creation events in normalizer.
+ */
+export const FOUR_MEME_FACTORY = "0x8d2f9af480f3f2e0c0f07de200a6ec928ef8a4c6";
+
+/**
  * Main entry point for fetching wallet activity.
  * Dispatches to the appropriate source adapter.
  */

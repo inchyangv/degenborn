@@ -17,19 +17,27 @@ export interface CharacterState {
   survival_streak: number;
   active_traits: TraitId[];
   updated_at: number;
+  // TF-05: Creator fields (optional — absent in pre-TF-05 states, treated as 0/false)
+  tokens_created?: number;         // total tokens launched on Four.meme
+  creator_badge?: boolean;         // first launch unlocked
+  kingmaker_tokens?: number;       // successful (high-volume) launches
+  fallen_creator_tokens?: number;  // failed launches (went to zero)
 }
 
 /** Event types that trigger state transitions */
 export type StateEventType =
-  | "win_streak_3"     // 3 consecutive profits → crown
-  | "big_loss"         // large single loss → scar + despair
-  | "loss_recovery"    // profit after big loss → survival streak + revenge
-  | "rug_exposure"     // rug event → corruption + zombie
-  | "sustained_profit" // high profit rate maintained → prestige + royal
-  | "mega_win"         // top 1% single trade → euphoria
-  | "long_hold"        // conviction hold > 7d → prestige
-  | "multi_rug"        // 3+ rug events → ghost mood
-  | "comeback"         // drawdown recovery → survival streak;
+  | "win_streak_3"       // 3 consecutive profits → crown
+  | "big_loss"           // large single loss → scar + despair
+  | "loss_recovery"      // profit after big loss → survival streak + revenge
+  | "rug_exposure"       // rug event → corruption + zombie
+  | "sustained_profit"   // high profit rate maintained → prestige + royal
+  | "mega_win"           // top 1% single trade → euphoria
+  | "long_hold"          // conviction hold > 7d → prestige
+  | "multi_rug"          // 3+ rug events → ghost mood
+  | "comeback"           // drawdown recovery → survival streak
+  | "token_created"      // TF-05: launched first token on Four.meme → creator_badge
+  | "creator_success"    // TF-05: launched token achieved high volume → kingmaker trait
+  | "creator_failure";   // TF-05: launched token went to zero → fallen_creator scar
 
 export interface StateEvent {
   type: StateEventType;

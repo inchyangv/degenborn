@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Kingmaker Crown — ornate golden crown with gem, positioned on head -->
+  <g transform="translate(256,80)" fill="none">
+    <!-- Crown base/band -->
+    <rect x="-100" y="50" width="200" height="28" rx="6" fill="#B8860B" stroke="#FFD700" stroke-width="3"/>
+    <!-- Crown body with tall center spire -->
+    <path d="M-100,50 L-100,-10 L-70,30 L-35,-70 L0,-100 L35,-70 L70,30 L100,-10 L100,50 Z"
+          fill="#FFD700" stroke="#B8860B" stroke-width="3"/>
+    <!-- Ornate center gem -->
+    <polygon points="0,-90 16,-60 0,-40 -16,-60" fill="#FF1744" stroke="#FF4444" stroke-width="2"/>
+    <!-- Side gems -->
+    <circle cx="-72" cy="-12" r="9" fill="#9C27B0" stroke="#E040FB" stroke-width="2"/>
+    <circle cx="72" cy="-12" r="9" fill="#9C27B0" stroke="#E040FB" stroke-width="2"/>
+    <!-- Crown details: cross-hatch pattern -->
+    <line x1="-80" y1="50" x2="-80" y2="10" stroke="#B8860B" stroke-width="2"/>
+    <line x1="-60" y1="50" x2="-50" y2="15" stroke="#B8860B" stroke-width="2"/>
+    <line x1="60" y1="50" x2="50" y2="15" stroke="#B8860B" stroke-width="2"/>
+    <line x1="80" y1="50" x2="80" y2="10" stroke="#B8860B" stroke-width="2"/>
+    <!-- Glow aura -->
+    <ellipse cx="0" cy="35" rx="105" ry="15" fill="#FFD700" opacity="0.15"/>
+  </g>
+</svg>
