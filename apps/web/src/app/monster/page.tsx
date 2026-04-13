@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { PersonaDNA, ArchetypeResult, CharacterState, MutationEvent, DiaryPage } from "@degenborn/shared";
-import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS, ARCHETYPE_PROFILES, relativeTime } from "@degenborn/shared";
+import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS, ARCHETYPE_PROFILES, relativeTime, getDailyHoroscope } from "@degenborn/shared";
 import DNAPanel from "@/components/DNAPanel";
 import ShareCard from "@/components/ShareCard";
 import TradingCard from "@/components/TradingCard";
@@ -71,6 +71,7 @@ function MonsterRoomContent() {
   const [relicMinting, setRelicMinting] = useState<Record<number, "idle" | "minting" | "done" | "error">>({});
   const [relicTxHashes, setRelicTxHashes] = useState<Record<number, string>>({});
   const [showArchetypeModal, setShowArchetypeModal] = useState(false);
+  const [horoscopeOpen, setHoroscopeOpen] = useState(false);
 
   useEffect(() => {
     if (!wallet) return;
@@ -339,6 +340,66 @@ function MonsterRoomContent() {
             ))}
           </div>
         </div>
+
+        {/* Daily Horoscope Widget — T1-03 */}
+        {(() => {
+          const horo = getDailyHoroscope(wallet.toLowerCase(), archetype.archetype as any);
+          return (
+            <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl mb-6 overflow-hidden">
+              <button
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[var(--degen-muted)] transition-colors"
+                onClick={() => setHoroscopeOpen((v) => !v)}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-base">🔮</span>
+                  <div>
+                    <div className="text-xs font-mono text-[var(--neon-purple)] uppercase tracking-widest">
+                      Today&apos;s Horoscope
+                    </div>
+                    <div className="text-[10px] text-gray-600">
+                      Lucky trait: {horo.luckyTrait}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-gray-600 text-xs">{horoscopeOpen ? "▲" : "▼"}</div>
+              </button>
+
+              {horoscopeOpen && (
+                <div className="px-4 pb-4 border-t border-[var(--degen-border)]">
+                  <div className="mt-3 space-y-3">
+                    <div>
+                      <div className="text-[10px] text-[var(--neon-gold)] uppercase tracking-widest mb-1">Fortune</div>
+                      <div className="text-sm text-gray-300 italic">&ldquo;{horo.fortune}&rdquo;</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-[var(--neon-green)] uppercase tracking-widest mb-1">Embrace</div>
+                      <div className="text-sm text-gray-400">{horo.embrace}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-[var(--neon-red)] uppercase tracking-widest mb-1">Avoid</div>
+                      <div className="text-sm text-gray-400">{horo.avoid}</div>
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="text-[10px] text-gray-700">Mood: {horo.moodLabel} · {horo.date}</div>
+                      <button
+                        onClick={() => {
+                          const text = encodeURIComponent(
+                            `Today's degen horoscope: "${horo.fortune}"\nLucky trait: ${horo.luckyTrait}\n#DegenBorn #fourmeme`
+                          );
+                          const url = encodeURIComponent(`${window.location.origin}/horoscope?wallet=${wallet}`);
+                          window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
+                        }}
+                        className="text-[10px] text-[var(--neon-purple)] hover:underline font-mono"
+                      >
+                        𝕏 Share today&apos;s reading →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Tabs — horizontal scroll on mobile */}
         <div className="flex gap-1 mb-6 bg-[var(--degen-card)] p-1 rounded-lg border border-[var(--degen-border)] overflow-x-auto">

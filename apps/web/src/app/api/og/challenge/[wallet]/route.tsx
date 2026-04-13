@@ -19,9 +19,10 @@ export async function GET(
   const wallet = params.wallet.toLowerCase();
 
   const profile = getProfileStore(wallet);
-  const archetype = (profile?.archetype ?? "unknown") as ArchetypeId;
-  const archetypeProfile = archetype !== "unknown" ? ARCHETYPE_PROFILES[archetype] : null;
-  const color = (ARCHETYPE_COLORS as Record<string, string>)[archetype] ?? "#9945ff";
+  const archetypeRaw = profile?.archetype ?? "unknown";
+  const archetype = archetypeRaw as ArchetypeId;
+  const archetypeProfile = archetypeRaw !== "unknown" ? ARCHETYPE_PROFILES[archetype] : null;
+  const color = (ARCHETYPE_COLORS as Record<string, string>)[archetypeRaw] ?? "#9945ff";
   const short = `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
 
   const archetypeEmoji: Record<string, string> = {

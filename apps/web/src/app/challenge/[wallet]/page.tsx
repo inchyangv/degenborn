@@ -11,9 +11,9 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const wallet = params.wallet.toLowerCase();
   const profile = getProfileStore(wallet);
-  const archetype = (profile?.archetype ?? "unknown") as ArchetypeId;
-  const archetypeProfile = archetype !== "unknown" ? ARCHETYPE_PROFILES[archetype] : null;
-  const color = (ARCHETYPE_COLORS as Record<string, string>)[archetype] ?? "#9945ff";
+  const archetypeRaw = profile?.archetype ?? "unknown";
+  const archetypeProfile = archetypeRaw !== "unknown" ? ARCHETYPE_PROFILES[archetypeRaw as ArchetypeId] : null;
+  const color = (ARCHETYPE_COLORS as Record<string, string>)[archetypeRaw] ?? "#9945ff";
   const short = `${wallet.slice(0, 6)}...${wallet.slice(-4)}`;
 
   const title = archetypeProfile

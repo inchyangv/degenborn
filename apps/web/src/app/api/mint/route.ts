@@ -147,11 +147,12 @@ export async function POST(req: NextRequest) {
     const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
 
     // Parse SoulCoreCreated event: event SoulCoreCreated(address indexed wallet, uint256 indexed tokenId, string archetype)
+    // topic[0] = keccak256("SoulCoreCreated(address,uint256,string)") = 0x2ccfd4f03485dc5bfff35b2cf48eb1df7354e8f6679e496c61f3e27975cefdd0
+    const SOUL_CORE_CREATED_TOPIC = "0x2ccfd4f03485dc5bfff35b2cf48eb1df7354e8f6679e496c61f3e27975cefdd0";
     let tokenId: string | null = null;
     for (const log of receipt.logs) {
-      // topic[0] = keccak256("SoulCoreCreated(address,uint256,string)")
-      if (log.topics[0] === "0x5b4e851e4f97ec3e0b1e7f0d5dfea8e1f9c5e2d0c4f8b3a2e1d0c9b8a7f6e5d4" ||
-          log.address.toLowerCase() === contractAddress.toLowerCase()) {
+      if (log.address.toLowerCase() === contractAddress.toLowerCase() &&
+          log.topics[0] === SOUL_CORE_CREATED_TOPIC) {
         if (log.topics[2]) {
           tokenId = BigInt(log.topics[2]).toString();
         }
