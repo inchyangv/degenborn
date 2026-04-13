@@ -4,7 +4,7 @@ import { scoreDNA, computeLoyaltyScore } from "@degenborn/scoring";
 import { classify } from "@degenborn/archetype";
 import { fetchWalletActivity } from "@degenborn/data-adapter";
 import type { ActivityEvent, TimeWindow, StateEvent, CharacterState, ArchetypeId } from "@degenborn/shared";
-import { setProfile } from "@/lib/profile-store";
+import { setProfile, getProfileStore, setCharacterState } from "@/lib/profile-store";
 import { getDataSource } from "@/lib/runtime-env";
 import { createInitialState, applyStateEvent } from "@/lib/state-machine";
 import path from "path";
@@ -77,8 +77,33 @@ export async function POST(req: NextRequest) {
     // Persist to profile store for metadata endpoint cache hits
     setProfile(walletLower, dna, archetypeResult);
 
+    // T2-01: Retrieve previously persisted state to use as accumulation base
+    const storedProfile = getProfileStore(walletLower);
+    const previousState = storedProfile?.character_state ?? null;
+
     // Derive character state from real event data — T3-04
-    const derivedState = deriveCharacterState(walletLower, archetypeResult.archetype as ArchetypeId, events);
+    const freshState = deriveCharacterState(walletLower, archetypeResult.archetype as ArchetypeId, events);
+
+    // Merge: take the higher level/prestige/counts to prevent regression on revisit
+    const derivedState: CharacterState = previousState
+      ? {
+          ...freshState,
+          level: Math.max(freshState.level, previousState.level),
+          prestige: Math.max(freshState.prestige, previousState.prestige),
+          crown_count: Math.max(freshState.crown_count, previousState.crown_count),
+          scar_count: Math.max(freshState.scar_count, previousState.scar_count),
+          survival_streak: Math.max(freshState.survival_streak, previousState.survival_streak),
+          // Keep highest corruption
+          corruption: Math.max(freshState.corruption, previousState.corruption),
+          // Merge active traits: union of old + new (no regression)
+          active_traits: Array.from(
+            new Set([...previousState.active_traits, ...freshState.active_traits])
+          ) as CharacterState["active_traits"],
+        }
+      : freshState;
+
+    // Persist the accumulated state for next visit
+    setCharacterState(walletLower, derivedState);
 
     return NextResponse.json({
       dna,

@@ -6,9 +6,12 @@
  *  2. JSON file at PROFILE_PERSIST_PATH (optional, survives process restart)
  *
  * Set PROFILE_PERSIST_PATH=/tmp/degenborn_profiles.json for local demo.
+ *
+ * T2-01: CharacterState is now persisted alongside DNA/archetype so that
+ * repeated visits accumulate level/mood/traits rather than resetting to L1.
  */
 
-import type { PersonaDNA, ArchetypeResult } from "@degenborn/shared";
+import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/shared";
 import fs from "fs";
 import path from "path";
 
@@ -18,6 +21,8 @@ export interface WalletProfile {
   archetype: string;
   archetype_confidence: number;
   last_scored_at: number;
+  /** Persisted character state — saves level/mood/traits across visits */
+  character_state?: CharacterState;
 }
 
 const profileStore = new Map<string, WalletProfile>();
@@ -57,16 +62,31 @@ function flushToDisk(): void {
 loadFromDisk();
 
 export function setProfile(wallet: string, dna: PersonaDNA, archetypeResult: ArchetypeResult): WalletProfile {
+  const existing = profileStore.get(wallet.toLowerCase());
   const profile: WalletProfile = {
     wallet_address: wallet,
     dna,
     archetype: archetypeResult.archetype,
     archetype_confidence: archetypeResult.confidence,
     last_scored_at: Math.floor(Date.now() / 1000),
+    // Carry forward previously saved character_state if archetype hasn't changed
+    character_state:
+      existing?.archetype === archetypeResult.archetype
+        ? existing.character_state
+        : undefined,
   };
   profileStore.set(wallet.toLowerCase(), profile);
   flushToDisk();
   return profile;
+}
+
+/** Persist an updated CharacterState for a wallet (T2-01). */
+export function setCharacterState(wallet: string, state: CharacterState): void {
+  const existing = profileStore.get(wallet.toLowerCase());
+  if (!existing) return; // profile must exist first
+  existing.character_state = state;
+  profileStore.set(wallet.toLowerCase(), existing);
+  flushToDisk();
 }
 
 export function getProfileStore(wallet: string): WalletProfile | undefined {
