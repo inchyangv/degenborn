@@ -19,6 +19,7 @@ import type { MutationEvent, DiaryPage } from "@degenborn/shared";
 import { randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
+import { appendMutationEvent, loadMutationDiary } from "./db";
 
 // ── In-memory tier ────────────────────────────────────────────────────────────
 const store = new Map<string, MutationEvent[]>();
@@ -79,6 +80,8 @@ export function addMutationEntry(wallet: string, entry: Partial<MutationEvent>):
   events.unshift(mutation); // newest first
   store.set(wallet, events.slice(0, 100)); // keep last 100
   flushToDisk();
+  // T5-01: async Postgres append (fire-and-forget)
+  void appendMutationEvent(mutation);
   return mutation;
 }
 
@@ -90,6 +93,31 @@ export function getMutationDiary(wallet: string, limit = 10): DiaryPage {
     total: events.length,
     has_more: events.length > limit,
   };
+}
+
+/**
+ * T5-01: Async version — tries Postgres first, falls back to in-memory.
+ * Merges DB results into the in-memory store for cache warmth.
+ */
+export async function getMutationDiaryAsync(wallet: string, limit = 10): Promise<DiaryPage> {
+  const dbEvents = await loadMutationDiary(wallet.toLowerCase(), limit);
+  if (dbEvents.length > 0) {
+    // Merge into in-memory store (avoid overwriting newer in-memory entries)
+    const inMem = store.get(wallet.toLowerCase()) ?? [];
+    const merged = [...inMem];
+    for (const ev of dbEvents) {
+      if (!merged.find((e) => e.id === ev.id)) merged.push(ev);
+    }
+    merged.sort((a, b) => b.timestamp - a.timestamp);
+    store.set(wallet.toLowerCase(), merged.slice(0, 100));
+    return {
+      wallet_address: wallet,
+      entries: dbEvents.slice(0, limit),
+      total: dbEvents.length,
+      has_more: dbEvents.length >= limit,
+    };
+  }
+  return getMutationDiary(wallet.toLowerCase(), limit);
 }
 
 export function seedDiaryFromReplay(wallet: string, entries: MutationEvent[]): void {

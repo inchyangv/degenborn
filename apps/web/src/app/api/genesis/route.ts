@@ -3,6 +3,7 @@ import { isAddress } from "viem";
 import type { PersonaDNA, ArchetypeId, CharacterState } from "@degenborn/shared";
 import { generateGenesisImage } from "@/lib/image-pipeline";
 import { setImageUrl } from "@/lib/profile-store";
+import { persistImageUrl } from "@/lib/image-store";
 
 interface GenesisRequest {
   wallet: string;
@@ -28,9 +29,13 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await generateGenesisImage(wallet, dna, archetype, state);
-    // T3-02: persist image URL so Monster Room and share card can use it
+    // T3-02 + T5-02: persist image URL so Monster Room and share card can use it
     if (!result.is_placeholder) {
-      setImageUrl(wallet.toLowerCase(), result.url);
+      // T5-02: copy to Vercel Blob for permanent storage (no-op if BLOB_READ_WRITE_TOKEN absent)
+      const stableUrl = await persistImageUrl(result.url, `genesis/${wallet.toLowerCase()}.png`);
+      const finalUrl = stableUrl !== result.url ? stableUrl : result.url;
+      setImageUrl(wallet.toLowerCase(), finalUrl);
+      return NextResponse.json({ ...result, url: finalUrl });
     }
     return NextResponse.json(result);
   } catch (err: unknown) {

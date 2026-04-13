@@ -1,11 +1,13 @@
 /**
  * Wallet profile store.
  *
- * Storage strategy (two-tier, matches diary-store pattern):
+ * Storage strategy (three-tier):
  *  1. In-memory Map (fast, always available)
- *  2. JSON file at PROFILE_PERSIST_PATH (optional, survives process restart)
+ *  2. JSON file at PROFILE_PERSIST_PATH (optional, survives process restart on single instances)
+ *  3. T5-01: Postgres via db.ts when DATABASE_URL is set (survives across serverless invocations)
  *
  * Set PROFILE_PERSIST_PATH=/tmp/degenborn_profiles.json for local demo.
+ * Set DATABASE_URL=postgresql://... for production persistence.
  *
  * T2-01: CharacterState is now persisted alongside DNA/archetype so that
  * repeated visits accumulate level/mood/traits rather than resetting to L1.
@@ -14,6 +16,7 @@
 import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/shared";
 import fs from "fs";
 import path from "path";
+import { upsertWalletProfile, updateCharacterState, updateImageUrl, loadWalletProfile, listWalletProfiles } from "./db";
 
 export interface WalletProfile {
   wallet_address: string;
@@ -79,6 +82,8 @@ export function setProfile(wallet: string, dna: PersonaDNA, archetypeResult: Arc
   };
   profileStore.set(wallet.toLowerCase(), profile);
   flushToDisk();
+  // T5-01: async Postgres upsert (fire-and-forget, no await needed at call site)
+  void upsertWalletProfile(wallet.toLowerCase(), dna, archetypeResult, profile.character_state);
   return profile;
 }
 
@@ -89,15 +94,19 @@ export function setCharacterState(wallet: string, state: CharacterState): void {
   existing.character_state = state;
   profileStore.set(wallet.toLowerCase(), existing);
   flushToDisk();
+  // T5-01: async Postgres update
+  void updateCharacterState(wallet.toLowerCase(), state);
 }
 
-/** Persist a genesis image URL for a wallet (T3-02). */
+/** Persist a genesis image URL for a wallet (T3-02 + T5-02). */
 export function setImageUrl(wallet: string, imageUrl: string): void {
   const existing = profileStore.get(wallet.toLowerCase());
   if (!existing) return;
   existing.image_url = imageUrl;
   profileStore.set(wallet.toLowerCase(), existing);
   flushToDisk();
+  // T5-01: async Postgres update
+  void updateImageUrl(wallet.toLowerCase(), imageUrl);
 }
 
 export function getProfileStore(wallet: string): WalletProfile | undefined {
@@ -106,6 +115,41 @@ export function getProfileStore(wallet: string): WalletProfile | undefined {
 
 export function listProfiles(): WalletProfile[] {
   return Array.from(profileStore.values()).sort((a, b) => b.last_scored_at - a.last_scored_at);
+}
+
+/**
+ * T5-01: Async version of listProfiles that prefers Postgres when available,
+ * falling back to in-memory store. Used by gallery / leaderboard endpoints
+ * that need cross-instance data in production.
+ */
+export async function listProfilesAsync(limit = 100): Promise<WalletProfile[]> {
+  const dbProfiles = await listWalletProfiles(limit);
+  if (dbProfiles.length > 0) {
+    // Merge DB results into in-memory store for cache hit on next sync call
+    for (const p of dbProfiles) {
+      if (!profileStore.has(p.wallet_address)) {
+        profileStore.set(p.wallet_address, {
+          wallet_address: p.wallet_address,
+          dna: p.dna,
+          archetype: p.archetype,
+          archetype_confidence: p.archetype_confidence,
+          last_scored_at: p.last_scored_at,
+          character_state: p.character_state ?? undefined,
+          image_url: p.image_url ?? undefined,
+        });
+      }
+    }
+    return dbProfiles.map((p) => ({
+      wallet_address: p.wallet_address,
+      dna: p.dna,
+      archetype: p.archetype,
+      archetype_confidence: p.archetype_confidence,
+      last_scored_at: p.last_scored_at,
+      character_state: p.character_state ?? undefined,
+      image_url: p.image_url ?? undefined,
+    }));
+  }
+  return listProfiles();
 }
 
 export const isPersisted = PERSIST_PATH !== null;
