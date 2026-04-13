@@ -9,6 +9,7 @@ import {
   pickShowcaseBadges,
   evaluateBadges,
 } from "@degenborn/shared";
+import type { LoyaltyScore } from "@degenborn/scoring";
 import { useRef, useState } from "react";
 import CharacterDisplay from "./CharacterDisplay";
 
@@ -17,11 +18,12 @@ interface Props {
   archetype: ArchetypeResult;
   state: CharacterState;
   wallet: string;
+  loyalty?: LoyaltyScore | null;
 }
 
 type CardMode = "flex" | "roast";
 
-export default function ShareCard({ dna, archetype, state, wallet }: Props) {
+export default function ShareCard({ dna, archetype, state, wallet, loyalty }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -213,6 +215,37 @@ export default function ShareCard({ dna, archetype, state, wallet }: Props) {
                   {badge.emoji}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Loyalty badge row */}
+          {loyalty && (
+            <div className="flex items-center justify-center mb-2">
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold border"
+                style={{
+                  color:
+                    loyalty.grade === "Legendary" ? "#ffd700"
+                    : loyalty.grade === "Diamond" ? "#00d4ff"
+                    : loyalty.grade === "Gold" ? "#f59e0b"
+                    : loyalty.grade === "Silver" ? "#94a3b8"
+                    : "#92400e",
+                  borderColor:
+                    loyalty.grade === "Legendary" ? "#ffd70055"
+                    : loyalty.grade === "Diamond" ? "#00d4ff55"
+                    : loyalty.grade === "Gold" ? "#f59e0b55"
+                    : loyalty.grade === "Silver" ? "#94a3b855"
+                    : "#92400e55",
+                  background: "rgba(0,0,0,0.3)",
+                }}
+              >
+                {loyalty.grade === "Legendary" ? "⭐"
+                  : loyalty.grade === "Diamond" ? "💎"
+                  : loyalty.grade === "Gold" ? "🥇"
+                  : loyalty.grade === "Silver" ? "🥈"
+                  : "🥉"}{" "}
+                {loyalty.grade} · Four.meme Loyalty {loyalty.score}
+              </span>
             </div>
           )}
 

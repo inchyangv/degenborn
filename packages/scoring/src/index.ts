@@ -1,2 +1,2 @@
-export { scoreDNA } from "./engine";
-export type { ScoringResult } from "./engine";
+export { scoreDNA, computeLoyaltyScore } from "./engine";
+export type { ScoringResult, LoyaltyScore, LoyaltyGrade } from "./engine";

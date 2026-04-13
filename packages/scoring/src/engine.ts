@@ -201,6 +201,68 @@ function scoreSurvival(events: ActivityEvent[]): number {
   return clamp(Math.round(recoveryScore + comebackScore + persistenceScore));
 }
 
+export type LoyaltyGrade = "Bronze" | "Silver" | "Gold" | "Diamond" | "Legendary";
+
+export interface LoyaltyScore {
+  score: number;
+  grade: LoyaltyGrade;
+  trade_count: number;
+  unique_tokens: number;
+  active_days: number;
+  first_trade_at: number | null;
+  last_trade_at: number | null;
+}
+
+/**
+ * Compute Four.meme Loyalty Score (0–100).
+ *
+ * Measures how deeply a wallet is embedded in the Four.meme ecosystem:
+ *  - Trade volume: how many Four.meme trades (all buy/sell/rug events)
+ *  - Diversity: how many unique tokens interacted with
+ *  - Longevity: how many calendar days span first → last trade
+ *
+ * All three axes are weighted and normalized to 0–100 deterministically.
+ */
+export function computeLoyaltyScore(events: ActivityEvent[]): LoyaltyScore {
+  if (events.length === 0) {
+    return { score: 0, grade: "Bronze", trade_count: 0, unique_tokens: 0, active_days: 0, first_trade_at: null, last_trade_at: null };
+  }
+
+  const trades = events.filter((e) => e.event_type === "buy" || e.event_type === "sell" || e.event_type === "rug");
+  const tradeCount = trades.length;
+
+  const uniqueTokenSet = new Set(events.map((e) => e.token_address));
+  const uniqueTokens = uniqueTokenSet.size;
+
+  const timestamps = events.map((e) => e.timestamp).sort((a, b) => a - b);
+  const firstAt = timestamps[0] ?? null;
+  const lastAt = timestamps[timestamps.length - 1] ?? null;
+  const spanDays = firstAt && lastAt ? Math.max(1, (lastAt - firstAt) / 86400) : 0;
+
+  // Active days: count distinct calendar days (UTC) with any event
+  const daySet = new Set(events.map((e) => Math.floor(e.timestamp / 86400)));
+  const activeDays = daySet.size;
+
+  // Score components (sum to 100)
+  // Trade count: 0-50 trades → 0-40 pts
+  const tradeScore = norm(tradeCount, 50) * 40;
+  // Unique tokens: 0-20 → 0-30 pts
+  const tokenScore = norm(uniqueTokens, 20) * 30;
+  // Activity span: 0-90 days → 0-30 pts
+  const spanScore = norm(spanDays, 90) * 30;
+
+  const score = clamp(Math.round(tradeScore + tokenScore + spanScore));
+
+  const grade: LoyaltyGrade =
+    score >= 85 ? "Legendary"
+    : score >= 70 ? "Diamond"
+    : score >= 55 ? "Gold"
+    : score >= 35 ? "Silver"
+    : "Bronze";
+
+  return { score, grade, trade_count: tradeCount, unique_tokens: uniqueTokens, active_days: activeDays, first_trade_at: firstAt, last_trade_at: lastAt };
+}
+
 /**
  * Main scoring entry point.
  * Deterministic — same events → same DNA.

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAddress } from "viem";
-import { scoreDNA } from "@degenborn/scoring";
+import { scoreDNA, computeLoyaltyScore } from "@degenborn/scoring";
 import { classify } from "@degenborn/archetype";
 import { fetchWalletActivity } from "@degenborn/data-adapter";
 import type { ActivityEvent, TimeWindow } from "@degenborn/shared";
@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
 
     const { dna } = scoreDNA(walletLower, events);
     const archetypeResult = classify(dna);
+    const loyalty = computeLoyaltyScore(events);
 
     // Real event type counts for Activity Breakdown
     const activity_counts = {
@@ -80,6 +81,7 @@ export async function POST(req: NextRequest) {
       archetype: archetypeResult,
       event_count: events.length,
       activity_counts,
+      loyalty,
       data_source: dataSource,
     });
   } catch (err: unknown) {

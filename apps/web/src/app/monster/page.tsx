@@ -5,6 +5,7 @@ import { useEffect, useState, Suspense } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { PersonaDNA, ArchetypeResult, CharacterState, MutationEvent, DiaryPage } from "@degenborn/shared";
 import { TRAIT_DEFINITIONS, TRAIT_EMOJI, ARCHETYPE_COLORS, ARCHETYPE_PROFILES, relativeTime, getDailyHoroscope } from "@degenborn/shared";
+import type { LoyaltyScore } from "@degenborn/scoring";
 import DNAPanel from "@/components/DNAPanel";
 import ShareCard from "@/components/ShareCard";
 import TradingCard from "@/components/TradingCard";
@@ -48,6 +49,7 @@ interface MonsterData {
   archetype: ArchetypeResult;
   state: CharacterState;
   activity_counts: ActivityCounts;
+  loyalty: LoyaltyScore | null;
   data_source: "live" | "demo" | "fixture";
 }
 
@@ -87,6 +89,7 @@ function MonsterRoomContent() {
           dna: PersonaDNA;
           archetype: ArchetypeResult;
           activity_counts?: ActivityCounts;
+          loyalty?: LoyaltyScore;
           data_source?: "live" | "demo" | "fixture";
         };
 
@@ -98,6 +101,7 @@ function MonsterRoomContent() {
           archetype: analyzed.archetype,
           state,
           activity_counts: analyzed.activity_counts ?? { buys: 0, sells: 0, dead_tokens: 0, revivals: 0 },
+          loyalty: analyzed.loyalty ?? null,
           data_source: analyzed.data_source ?? "live",
         });
 
@@ -148,7 +152,7 @@ function MonsterRoomContent() {
     );
   }
 
-  const { dna, archetype, state, activity_counts, data_source } = data;
+  const { dna, archetype, state, activity_counts, loyalty, data_source } = data;
 
   return (
     <div className="min-h-screen pb-12 relative">
@@ -346,6 +350,79 @@ function MonsterRoomContent() {
           </div>
         </div>
 
+        {/* Four.meme Loyalty Score — TF-02 */}
+        {loyalty && (
+          <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-4 mb-6">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <div className="text-xs text-gray-600 uppercase tracking-widest">Four.meme Loyalty</div>
+                <div className="text-[10px] text-gray-700 mt-0.5">Ecosystem contribution score</div>
+              </div>
+              <div className="text-right">
+                <div
+                  className="text-2xl font-black"
+                  style={{
+                    color:
+                      loyalty.grade === "Legendary" ? "#ffd700"
+                      : loyalty.grade === "Diamond" ? "#00d4ff"
+                      : loyalty.grade === "Gold" ? "#f59e0b"
+                      : loyalty.grade === "Silver" ? "#94a3b8"
+                      : "#92400e",
+                  }}
+                >
+                  {loyalty.score}
+                </div>
+                <div
+                  className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{
+                    color:
+                      loyalty.grade === "Legendary" ? "#ffd700"
+                      : loyalty.grade === "Diamond" ? "#00d4ff"
+                      : loyalty.grade === "Gold" ? "#f59e0b"
+                      : loyalty.grade === "Silver" ? "#94a3b8"
+                      : "#92400e",
+                  }}
+                >
+                  {loyalty.grade === "Legendary" ? "⭐ Legendary"
+                    : loyalty.grade === "Diamond" ? "💎 Diamond"
+                    : loyalty.grade === "Gold" ? "🥇 Gold"
+                    : loyalty.grade === "Silver" ? "🥈 Silver"
+                    : "🥉 Bronze"}
+                </div>
+              </div>
+            </div>
+            {/* Score bar */}
+            <div className="h-2 bg-[var(--degen-muted)] rounded-full overflow-hidden mb-3">
+              <div
+                className="h-full rounded-full transition-all duration-1000"
+                style={{
+                  width: `${loyalty.score}%`,
+                  background:
+                    loyalty.grade === "Legendary" ? "linear-gradient(90deg, #f59e0b, #ffd700)"
+                    : loyalty.grade === "Diamond" ? "linear-gradient(90deg, #00d4ff, #9945ff)"
+                    : loyalty.grade === "Gold" ? "#f59e0b"
+                    : loyalty.grade === "Silver" ? "#94a3b8"
+                    : "#92400e",
+                }}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center text-xs">
+              <div>
+                <div className="text-[var(--neon-green)] font-black text-base">{loyalty.trade_count}</div>
+                <div className="text-gray-600 text-[10px]">Trades</div>
+              </div>
+              <div>
+                <div className="text-[var(--neon-purple)] font-black text-base">{loyalty.unique_tokens}</div>
+                <div className="text-gray-600 text-[10px]">Tokens</div>
+              </div>
+              <div>
+                <div className="text-[var(--neon-gold)] font-black text-base">{loyalty.active_days}</div>
+                <div className="text-gray-600 text-[10px]">Active days</div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Daily Horoscope Widget — T1-03 */}
         {(() => {
           const horo = getDailyHoroscope(wallet.toLowerCase(), archetype.archetype as any);
@@ -498,7 +575,7 @@ function MonsterRoomContent() {
 
         {activeTab === "share" && (
           <div className="space-y-8">
-            <ShareCard dna={dna} archetype={archetype} state={state} wallet={wallet} />
+            <ShareCard dna={dna} archetype={archetype} state={state} wallet={wallet} loyalty={loyalty} />
             <div className="border-t border-[var(--degen-border)] pt-6">
               <div className="text-xs text-gray-600 uppercase tracking-widest mb-4">Trading Card</div>
               <TradingCard dna={dna} archetype={archetype} state={state} wallet={wallet} />
