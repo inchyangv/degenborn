@@ -185,18 +185,31 @@ function MonsterRoomContent() {
             <span className="text-sm font-mono text-gray-500 ml-2">mutations so far</span>
           </div>
         )}
-        <div className="flex gap-4">
+        <div className="flex gap-2 flex-wrap justify-center">
+          {/* 1-click X share — primary CTA T0-03 */}
+          <button
+            onClick={() => {
+              const caption = `I'm a ${archetype.profile.name}. "${archetype.profile.tagline}" — my DegenBorn soul is live.`;
+              const text = encodeURIComponent(`${caption}\n\n#DegenBorn #fourmeme`);
+              const url = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
+              window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
+            }}
+            className="px-5 py-2 text-xs font-black rounded-lg hover:brightness-110 transition-all text-black"
+            style={{ background: ARCHETYPE_COLORS[archetype.archetype as keyof typeof ARCHETYPE_COLORS] ?? "var(--neon-purple)" }}
+          >
+            𝕏 Share My Soul
+          </button>
           <Link
             href={`/m/${wallet}`}
-            className="text-xs text-gray-600 hover:text-[var(--neon-green)] transition-colors font-mono"
+            className="px-4 py-2 text-xs border border-[var(--degen-border)] text-gray-500 hover:text-[var(--neon-green)] hover:border-[var(--neon-green)] transition-colors font-mono rounded-lg"
           >
-            🔗 View publicly →
+            🔗 Public page →
           </Link>
           <Link
             href={`/compare?a=${wallet}`}
-            className="text-xs text-gray-600 hover:text-[var(--neon-purple)] transition-colors font-mono"
+            className="px-4 py-2 text-xs border border-[var(--degen-border)] text-gray-500 hover:text-[var(--neon-purple)] hover:border-[var(--neon-purple)] transition-colors font-mono rounded-lg"
           >
-            ⚔ Challenge a friend →
+            ⚔ Challenge →
           </Link>
         </div>
       </div>
