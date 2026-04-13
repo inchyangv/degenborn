@@ -23,6 +23,8 @@ export interface WalletProfile {
   last_scored_at: number;
   /** Persisted character state — saves level/mood/traits across visits */
   character_state?: CharacterState;
+  /** DALL-E / Flux genesis image URL (T3-02) */
+  image_url?: string;
 }
 
 const profileStore = new Map<string, WalletProfile>();
@@ -85,6 +87,15 @@ export function setCharacterState(wallet: string, state: CharacterState): void {
   const existing = profileStore.get(wallet.toLowerCase());
   if (!existing) return; // profile must exist first
   existing.character_state = state;
+  profileStore.set(wallet.toLowerCase(), existing);
+  flushToDisk();
+}
+
+/** Persist a genesis image URL for a wallet (T3-02). */
+export function setImageUrl(wallet: string, imageUrl: string): void {
+  const existing = profileStore.get(wallet.toLowerCase());
+  if (!existing) return;
+  existing.image_url = imageUrl;
   profileStore.set(wallet.toLowerCase(), existing);
   flushToDisk();
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAddress } from "viem";
 import type { PersonaDNA, ArchetypeId, CharacterState } from "@degenborn/shared";
 import { generateGenesisImage } from "@/lib/image-pipeline";
+import { setImageUrl } from "@/lib/profile-store";
 
 interface GenesisRequest {
   wallet: string;
@@ -27,6 +28,10 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await generateGenesisImage(wallet, dna, archetype, state);
+    // T3-02: persist image URL so Monster Room and share card can use it
+    if (!result.is_placeholder) {
+      setImageUrl(wallet.toLowerCase(), result.url);
+    }
     return NextResponse.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

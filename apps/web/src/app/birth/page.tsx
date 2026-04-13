@@ -97,6 +97,8 @@ function BirthContent() {
   const [phase, setPhase] = useState<Phase>("scanning");
   const [genesisVisible, setGenesisVisible] = useState(false);
   const [analysisWindow, setAnalysisWindow] = useState<Window>("30d");
+  const [genesisImageUrl, setGenesisImageUrl] = useState<string | null>(null);
+  const [genesisImageLoading, setGenesisImageLoading] = useState(false);
   const skipRef = useRef(false);
 
   const advanceToMint = () => {
@@ -142,10 +144,31 @@ function BirthContent() {
         setTimeout(() => {
           if (!skipRef.current) {
             setPhase("genesis");
-            setTimeout(() => {
-              setGenesisVisible(true);
-              playIfUnmuted(playSynthSting);
-            }, 100);
+            // T3-02: call genesis image API during genesis phase
+            setGenesisImageLoading(true);
+            fetch("/api/genesis", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                wallet,
+                dna: result.dna,
+                archetype: result.archetype.archetype,
+              }),
+            })
+              .then((r) => r.ok ? r.json() : null)
+              .then((img: { url?: string; is_placeholder?: boolean } | null) => {
+                if (img?.url && !img.is_placeholder) {
+                  setGenesisImageUrl(img.url);
+                }
+              })
+              .catch(() => {})
+              .finally(() => {
+                setGenesisImageLoading(false);
+                if (!skipRef.current) {
+                  setGenesisVisible(true);
+                  playIfUnmuted(playSynthSting);
+                }
+              });
           }
         }, 5500);
         setTimeout(() => { if (!skipRef.current) setPhase("mint"); }, 9000);
@@ -285,15 +308,39 @@ function BirthContent() {
       {/* GENESIS phase — character cinematic reveal */}
       {phase === "genesis" && data && initialState && (
         <div className="my-8 flex flex-col items-center gap-4">
+          {/* T3-02: Show loading while genesis image is being generated */}
+          {genesisImageLoading && (
+            <div className="flex flex-col items-center gap-2 py-8">
+              <div className="text-[var(--neon-purple)] text-sm font-mono animate-pulse">
+                ✨ Your soul is taking form...
+              </div>
+              <div className="w-40 h-1 bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-full bg-[var(--neon-purple)] animate-[pulse_1.5s_ease-in-out_infinite] w-full origin-left" />
+              </div>
+            </div>
+          )}
           <div
             className={`transition-all duration-700 ${genesisVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
           >
-            <CharacterDisplay
-              archetype={data.archetype.archetype as any}
-              state={initialState}
-              wallet={wallet}
-              size={240}
-            />
+            {/* T3-02: Use real genesis image if available, fallback to CharacterDisplay */}
+            {genesisImageUrl ? (
+              <div className="relative" style={{ width: 240, height: 240 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={genesisImageUrl}
+                  alt="Genesis character"
+                  className="w-full h-full object-cover rounded-2xl"
+                  style={{ border: "2px solid var(--neon-purple)" }}
+                />
+              </div>
+            ) : (
+              <CharacterDisplay
+                archetype={data.archetype.archetype as any}
+                state={initialState}
+                wallet={wallet}
+                size={240}
+              />
+            )}
           </div>
           {genesisVisible && (
             <div className="text-[var(--neon-gold)] font-mono text-sm italic text-center">
