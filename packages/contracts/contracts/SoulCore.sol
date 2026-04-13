@@ -146,6 +146,23 @@ contract SoulCore is ERC721, Ownable {
         return super._update(to, tokenId, auth);
     }
 
+    /**
+     * @dev T5-04: Block approve — soulbound tokens cannot be approved for transfer.
+     *      Overrides ERC721.approve to always revert.
+     */
+    function approve(address /* to */, uint256 /* tokenId */) public pure override {
+        revert TransferForbidden();
+    }
+
+    /**
+     * @dev T5-04: Block setApprovalForAll — soulbound tokens cannot be operated
+     *      by third-party operators.
+     *      Overrides ERC721.setApprovalForAll to always revert.
+     */
+    function setApprovalForAll(address /* operator */, bool /* approved */) public pure override {
+        revert TransferForbidden();
+    }
+
     // ─── Views ───────────────────────────────────────────────────────────────
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
