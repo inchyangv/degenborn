@@ -185,24 +185,39 @@ export default function WeeklyRecapModal({ wallet, state }: WeeklyRecapModalProp
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
           <button
             onClick={() => {
-              navigator.clipboard.writeText(
-                `Week ${currentWeek}: Level ${state.level} · ${state.scar_count} scars · ${state.crown_count} crowns — DegenBorn`
+              const changesText = lines.map((l) => `${l.label}: ${l.value}`).join(" · ");
+              const text = encodeURIComponent(
+                `Week ${currentWeek} recap: ${changesText || "Held steady."}\nLv.${state.level} · ${state.crown_count} crowns · ${state.scar_count} scars\n\nMy monster evolves on @four_meme × @DegenBorn 👾\n#DegenBorn #fourmeme`
               );
+              window.open(`https://twitter.com/intent/tweet?text=${text}`, "_blank", "noopener");
             }}
-            className="flex-1 py-2 text-sm font-black rounded-lg"
+            className="w-full py-2 text-sm font-black rounded-lg"
             style={{ background: color, color: "#000" }}
           >
-            Copy Recap
+            𝕏 Share This Week
           </button>
-          <button
-            onClick={() => setOpen(false)}
-            className="px-4 py-2 text-sm border border-[var(--degen-border)] text-gray-400 rounded-lg hover:border-gray-400 transition-colors"
-          >
-            Dismiss
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  `Week ${currentWeek}: Level ${state.level} · ${state.scar_count} scars · ${state.crown_count} crowns — DegenBorn × four.meme`
+                );
+              }}
+              className="flex-1 py-2 text-sm border rounded-lg"
+              style={{ borderColor: `${color}44`, color }}
+            >
+              Copy Text
+            </button>
+            <button
+              onClick={() => setOpen(false)}
+              className="px-4 py-2 text-sm border border-[var(--degen-border)] text-gray-400 rounded-lg hover:border-gray-400 transition-colors"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       </div>
     </div>
