@@ -338,8 +338,8 @@ function BirthContent() {
             <div className="text-xs text-gray-700 mb-3">Record this moment</div>
             <button
               onClick={() => {
-                const caption = `I was just born as a ${data.archetype.profile.name}. "${data.archetype.profile.tagline}" — my DegenBorn soul has awakened.`;
-                const text = encodeURIComponent(`${caption}\n\n#DegenBorn #fourmeme`);
+                const caption = `I was just born as a ${data.archetype.profile.name} on @four_meme. "${data.archetype.profile.tagline}" — my DegenBorn soul has awakened.`;
+                const text = encodeURIComponent(`${caption}\n\nEvery Four.meme trade shapes my monster 👾\n#DegenBorn #fourmeme`);
                 const url = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
                 window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
               }}

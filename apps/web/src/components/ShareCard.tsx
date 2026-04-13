@@ -56,7 +56,7 @@ export default function ShareCard({ dna, archetype, state, wallet, loyalty }: Pr
   };
 
   const shareToX = () => {
-    const text = encodeURIComponent(`${caption}\n\n#DegenBorn #fourmeme`);
+    const text = encodeURIComponent(`${caption}\n\nTrade on @four_meme to evolve your monster 👾\n#DegenBorn #fourmeme`);
     const profileUrl = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${profileUrl}`, "_blank", "noopener");
   };
@@ -64,7 +64,7 @@ export default function ShareCard({ dna, archetype, state, wallet, loyalty }: Pr
   const shareNative = async () => {
     if (!navigator.share) { shareToX(); return; }
     try {
-      await navigator.share({ title: `DegenBorn — ${archetype.profile.name}`, text: `${caption}\n\n#DegenBorn #fourmeme`, url: `${window.location.origin}/m/${wallet}` });
+      await navigator.share({ title: `DegenBorn — ${archetype.profile.name}`, text: `${caption}\n\nTrade on @four_meme to evolve your monster 👾\n#DegenBorn #fourmeme`, url: `${window.location.origin}/m/${wallet}` });
     } catch {
       // user cancelled or not supported
     }

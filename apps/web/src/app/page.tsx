@@ -373,6 +373,37 @@ function LandingContent() {
         </div>
       </section>
 
+      {/* ═══ Four.meme Return Loop — TF-03 ═══ */}
+      <section className="w-full max-w-4xl mb-14">
+        <div className="text-xs text-gray-600 uppercase tracking-widest text-center mb-6">The Loop</div>
+        <div className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl p-6">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 text-center text-xs">
+            {[
+              { icon: "⚡", label: "Trade on Four.meme", sub: "Any buy, sell, or rug event", color: "var(--neon-green)" },
+              { arrow: true },
+              { icon: "🧬", label: "DegenBorn analyzes", sub: "DNA scores update", color: "var(--neon-purple)" },
+              { arrow: true },
+              { icon: "👾", label: "Monster evolves", sub: "New traits & mutations", color: "var(--neon-gold)" },
+              { arrow: true },
+              { icon: "𝕏", label: "Share your monster", sub: "Brings new traders to Four.meme", color: "var(--neon-green)" },
+            ].map((step, i) =>
+              "arrow" in step ? (
+                <div key={i} className="text-gray-700 font-mono text-lg hidden md:block">→</div>
+              ) : (
+                <div key={i} className="flex-1 min-w-[120px] bg-[var(--degen-muted)] rounded-xl p-4">
+                  <div className="text-2xl mb-1">{step.icon}</div>
+                  <div className="font-black text-white text-xs mb-0.5">{step.label}</div>
+                  <div className="text-gray-600 text-[10px]">{step.sub}</div>
+                </div>
+              )
+            )}
+          </div>
+          <div className="text-center mt-4 text-[10px] text-gray-600 italic">
+            Every trade on Four.meme shapes your monster. Every shared monster brings someone new to Four.meme.
+          </div>
+        </div>
+      </section>
+
       {/* ═══ Secondary links ═══ */}
       <div className="flex flex-wrap gap-6 justify-center text-sm text-gray-600 mb-10">
         <Link href="/gallery" className="hover:text-[var(--neon-green)] transition-colors">

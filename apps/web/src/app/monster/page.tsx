@@ -199,8 +199,8 @@ function MonsterRoomContent() {
           {/* 1-click X share — primary CTA T0-03 */}
           <button
             onClick={() => {
-              const caption = `I'm a ${archetype.profile.name}. "${archetype.profile.tagline}" — my DegenBorn soul is live.`;
-              const text = encodeURIComponent(`${caption}\n\n#DegenBorn #fourmeme`);
+              const caption = `I'm a ${archetype.profile.name}. "${archetype.profile.tagline}" — my DegenBorn soul was born on @four_meme.`;
+              const text = encodeURIComponent(`${caption}\n\nEvery trade on Four.meme shapes my monster 👾\n#DegenBorn #fourmeme`);
               const url = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
               window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
             }}
@@ -222,6 +222,19 @@ function MonsterRoomContent() {
             ⚔ Challenge →
           </Link>
         </div>
+
+        {/* Evolve Your Monster CTA — TF-03 */}
+        <a
+          href="https://four.meme"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl border transition-all hover:brightness-125 text-xs font-bold"
+          style={{ borderColor: "var(--neon-green)", color: "var(--neon-green)", background: "rgba(0,255,136,0.06)" }}
+        >
+          <span>⚡</span>
+          <span>Trade on Four.meme to trigger new mutations</span>
+          <span className="opacity-60">→</span>
+        </a>
       </div>
 
       {/* Archetype Info Modal — M-13 */}
