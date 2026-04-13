@@ -295,7 +295,9 @@ function normalizeRpc(raw: RawWalletActivity): ActivityEvent[] {
     const BSC_BLOCK_TIME = 3;
     const timestamp = BSC_GENESIS + blockNum * BSC_BLOCK_TIME;
 
-    const isFourMeme = (log.address ?? "").toLowerCase() === FOUR_MEME_ROUTER.toLowerCase();
+    // T5-03: compare transaction.to (the router being called) not log.address (the token contract)
+    const txTo = (log.transactionTo ?? log.transaction?.to ?? log.to ?? "").toLowerCase();
+    const isFourMeme = txTo === FOUR_MEME_ROUTER.toLowerCase();
 
     const id = deterministicId(raw.wallet_address, `${txHash}:${log.logIndex ?? "0"}:${direction}`);
     events.push({
