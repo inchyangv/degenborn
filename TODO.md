@@ -1,236 +1,461 @@
-# TODO.md — DegenBorn 실전 감사 결과
+# TODO.md — DegenBorn v2 Product Improvement Roadmap
 
-> 2026-04-12 기준, 시니어 테크리드 감사.
-> 모킹/페이크/안 돌아가는 것 전부 적발. 우선순위별 정리.
-
----
-
-## P0-CRITICAL: 빌드 자체가 안 됨
-
-현재 `pnpm build`가 실패한다. 배포도 불가능.
-
-### 1. Worker 타입 불일치 (`apps/worker/src/index.ts:113`)
-- **문제:** Worker 내부 `WalletProfile` 인터페이스가 `dna.sample_size`를 요구하지만, `@degenborn/shared`의 `PersonaDNA`는 `event_count`/`computed_at`를 갖고 있음
-- **증상:** `TS2741: Property 'sample_size' is missing`
-- **수정:** Worker의 로컬 `WalletProfile` 인터페이스를 shared의 `PersonaDNA` 타입에 맞게 수정
-
-### 2. Next.js Route Export 위반 (`apps/web/src/app/api/relic/route.ts`)
-- **문제:** `getEligibleMilestones`가 route 파일에서 named export 되어 있음. Next.js App Router는 HTTP method handler만 허용 (`GET`, `POST` 등)
-- **증상:** `next build` 실패
-- **수정:** `getEligibleMilestones`를 별도 lib 파일로 이동하거나 export 제거
-
-### 3. BigInt 타겟 불일치 (`api/evolution/route.ts`, `api/relic/route.ts`)
-- **문제:** `tsconfig`이 ES2017을 타겟하지만 코드에서 BigInt 리터럴(`0n`) 사용
-- **증상:** `tsc --noEmit` 실패 (SWC 빌드는 통과할 수 있으나 타입체크 깨짐)
-- **수정:** tsconfig target을 ES2020으로 올리거나, BigInt 리터럴을 `BigInt(0)`으로 변경
-
-### 4. Fixture 파일명-주소 불일치
-- **문제:** fixture 파일은 `0xmad_gambler.json`인데, 내부 wallet_address는 `0xmadgambler0000000000000000000000000000001`. `loadFixture`는 주소를 기반으로 파일을 찾으므로 매칭 실패
-- **증상:** Worker에서 fixture 로드 항상 실패 -> 실제 API로 폴백 -> API 키 없으면 전체 실패
-- **수정:** fixture 파일명을 내부 wallet_address와 일치시키거나, loadFixture 로직에 매핑 추가
+> 2026-04-13 기준. 밈 전문가 + 프로덕트 기획자 + 시니어 엔지니어 공동 감사.
+> 현재 프로덕트의 핵심 문제: **"재미있는 구조는 있는데, 퍼질 이유가 없다."**
 
 ---
 
-## P0-HIGH: 돌아가긴 하는데 가짜 데이터를 보여줌
+## 핵심 진단
 
-### 5. `/api/analyze`가 실패 시 조용히 가짜 데이터 반환
-- **문제:** Moralis/Covalent 호출 실패 시 `generateDemoEvents()`로 20개 합성 이벤트를 생성하여 200 OK로 반환. 응답에 실제/가짜 여부 표시 없음
-- **영향:** 유저가 자기 지갑의 진짜 분석 결과를 보고 있다고 착각
-- **수정:** 응답에 `data_source: "live" | "demo" | "fixture"` 필드 추가. UI에서 demo 모드일 때 명확히 표시
+DegenBorn의 기술 아키텍처는 탄탄하다 — deterministic scoring, state machine, 6가지 아키타입, 10개 밈 템플릿, 타로/호로스코프/로스트/배틀 등 콘텐츠 레이어가 풍부하다.
 
-### 6. Monster Room이 항상 Level 1에서 시작 (`apps/web/src/app/monster/page.tsx`)
-- **문제:** 매 페이지 로드마다 `createInitialState()`로 새로운 레벨 1 상태 생성. 이전 mutation/evolution 이력이 반영 안 됨
-- **영향:** 유저가 돌아와도 진화 상태가 리셋됨
-- **수정:** 서버에서 누적 state를 로드하는 로직 추가 (diary entries를 replay하여 state 재구성, 또는 profile store에 state 영속화)
+**문제는 이 모든 게 "안에서만 재밌다"는 것이다.**
 
-### 7. Activity Breakdown 수치가 완전 가짜 (`apps/web/src/app/monster/page.tsx`)
-- **문제:** "Buys", "Sells", "Dead tokens", "Revivals" 수치가 DNA 점수에 임의 공식을 적용하여 생성 (`Math.round(dna.aggression * 0.4 + dna.event_count * 0.3)` 등). 실제 트랜잭션 카운트가 아님
-- **영향:** 유저에게 거짓 정보 표시
-- **수정:** analyze API 응답에서 실제 이벤트 타입별 카운트를 집계하여 전달
+밈이 퍼지려면 세 가지가 필요하다:
+1. **즉시성** — 5초 안에 "이거 뭐지?" 하고 클릭하게 만드는 것
+2. **자기표현** — "이게 나다" 하고 공유하고 싶게 만드는 것
+3. **반응성** — 다른 사람이 보고 "나도 해볼까" 하게 만드는 것
 
-### 8. 상태 캡션 버그 (`apps/web/src/lib/state-machine.ts`)
-- **문제:** `big_loss` 캡션이 `Math.abs(0)` 사용 → 항상 "Down 0 USD". `long_hold` 캡션이 `Math.floor(0 / 86400)` 사용 → 항상 "0 days held"
-- **원인:** 이벤트 객체에서 실제 손실액/보유 기간 데이터를 받지 않고 하드코딩된 0 사용
-- **수정:** `StateEvent` 타입에 `amount`/`duration` 필드 추가, 캡션 생성 시 실제 값 사용
-
-### 9. Birth 페이지에서 Genesis 이미지 미호출
-- **문제:** `/birth` 페이지가 `/api/genesis-image` 또는 `/api/genesis`를 호출하지 않음. 유저가 처음 보는 캐릭터가 placeholder SVG
-- **영향:** DALL-E 통합이 있음에도 Birth에서는 항상 placeholder 표시
-- **수정:** Birth 플로우의 Genesis 단계에서 이미지 생성 API 호출 추가
-
-### 10. DALL-E 이미지 URL이 ~1시간 후 만료
-- **문제:** OpenAI가 반환하는 이미지 URL은 임시(~1시간 유효). 인메모리 캐시에만 저장. 프로세스 재시작 시 캐시 소멸, URL 만료 후 이미지 깨짐
-- **영향:** 생성된 캐릭터 이미지가 시간이 지나면 404
-- **수정:** 이미지를 S3/Cloudflare R2/Vercel Blob 등에 영구 저장. URL 대신 저장된 경로 사용
+현재 DegenBorn은 2번은 부분적으로 해결했지만, 1번과 3번이 약하다.
 
 ---
 
-## P0-MEDIUM: 핵심 기능 결함
+## TIER 0: 밈 바이럴리티 핵심 (퍼지는 구조)
 
-### 11. 모든 상태가 인메모리 (DB 없음)
-- **문제:** `profile-store`, `diary-store`, `image-cache` 모두 인메모리 Map 또는 `/tmp` JSON 파일. Vercel 서버리스에서는 요청마다 인스턴스가 달라서 상태 공유 불가
-- **영향:** 프로필 분석, 다이어리 기록, 이미지 캐시 모두 요청 간 유실 가능
-- **수정 옵션:**
-  - (최소) Vercel KV / Upstash Redis로 state 영속화
-  - (권장) Postgres (Supabase/Neon) 도입 → PROJECT.md 설계대로
+> 이 티어의 목표: **프로덕트 바깥에서 보이는 것만으로 사람이 들어오게 만든다.**
 
-### 12. `/api/mint` 이벤트 토픽 해시가 가짜 (`apps/web/src/app/api/mint/route.ts:153`)
-- **문제:** `0x5b4e851e4f97ec3e0b1e7f0d5dfea8e1f9c5e2d0c4f8b3a2e1d0c9b8a7f6e5d4`는 실제 `SoulCoreCreated` 이벤트의 keccak256이 아님. 완전히 조작된 값
-- **영향:** 트랜잭션 로그에서 token ID 파싱 실패 → fallback 주소 매칭에 의존 (약한 휴리스틱)
-- **수정:** 실제 SoulCore 컨트랙트의 `SoulCoreCreated` 이벤트 시그니처로 keccak256 계산하여 교체
+### T0-01. OG 이미지를 "밈 카드"로 재설계
 
-### 13. `/api/share`가 항상 placeholder SVG 사용
-- **문제:** share card의 `image_url`이 항상 `_placeholder.svg`를 사용. DALL-E로 생성된 이미지가 있어도 무시
-- **수정:** profile store에서 생성된 이미지 URL이 있으면 우선 사용
+- **현재:** `/api/og/[wallet]`이 존재하지만 단순 메타데이터 수준
+- **문제:** X/Discord에 링크 올리면 기본 카드가 뜨는데, 이게 눈에 띄지 않으면 아무도 안 클릭한다
+- **수정:**
+  - OG 이미지를 **밈 형식**으로 렌더링: 캐릭터 + 아키타입 이름 + 대표 대사 1줄 + DNA 레이더 차트 미니
+  - "나는 Rug Necromancer다" 같은 선언형 한 줄이 이미지 안에 있어야 한다
+  - 배경색을 아키타입별로 다르게 (이미 ARCHETYPE_COLORS 있음)
+  - 예시: Ice Whale 카드는 빙하 블루 배경 + "I don't trade. I wait. Then I destroy." 텍스트
+- **파일:** `apps/web/src/app/api/og/[wallet]/route.tsx` — satori/vercel OG로 서버사이드 렌더
+- **AC:**
+  - [ ] X에 /m/{wallet} 링크 붙이면 밈 카드가 뜬다
+  - [ ] 아키타입별 배경색 + 대사가 다르다
+  - [ ] 캐릭터 이미지(또는 SVG placeholder)가 포함된다
 
-### 14. `getPreviewUrl`이 항상 base image만 반환 (`overlay-renderer.ts`)
-- **문제:** trait overlay 합성 결과를 반환하는 대신 항상 원본 이미지 URL만 반환. 실시간 overlay 합성 결과가 노출 안 됨
-- **수정:** 비동기 합성 완료 후 결과 URL/데이터URL을 캐시하고 반환하는 로직 추가
+### T0-02. "What Kind of Degen Are You?" 퀴즈 → 공유 최적화
 
-### 15. RPC 어댑터의 Four.meme 플래그 미작동 (`data-adapter/src/normalizer.ts:298`)
-- **문제:** `log.address`(ERC-20 Transfer에서는 토큰 컨트랙트 주소)를 Four.meme 라우터 주소와 비교. Transfer 이벤트의 `log.address`는 라우터가 아니라 토큰이므로 항상 `false`
-- **수정:** `log.topics` 또는 트랜잭션의 `to` 주소와 라우터 비교
+- **현재:** `/quiz` 페이지 존재 (5개 질문 → 아키타입 분류)
+- **문제:** 퀴즈 결과가 페이지 안에서만 보인다. 공유 가능한 카드가 없다
+- **수정:**
+  - 퀴즈 결과 페이지에 **즉시 공유 가능한 결과 카드** 추가
+  - "I'm a Rug Necromancer. What are you?" 형태의 공유 텍스트
+  - 결과 URL: `/quiz/result?type=rug_necromancer&scores=82,34,76,41,91` — OG 이미지가 결과 카드
+  - 카드 하단에 "Find yours → degenborn.xyz/quiz" CTA
+  - X Share Intent + 클립보드 복사
+- **왜 중요:** BuzzFeed 스타일 성격 퀴즈는 밈코인 커뮤니티에서 가장 잘 퍼지는 포맷이다. 지갑 연결 없이도 진입 가능 → 퍼널 상단 확장
+- **AC:**
+  - [ ] 퀴즈 결과에 공유 카드 (OG image) 생성
+  - [ ] X 공유 시 "I'm a [Archetype]. What degen are you?" 텍스트
+  - [ ] 결과 URL이 고유하고 OG 이미지가 결과를 반영
 
-### 16. Covalent/RPC 소스에서 3/5 DNA 축이 무의미
-- **문제:** Covalent은 `pnl_delta: 0`, RPC는 `pnl_delta: 0` + `value_usd: 0`으로 모든 이벤트 생성. Chaos, Luck, Survival 점수가 거의 0으로 수렴
-- **영향:** Moralis만 정상 작동. 다른 소스에서는 Aggression/Conviction만 유의미
-- **수정:** (Covalent) 가격 API 연동하여 PnL 추정. (RPC) DEX 이벤트 디코딩 + 가격 오라클 추가. 또는 UI에서 데이터 소스 한계를 명시
+### T0-03. 1-Click 공유 플로우: Monster Room → X 포스트
 
----
+- **현재:** Share 탭에 Trading Card + Caption 있지만, 실제 공유까지의 마찰이 크다
+- **문제:** 유저가 캡션 복사 → X 열기 → 붙여넣기 → 이미지 따로 다운 → 첨부 → 포스트. 이건 안 한다.
+- **수정:**
+  - "Share to X" 버튼 하나로:
+    1. Trading Card 이미지를 자동 생성 (html2canvas 또는 서버사이드)
+    2. X Web Intent에 텍스트 + URL 자동 세팅
+    3. URL에 OG 이미지가 자동으로 붙으므로 이미지 첨부 불필요
+  - 캡션은 아키타입별 템플릿에서 자동 생성 (이미 있음)
+  - **핵심:** 버튼 하나 누르면 3초 안에 X 포스트 창이 뜬다
+- **AC:**
+  - [ ] "Share to X" 버튼 1개로 텍스트 + OG URL 포함 트윗 창 열림
+  - [ ] 공유 URL의 OG 이미지가 Trading Card 수준의 비주얼
 
-## P1: 보안 및 안정성
+### T0-04. 도전장(Challenge Link) 바이럴 루프 강화
 
-### 17. Mint/Relic 엔드포인트에 인증/레이트리밋 없음
-- **문제:** `/api/mint`, `/api/relic` 누구나 호출 가능. 스팸 호출로 deployer 지갑의 BNB 가스비 고갈 가능
-- **수정:** 최소한 wallet signature 검증 또는 reCAPTCHA. 레이트리밋 추가 (IP 또는 지갑 기준)
-
-### 18. SoulCore `approve()`/`setApprovalForAll()` 미차단
-- **문제:** Soulbound 토큰인데 approve 함수가 정상 작동. 의미 없는 가스 소비 + 오해 유발
-- **수정:** `approve()`와 `setApprovalForAll()`을 override하여 revert 처리
-
-### 19. 스마트 컨트랙트 BscScan 미인증
-- **문제:** SoulCore, SnapshotRelic 모두 BscScan에서 소스코드 미공개
-- **수정:** `npx hardhat verify --network bscTestnet <address> <constructor-args>`
-
-### 20. deployer 키 노출 리스크
-- **문제:** `.env.local`과 `.env.deployer`에 평문 개인키 존재. `.gitignore`에는 있으나 주의 필요
-- **수정:** 메인넷 배포 전 키 로테이션 필수. 배포 시 secret manager 사용 (Vercel env vars, Railway secrets)
-
----
-
-## P1: 코드 품질 및 기능 완성도
-
-### 21. Landing 페이지 몬스터 캐러셀이 가짜 지갑 사용
-- **문제:** `0xrugnecromancer...`, `0xicewhale...` 등 가짜 주소의 하드코딩된 샘플 몬스터 표시
-- **수정:** 실제 분석된 프로필에서 동적으로 로드하거나, 최소한 fixture 데이터와 일관성 맞추기
-
-### 22. `/api/profiles`가 항상 하드코딩 fixture 프로필 반환
-- **문제:** 서버 재시작 후 인메모리 프로필 스토어가 비어있으면 6개 가짜 프로필 반환 (`is_fixture: true`)
-- **수정:** DB 도입 후 실제 분석된 프로필만 반환
-
-### 23. Scan 로그 애니메이션이 코스메틱 연극 (`birth/page.tsx`)
-- **문제:** `SCAN_LOG_LINES`가 하드코딩된 문자열 배열. 실제 API 처리 진행률과 무관하게 타이머 기반 표시
-- **수정:** (최소) 실제 진행 상태 표시 불가 시 "분석 중..." 단일 스켈레톤으로 변경. (권장) SSE/WebSocket으로 실제 진행률 전달
-
-### 24. Unibase 통합이 완전 데드코드 (`lib/unibase-adapter.ts`)
-- **문제:** endpoint URL이 "placeholder URL"로 명시. `UNIBASE_ENABLED=false`. Cyrillic 문자 혼용 (`Unibаse`의 `а`가 키릴 문자)
-- **수정:** 실제 Unibase API가 준비될 때까지 코드 제거하거나, 명확히 disabled 상태로 격리
-
-### 25. `scoreAggression` 데드코드 (`packages/scoring/src/engine.ts:60`)
-- **문제:** `raw` 변수 계산 후 사용 안 됨. 바로 다음 줄에서 다른 공식으로 재계산
-- **수정:** 데드코드 제거
-
-### 26. `narrative.ts`의 금지어 필터가 과도함
-- **문제:** "buy", "sell", "invest" 등 일반 문맥에서도 정상적인 단어를 `***`로 치환. "I'd sell my soul" → "I'd *** my soul"
-- **수정:** 금융 조언 맥락에서만 필터링하도록 정규식 정교화, 또는 LLM 프롬프트에서 사전 방지
-
-### 27. `name.ts` 제목 임계값 오해 소지
-- **문제:** `Twice-Rugged` 타이틀이 `scar_count >= 3`에서 발동 (3번 = "두 번"?)
-- **수정:** 타이틀 이름 또는 임계값 조정
-
-### 28. SFX가 하드코딩 합성 비프음
-- **문제:** `/public/sfx/` 디렉토리 없음. Web Audio API로 오실레이터 생성하는 stub
-- **수정:** (최소) 현 상태로 유지 (해커톤 수준). (권장) 짧은 사운드 에셋 추가
-
-### 29. `/api/origin`, `/api/roast`의 JSON 파싱 취약
-- **문제:** LLM 출력에서 `rawText.match(/\{[\s\S]*\}/)` 사용. 중첩 JSON이나 다중 JSON 블록에서 오매칭 가능
-- **수정:** `JSON.parse` 직접 시도 → 실패 시 정규식 fallback. 또는 Anthropic structured output 사용
-
-### 30. `deployedAt` 타임스탬프 덮어쓰기 (`packages/contracts/deployments/bscTestnet.json`)
-- **문제:** deploy-relic 스크립트 실행 시 SoulCore의 deploy 타임스탬프가 SnapshotRelic 것으로 덮어써짐
-- **수정:** `deployedAt`를 컨트랙트별로 분리 (`soulCoreDeployedAt`, `relicDeployedAt`)
+- **현재:** `/compare?a={wallet}` + SummoningBanner 존재
+- **문제:** 도전 플로우가 약하다. "내가 Rug Necromancer인데, 넌 뭔데?" 느낌이 안 난다
+- **수정:**
+  - 도전장 URL: `/challenge/{from_wallet}` → 전용 랜딩
+  - "0xrugN...0001 has challenged you. Are you brave enough?" 헤더
+  - 도전자의 캐릭터 카드가 먼저 보이고, "Connect Your Wallet to Accept" CTA
+  - 수락하면 → birth → 결과 비교 or battle 자동 이동
+  - 도전장 OG 이미지: "⚔ A Rug Necromancer is calling you out"
+- **왜 중요:** 1:1 도전은 밈코인 커뮤니티의 핵심 감정(경쟁, flex, cope)을 건드린다. 한 명이 공유하면 최소 1명이 반응하는 구조.
+- **AC:**
+  - [ ] /challenge/{wallet} 전용 랜딩 존재
+  - [ ] OG 이미지에 도전자 캐릭터 + 도발 문구
+  - [ ] CTA 클릭 → birth → battle 자동 플로우
 
 ---
 
-## P1: 테스트 커버리지 부족
+## TIER 1: 밈 콘텐츠 품질 (안에서 더 재밌게)
 
-### 31. `@degenborn/shared` 패키지 테스트 0개
-- **문제:** badges, horoscope, tarot, tier, lexicon, caption, dialogue 등 모든 모듈에 테스트 없음
-- **수정:** 최소 badges.evaluateBadges, computeTier, checkLexicon, pickDialogue에 단위 테스트 추가
+> 이 티어의 목표: **프로덕트 안에서의 경험이 스크린샷/녹화할 만큼 재밌다.**
 
-### 32. SoulCore burn 경로 테스트 없음
-- **문제:** `_update`의 burn 브랜치 (`_walletToToken` cleanup)가 테스트 미커버
-- **수정:** burn 시 walletToToken 매핑 정리 확인 테스트 추가
+### T1-01. Birth Sequence를 "reveal 영상"급으로
 
-### 33. Archetype classifier 신뢰도/fallback 테스트 없음
-- **문제:** 모든 점수가 중간(35-64)일 때 fallback 경로, confidence 값 검증 없음
-- **수정:** all-mid DNA 입력 시 fallback 동작 테스트 추가
+- **현재:** Birth는 5단계(Scan → DNA → Archetype → Genesis → Mint)로 구성. Scan이 하드코딩된 문자열 애니메이션.
+- **문제:** 가장 공유 가능한 순간(아키타입 공개)이 시각적으로 약하다
+- **수정:**
+  - Archetype Reveal에 **극적 연출 추가:**
+    - 화면 전체가 아키타입 컬러로 플래시
+    - 대표 대사가 타이프라이터로 나타남
+    - 짧은 SFX (Web Audio oscillator → 좀 더 극적인 톤)
+    - 1-2초 서스펜스 후 이름 공개
+  - "Record This Moment" 힌트 표시 → 유저가 화면 녹화하도록 유도
+  - Birth 완료 후 자동으로 share intent 준비
+- **AC:**
+  - [ ] Archetype reveal에 풀스크린 플래시 + 서스펜스 딜레이
+  - [ ] 대표 대사 타이프라이터 연출
+  - [ ] Birth 완료 후 "Share Your Birth" CTA
 
-### 34. Scoring 엔진에서 pnl_delta=0 시나리오 테스트 없음
-- **문제:** RPC/Covalent 소스에서 현실적으로 발생하는 모든 pnl_delta=0 케이스 미테스트
-- **수정:** 전체 이벤트 pnl_delta=0 입력 시 점수 분포 테스트
+### T1-02. 로스트(Roast) 카드를 공유 가능한 포맷으로
+
+- **현재:** `/api/roast`가 LLM으로 3문단 로스트 생성, BrutalRoastCard 컴포넌트 존재
+- **문제:** 로스트가 텍스트로만 존재. 밈으로 퍼지려면 **이미지 포맷**이어야 한다
+- **수정:**
+  - 로스트 결과를 "Roast Certificate" 이미지로 렌더링
+  - 디자인: 검은 배경 + 빨간 텍스트 + 캐릭터 + "BRUTALLY ROASTED" 스탬프
+  - 하단에 DNA 요약 + "This degen was roasted by DegenBorn"
+  - 1-click X 공유: "I just got roasted by my own wallet data 💀"
+- **왜 중요:** 로스트는 밈코인 커뮤니티에서 가장 인기 있는 콘텐츠 유형 중 하나. 자기비하 + 유머 = 최고의 공유성.
+- **AC:**
+  - [ ] 로스트 결과를 이미지 카드로 렌더링
+  - [ ] X 공유 1-click
+  - [ ] "Get Roasted" CTA가 랜딩에서 접근 가능
+
+### T1-03. "Daily Horoscope" 알림 + 공유 루프
+
+- **현재:** `/horoscope/[wallet]` 존재. 매일 다른 결과 (deterministic).
+- **문제:** 유저가 매일 들어올 이유가 없다. 호로스코프는 **습관형 콘텐츠**인데 리마인더가 없다
+- **수정:**
+  - 호로스코프 카드를 이미지로 렌더링 (OG 이미지로)
+  - 매일 다른 URL → 매일 다른 OG 이미지
+  - Monster Room에 "Today's Horoscope" 위젯 (접혀 있다가 클릭하면 펼침)
+  - "Lucky Trait: 🔥 revenge aura" 같은 게 Monster Room 상단에 항상 보임
+  - 공유 텍스트: "Today's degen horoscope: [fortune]. Lucky trait: [trait]"
+- **AC:**
+  - [ ] Monster Room에 일일 호로스코프 위젯
+  - [ ] 호로스코프 카드 이미지 렌더링
+  - [ ] 공유 시 일자별 고유 OG 이미지
+
+### T1-04. Meme Studio 템플릿 UX 개선
+
+- **현재:** 10개 SVG 템플릿. 캐릭터 오버레이 + 텍스트 슬롯. 다운로드 가능.
+- **문제:**
+  1. 템플릿 미리보기가 작아서 뭐가 뭔지 모름
+  2. 텍스트 입력이 기계적 (label: "Top text", "Bottom text")
+  3. 완성된 밈을 바로 공유할 수 없음
+- **수정:**
+  - 템플릿 선택 시 대형 프리뷰 (아키타입 기반 추천 순서는 이미 있음)
+  - 텍스트 슬롯에 **구체적인 예시** 기본 세팅 (dialogue bank에서 가져오는 건 있는데, 더 밈적인 예시 필요)
+  - "Randomize Text" 버튼 — 누를 때마다 dialogue bank에서 랜덤 조합
+  - 완성 후 "Post to X" 1-click
+  - **신규 템플릿 3-5개 추가** (아래 T1-05)
+- **AC:**
+  - [ ] 템플릿 대형 프리뷰
+  - [ ] "Randomize" 버튼
+  - [ ] 완성 → X 공유 1-click
+
+### T1-05. 밈 템플릿 추가 — 크립토 네이티브
+
+현재 10개 템플릿은 범용 밈(This is Fine, Stonks, Galaxy Brain 등). 크립토/밈코인 특화 템플릿이 필요하다:
+
+1. **"Bought the Dip / It Dipped More"** — 2-panel, 위는 hopium, 아래는 절망
+2. **"Nobody: / My Portfolio:"** — Nobody 밈 포맷, 포트폴리오 그래프 하락
+3. **"I'm in this photo and I don't like it"** — 캐릭터가 차트 앞에 서 있음
+4. **"Same Energy"** — 캐릭터 vs 유명 밈 대비 (빈 슬롯)
+5. **"Rug Pull Stages of Grief"** — 5단계 감정 (denial → anger → bargaining → depression → acceptance). 각 단계에 캐릭터 표정 변화
+
+- **AC:**
+  - [ ] 최소 3개 신규 밈 템플릿 추가
+  - [ ] 각 템플릿에 적합한 아키타입 매핑
+
+### T1-06. 타로 카드 비주얼 + 공유
+
+- **현재:** 22장 Major Arcana 존재. 텍스트 기반.
+- **문제:** 타로가 공유 가능하려면 **카드 비주얼**이 있어야 한다
+- **수정:**
+  - 각 카드에 SVG 기반 비주얼 (심볼 + 배경색 + 카드 프레임)
+  - "This week's card: The Devil's Rug 😈" OG 이미지
+  - 뒤집힌 카드 드라마틱 애니메이션 (카드 뒤집기 모션)
+  - X 공유: "My weekly tarot: [카드 이름]. [meaning]"
+- **AC:**
+  - [ ] 타로 카드 SVG 비주얼 (최소 5장)
+  - [ ] 카드 뒤집기 애니메이션
+  - [ ] 공유 가능한 OG 이미지
 
 ---
 
-## P2: 해커톤 이후 개선
+## TIER 2: 리텐션 + 커뮤니티 (돌아올 이유)
 
-### 35. Postgres DB 도입
-- 인메모리 스토어를 Supabase/Neon Postgres로 교체
-- `wallet_profile`, `activity_event`, `mutation_event`, `generated_asset` 테이블 생성
+> 이 티어의 목표: **한 번 온 유저가 계속 돌아오고, 다른 사람과 상호작용한다.**
 
-### 36. 이미지 영구 저장소 (S3/R2/Vercel Blob)
-- DALL-E 생성 이미지를 영구 저장
-- tokenURI에서 안정적인 이미지 URL 제공
+### T2-01. Monster Room 상태 영속화
 
-### 37. Unibase 실제 연동
-- 실제 API endpoint 확보 후 adapter 연결
-- Cyrillic 문자 정리
+- **현재:** Monster Room이 매번 Level 1에서 시작. 이전 진화 미반영.
+- **영향:** 유저가 "내 캐릭터가 성장한다"를 느끼지 못함
+- **수정:**
+  - 최소: diary entries를 replay하여 state 재구성
+  - 권장: Vercel KV / Upstash Redis로 CharacterState 영속
+  - profile-store에 state 포함하여 저장
+- **AC:**
+  - [ ] 같은 지갑으로 재방문 시 이전 레벨/무드/트레이트 유지
+  - [ ] Mutation diary가 누적됨
 
-### 38. 다중 데이터 소스 PnL 보강
-- Covalent: CoinGecko/Moralis 가격 API 연동하여 PnL 계산
-- RPC: DEX 이벤트 디코딩 + AMM 가격 추출
+### T2-02. "Weekly Flex" — 주간 자동 리캡 카드
 
-### 39. Analytics 연동 (PostHog)
-- PostHog 키 설정 및 주요 이벤트 트래킹 활성화
+- **현재:** WeeklyRecapModal 존재하지만 단순 텍스트
+- **수정:**
+  - 주간 리캡을 **공유 가능한 카드**로 만들기
+  - "This week: +2 crowns, 1 rug survived, level 3→5"
+  - 카드 디자인: 주간 변화 시각화 (before/after)
+  - 매주 월요일 접속 시 자동 팝업 + "Share Your Week" CTA
+- **왜 중요:** 습관형 콘텐츠. 매주 새로운 공유 가능한 콘텐츠가 자동 생성된다.
+- **AC:**
+  - [ ] 주간 리캡 카드 이미지 생성
+  - [ ] 월요일 자동 팝업
+  - [ ] X 공유 1-click
 
-### 40. CI/CD 파이프라인
-- GitHub Actions: lint, typecheck, test, build
-- 컨트랙트 자동 verify
-- 환경별 배포 (staging/production)
+### T2-03. Gallery를 "Leaderboard"로 업그레이드
+
+- **현재:** Gallery는 분석된 몬스터 목록. 필터/정렬 있음.
+- **문제:** 구경만 할 수 있고 상호작용이 없다
+- **수정:**
+  - **랭킹 시스템:** Level, Prestige, Survival Streak, Crown Count별 리더보드
+  - **"Most Rugged" 보드:** Corruption + Scar 기반 (역설적 자랑)
+  - 각 몬스터에 "Challenge" 버튼 → 바로 battle 진입
+  - "Vote for Scariest" 같은 커뮤니티 투표 (인메모리 카운터라도)
+- **AC:**
+  - [ ] 최소 3가지 기준 리더보드
+  - [ ] 각 몬스터에 Challenge 버튼
+  - [ ] "Most Rugged" 역설적 리더보드
+
+### T2-04. Confession Booth(고해성사) 캐릭터 개성 강화
+
+- **현재:** `/confession/[wallet]` — LLM 기반 대화, 아키타입별 응답
+- **문제:** 대화가 일반적. 캐릭터 개성이 약하다.
+- **수정:**
+  - LLM 프롬프트에 아키타입별 **구체적 말투 규칙** 추가
+    - Mad Gambler: 짧은 문장, 느낌표 많이, 자기 얘기로 돌림
+    - Ice Whale: 마침표. 짧게. 감정 없이. 결론만.
+    - Rug Necromancer: 은유 많이, "죽음"/"부활" 비유
+    - Ghost Bagholder: 말끝 흐리기... 오래 걸리는 대답... 무기력
+  - **대화 기록을 공유 가능하게** — 인상적인 응답을 카드로 만들어 공유
+  - "My soul said:" + 한 줄 → X 공유
+- **AC:**
+  - [ ] 아키타입별 말투 규칙 프롬프트 강화
+  - [ ] 개별 응답을 이미지 카드로 만들기
+  - [ ] "Share This Line" 버튼
+
+### T2-05. Sticker Pack 내보내기 최적화
+
+- **현재:** 36개 스티커 (6 아키타입 × 6 표정). SVG 기반.
+- **문제:** 스티커가 앱 안에만 있다. 텔레그램/디스코드에서 쓸 수 없다
+- **수정:**
+  - PNG 다운로드 + "Copy to Clipboard" 버튼 (이미 있는지 확인 필요)
+  - **텔레그램 스티커팩 내보내기** 포맷 (WebP, 512x512)
+  - 디스코드 이모지 크기 (128x128 PNG)
+  - 각 스티커에 아키타입별 대사 텍스트 오버레이
+- **AC:**
+  - [ ] WebP 512x512 다운로드 (텔레그램용)
+  - [ ] PNG 128x128 다운로드 (디스코드용)
+  - [ ] 대사 텍스트 포함 버전
 
 ---
 
-## 요약 대시보드
+## TIER 3: 프로덕트 완성도 (해커톤 → 실제 제품)
 
-| 카테고리 | 항목 수 | 상태 |
-|----------|---------|------|
-| 빌드 깨짐 (P0-CRITICAL) | 4 | 즉시 수정 필요 |
-| 가짜 데이터 노출 (P0-HIGH) | 6 | 핵심 UX 결함 |
-| 핵심 기능 결함 (P0-MEDIUM) | 6 | 실제 동작 안 함 |
-| 보안/안정성 (P1) | 4 | 배포 전 수정 |
-| 코드 품질 (P1) | 10 | 품질 개선 |
-| 테스트 (P1) | 4 | 커버리지 확대 |
-| 해커톤 이후 (P2) | 6 | 로드맵 |
-| **전체** | **40** | |
+> 이 티어의 목표: **"데모"에서 "쓸 수 있는 제품"으로.**
 
-### TICKET.md 최종 체크리스트 현황
+### T3-01. 데이터 소스 투명성 UI
 
-| # | 기준 | 현재 상태 |
-|---|------|----------|
-| 1 | 지갑 연결 후 archetype이 30초 안에 나온다 | **부분** — Moralis 키 있으면 OK, 실패 시 가짜 데이터로 OK처럼 보임 |
-| 2 | 캐릭터가 생성되거나 placeholder로 나타난다 | **부분** — placeholder SVG만 표시, DALL-E 호출 안 함 |
-| 3 | 민팅 흐름이 한 번은 성공한다 | **OK** — BSC Testnet에 실제 배포 + 실제 트랜잭션 |
-| 4 | 거래 이벤트 재생 시 trait가 바뀐다 | **부분** — state machine은 동작하나 state 영속 안 됨 |
-| 5 | mutation diary가 보인다 | **부분** — 인메모리라 새로고침 시 유실 |
-| 6 | 공유 카드가 생성된다 | **부분** — 항상 placeholder 이미지 사용 |
-| 7 | 외부 API 죽어도 Replay Mode 돈다 | **OK** — 하드코딩 preset으로 독립 동작 |
+- **현재:** API가 data_source 반환하지만 UI에서 충분히 표시 안 됨
+- **수정:**
+  - Monster Room 상단에 데이터 배지: 🟢 Live / 🟡 Fixture / 🔴 Demo
+  - Demo 모드일 때: "This is demo data. Connect a real wallet for your true DNA."
+  - Fixture 모드일 때: "Sample wallet — not real on-chain data."
+- **AC:**
+  - [ ] 데이터 소스 배지가 항상 보인다
+  - [ ] Demo/Fixture일 때 명확한 안내 문구
+
+### T3-02. Genesis 이미지 Birth에서 호출
+
+- **현재:** Birth 페이지가 `/api/genesis-image`를 호출하지 않음. 항상 placeholder SVG.
+- **수정:**
+  - Birth Genesis 단계에서 이미지 생성 API 호출
+  - DALL-E key 없으면 placeholder, 있으면 실제 이미지
+  - 생성 중 로딩 애니메이션 ("Your soul is taking form...")
+- **AC:**
+  - [ ] OPENAI_API_KEY 있으면 실제 이미지 생성
+  - [ ] 생성 중 로딩 상태 표시
+  - [ ] 생성된 이미지가 Monster Room에서도 사용됨
+
+### T3-03. Share Card가 실제 이미지 사용
+
+- **현재:** `/api/share`가 항상 placeholder SVG. 생성된 이미지 무시.
+- **수정:**
+  - profile store에서 image_url 확인
+  - DALL-E 이미지가 있으면 그것 사용
+  - 없으면 아키타입 placeholder (현재 동작)
+- **AC:**
+  - [ ] 생성된 이미지가 share card에 반영
+  - [ ] OG 이미지에도 실제 캐릭터 이미지 사용
+
+### T3-04. 상태 머신에 실제 이벤트 데이터 반영
+
+- **현재:** state-machine의 big_loss 캡션이 "Down ? USD", long_hold가 "? days held"
+- **이미 수정됨:** event.payload에서 amount/duration 읽도록 변경
+- **추가 필요:**
+  - Mutation processor가 실제 amount/duration을 payload에 넣어야 함
+  - analyze → state machine flow에서 실제 PnL 데이터가 payload로 전달
+- **AC:**
+  - [ ] big_loss 시 실제 USD 손실액 표시
+  - [ ] long_hold 시 실제 보유 일수 표시
+
+### T3-05. Overlay Renderer가 실제 합성 결과 반환
+
+- **현재:** `getPreviewUrl`이 항상 base image만 반환
+- **수정:**
+  - Canvas 기반 trait overlay 합성
+  - 합성 결과를 data URL로 캐시
+  - Monster Room, Share Card, OG Image 모두에서 합성된 캐릭터 사용
+- **AC:**
+  - [ ] trait overlay가 시각적으로 반영됨
+  - [ ] crown, zombie_eyes, bandage 등이 실제로 보임
+
+---
+
+## TIER 4: 밈 문화 심화 (커뮤니티 정체성)
+
+> 이 티어의 목표: **DegenBorn 자체가 밈이 된다.**
+
+### T4-01. "Degen Report Card" — 종합 성적표 카드
+
+- **현재:** `/sheet/[wallet]`과 `/certificate/[wallet]` 존재하지만 활용 약함
+- **수정:**
+  - 학교 성적표/통지표 형식의 종합 카드
+  - 과목: Aggression (F~S), Conviction (F~S), Chaos, Luck, Survival
+  - 담임 코멘트: 아키타입별 한 줄 (예: "이 학생은 수업 시간에 차트만 봅니다")
+  - "Parents' Signature: ___" (빈 칸) — 밈적 요소
+  - 직인: "DegenBorn Academy — Est. 2024"
+  - **이걸 공유하면 자연스럽게 밈이 된다**
+- **AC:**
+  - [ ] 성적표 이미지 카드 생성
+  - [ ] 과목별 등급 (DNA → 등급 변환)
+  - [ ] 담임 코멘트 아키타입별 차별화
+  - [ ] X 공유 1-click
+
+### T4-02. "Degen Zodiac" — 12궁도 × 6아키타입 매트릭스
+
+- **현재:** Horoscope + Tarot 존재하지만 독자적 세계관이 약함
+- **수정:**
+  - 6 아키타입을 "Degen Zodiac Signs"으로 포지셔닝
+  - 궁합표: "Mad Gambler × Ice Whale = 💀 Toxic Combo"
+  - "Ask your friends: What's your degen sign?"
+  - 각 조합에 한 줄 설명 (6×6 = 36 조합)
+  - 궁합 결과를 공유 가능한 카드로
+- **왜 중요:** "별자리 궁합"은 인류 역사상 가장 성공한 바이럴 포맷 중 하나다. 이걸 크립토 컨텍스트로 가져온다.
+- **AC:**
+  - [ ] 6×6 궁합표 데이터
+  - [ ] /zodiac 페이지 — 두 아키타입 선택 → 궁합 결과
+  - [ ] 궁합 카드 이미지 + X 공유
+
+### T4-03. "Graveyard"를 진짜 문화 콘텐츠로
+
+- **현재:** `/graveyard` — 하드코딩된 flatlined souls 리스트
+- **문제:** Graveyard가 문화적 의미를 갖지 못하고 있다
+- **수정:**
+  - 실제 Ghost 상태(corruption 80+) 몬스터가 자동 등재
+  - 각 묘비에 "Last Words" (마지막 dialogue)
+  - "R.I.P. — This degen held $RUGTOKEN for 47 days"
+  - 방문자가 "F" 누르면 카운터 증가 (인메모리)
+  - "Pour One Out" 공유 버튼
+  - 가끔 부활하는 영혼 (survival_streak > 0이면 묘비에 금 테두리)
+- **AC:**
+  - [ ] Ghost 상태 몬스터 자동 등재
+  - [ ] "F to Pay Respects" 버튼
+  - [ ] "Last Words" 표시
+  - [ ] 부활한 영혼 골드 표시
+
+### T4-04. "Wall of Shame" / "Hall of Fame" 듀얼 보드
+
+- **새로운 콘텐츠:**
+  - **Hall of Fame:** Level 7+, Prestige 70+, 3-Crown+ → 금색 카드
+  - **Wall of Shame:** Corruption 80+, 5+ Scars, Ghost mood → 빨간 카드
+  - 핵심 인사이트: 밈코인 커뮤니티에서 **"rekt된 것도 자랑**"이다
+  - Wall of Shame에 올라가는 것도 일종의 성취 → 역설적 리텐션
+  - 각 카드에 "이 디젠은 [stat] 때문에 여기에 있다" 한 줄
+- **AC:**
+  - [ ] /fame + /shame 또는 gallery 내 탭으로 구현
+  - [ ] 자동 분류 기준 명확
+
+### T4-05. Seasonal "Degen Season" 이벤트 프레임워크
+
+- **새로운 콘텐츠:**
+  - 매 시즌(월간 또는 격주) 테마 이벤트
+  - 예시: "Rug Season" — 이 기간 동안 rug event에서 살아남으면 특별 badge
+  - "Bull Run" — win streak 보너스 포인트
+  - "Ghost Month" — 가장 오래 ghost 상태 유지한 지갑에게 명예
+  - 시즌 종료 시 "Season Report" 카드 자동 생성
+- **왜 중요:** 한정 시간 이벤트는 FOMO를 만들고, FOMO는 공유를 만든다.
+- **AC:**
+  - [ ] Season 데이터 구조 (시작/종료 시간, 테마, 보너스 조건)
+  - [ ] 시즌 badge 시스템
+  - [ ] 시즌 리포트 카드
+
+---
+
+## TIER 5: 기술 부채 해소 (견고한 기반)
+
+> TIER 0-4를 안정적으로 지탱하기 위한 기술 기반.
+
+### T5-01. DB 도입 (인메모리 → Postgres)
+
+- 모든 인메모리 store를 Supabase/Neon Postgres로 이전
+- wallet_profile, activity_event, mutation_event, generated_asset 테이블
+- Vercel 서버리스 환경에서 상태 공유 가능
+
+### T5-02. 이미지 영구 저장소
+
+- DALL-E 이미지 → Vercel Blob / Cloudflare R2
+- tokenURI에서 안정적 URL 제공
+- OG 이미지 캐시
+
+### T5-03. RPC Four.meme 플래그 수정
+
+- normalizer.ts에서 `log.address` → `transaction.to` 비교로 변경
+- Four.meme 라우터 주소와 올바르게 매칭
+
+### T5-04. SoulCore approve/setApprovalForAll 차단
+
+- Soulbound 토큰인데 approve가 작동하는 문제
+- override하여 revert 처리
+
+### T5-05. 테스트 커버리지 확대
+
+- @degenborn/shared 단위 테스트 (badges, tier, lexicon, dialogue)
+- Archetype classifier fallback 테스트
+- Scoring engine pnl_delta=0 시나리오 테스트
+- SoulCore burn 경로 테스트
+
+---
+
+## 우선순위 매트릭스
+
+| 티어 | 임팩트 | 난이도 | 추천 순서 |
+|------|--------|--------|-----------|
+| T0 (바이럴리티) | **최고** | 중 | **1순위** — 해커톤 심사에 직접 영향 |
+| T1 (콘텐츠 품질) | 높음 | 중-하 | **2순위** — 데모 시연 품질 |
+| T2 (리텐션) | 높음 | 중 | 3순위 — 제출 후 유저 유지 |
+| T3 (완성도) | 중 | 하-중 | 4순위 — 기존 버그/가짜 데이터 수정 |
+| T4 (문화 심화) | 중-높 | 중 | 5순위 — post-hackathon 차별화 |
+| T5 (기술 부채) | 기반 | 중-높 | 병행 — 다른 티어 진행하면서 점진적 |
+
+---
+
+## 한 줄 요약
+
+> **DegenBorn은 이미 "재미있는 장난감"이다. 이제 "퍼지는 밈"이 되어야 한다.**
+> **핵심은 "안에서 재밌는 것"을 "밖에서 보이는 것"으로 바꾸는 일이다.**
+> **모든 경험의 끝에 "이거 X에 올려야지" 하는 순간이 있어야 한다.**
