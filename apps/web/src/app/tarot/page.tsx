@@ -102,11 +102,21 @@ function TarotContent() {
 
         {draw && (
           <>
+            {/* Card flip animation wrapper — T1-06 */}
+            <style>{`
+              @keyframes card-flip {
+                0%   { transform: rotateY(90deg); opacity: 0; }
+                100% { transform: rotateY(0deg);  opacity: 1; }
+              }
+            `}</style>
+
             {/* Card — 9:16 format */}
             <div
               ref={cardRef}
-              className={`rounded-2xl overflow-hidden transition-all duration-700 ${revealed ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
+              className="rounded-2xl overflow-hidden"
               style={{
+                animation: revealed ? "card-flip 0.6s ease-out forwards" : "none",
+                opacity: revealed ? 1 : 0,
                 aspectRatio: "9/16",
                 background: `linear-gradient(160deg, #0a0a0f, ${color}22)`,
                 border: `1px solid ${color}55`,
@@ -176,12 +186,28 @@ function TarotContent() {
 
             {/* Actions */}
             <div className="flex gap-3 mt-4 flex-wrap">
+              {/* X share — T1-06 */}
               <button
-                onClick={handleDownload}
-                className="px-5 py-2.5 font-black text-sm rounded-lg hover:brightness-110 transition-all"
+                onClick={() => {
+                  const cardName = draw.card.name;
+                  const reversed = draw.is_reversed ? " (Reversed)" : "";
+                  const text = encodeURIComponent(
+                    `My weekly degen tarot: ${cardName}${reversed}\n\n"${draw.meaning}"\n\n#DegenBorn #fourmeme`
+                  );
+                  const url = encodeURIComponent(`${window.location.origin}/tarot?wallet=${wallet}`);
+                  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
+                }}
+                className="flex-1 py-2.5 font-black text-sm rounded-lg hover:brightness-110 transition-all"
                 style={{ background: color, color: "#000" }}
               >
-                ↓ Save Card
+                𝕏 Share Reading
+              </button>
+              <button
+                onClick={handleDownload}
+                className="px-5 py-2.5 border font-bold text-sm rounded-lg hover:opacity-80 transition-all"
+                style={{ borderColor: `${color}55`, color }}
+              >
+                ↓ Save
               </button>
               <Link
                 href={`/monster?wallet=${wallet}`}
