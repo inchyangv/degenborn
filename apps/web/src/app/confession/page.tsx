@@ -174,9 +174,10 @@ function ConfessionContent() {
                     {msg.role === "soul" && (
                       <button
                         onClick={() => setShareTarget(msg)}
-                        className="absolute -bottom-4 right-0 text-[10px] text-gray-700 hover:text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="mt-2 block text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{ color }}
                       >
-                        Share →
+                        𝕏 Share this line →
                       </button>
                     )}
                   </div>
@@ -245,25 +246,41 @@ function ConfessionContent() {
                   — {monster?.archetype.profile.name} · DegenBorn Confession Booth
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(
-                      `"${shareTarget.text}" — ${monster?.archetype.profile.name} · DegenBorn Confession Booth`
+                    const text = encodeURIComponent(
+                      `My soul said: "${shareTarget.text}"\n\n— ${monster?.archetype.profile.name} on @four_meme × @DegenBorn\n#DegenBorn #fourmeme`
                     );
+                    const url = encodeURIComponent(`${window.location.origin}/confession?wallet=${wallet}`);
+                    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
                     setShareTarget(null);
                   }}
-                  className="flex-1 py-2 text-sm font-black rounded-lg"
+                  className="w-full py-2 text-sm font-black rounded-lg"
                   style={{ background: color, color: "#000" }}
                 >
-                  Copy Text
+                  𝕏 Share to X
                 </button>
-                <button
-                  onClick={() => setShareTarget(null)}
-                  className="px-4 py-2 text-sm border border-[var(--degen-border)] text-gray-400 rounded-lg hover:border-gray-400 transition-colors"
-                >
-                  Cancel
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `"${shareTarget.text}" — ${monster?.archetype.profile.name} · DegenBorn × four.meme`
+                      );
+                      setShareTarget(null);
+                    }}
+                    className="flex-1 py-2 text-sm border rounded-lg"
+                    style={{ borderColor: `${color}44`, color }}
+                  >
+                    Copy Text
+                  </button>
+                  <button
+                    onClick={() => setShareTarget(null)}
+                    className="px-4 py-2 text-sm border border-[var(--degen-border)] text-gray-400 rounded-lg hover:border-gray-400 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>
