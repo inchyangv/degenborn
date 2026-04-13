@@ -173,6 +173,25 @@ function MonsterRoomContent() {
         </div>
         <Link href="/gallery" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">Gallery</Link>
       </div>
+      {/* T3-01: Data source badge */}
+      {data_source !== "live" && (
+        <div className="flex justify-center py-2">
+          <div
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono border ${
+              data_source === "demo"
+                ? "border-[var(--neon-gold)] text-[var(--neon-gold)] bg-yellow-900/10"
+                : "border-gray-600 text-gray-500"
+            }`}
+          >
+            <span>{data_source === "demo" ? "🟡" : "🟠"}</span>
+            <span>
+              {data_source === "demo"
+                ? "Demo data — not real on-chain activity"
+                : "Sample fixture data — not real on-chain data"}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* CHARACTER HERO — 70vh focal point */}
       <div
