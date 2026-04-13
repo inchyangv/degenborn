@@ -323,6 +323,26 @@ function BirthContent() {
             </div>
           )}
           <MintButton wallet={wallet} dna={data.dna} archetype={data.archetype} />
+
+          {/* Share Your Birth CTA — T1-01 */}
+          <div className="mt-6 text-center">
+            <div className="text-xs text-gray-700 mb-3">Record this moment</div>
+            <button
+              onClick={() => {
+                const caption = `I was just born as a ${data.archetype.profile.name}. "${data.archetype.profile.tagline}" — my DegenBorn soul has awakened.`;
+                const text = encodeURIComponent(`${caption}\n\n#DegenBorn #fourmeme`);
+                const url = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
+                window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
+              }}
+              className="px-8 py-3 font-black text-sm rounded-xl hover:brightness-110 transition-all"
+              style={{
+                background: `linear-gradient(135deg, var(--neon-purple), var(--neon-gold))`,
+                color: "#000",
+              }}
+            >
+              𝕏 Share Your Birth
+            </button>
+          </div>
         </>
       )}
 
