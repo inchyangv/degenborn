@@ -2,7 +2,7 @@
 
 import type { CharacterState, ArchetypeId, TraitId } from "@degenborn/shared";
 import { TRAIT_DEFINITIONS, TRAIT_EMOJI } from "@degenborn/shared";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Props {
   archetype: ArchetypeId;
@@ -10,17 +10,16 @@ interface Props {
   wallet: string;
   size?: number;
   showTraitBadges?: boolean;
+  /** Optional override for the base image URL (e.g., DALL-E genesis image) — T3-05 */
+  genesisImageUrl?: string | null;
 }
 
-/** Maps trait categories to position on the character card */
-const TRAIT_POSITION_CLASSES: Record<string, string> = {
-  head: "top-4 left-1/2 -translate-x-1/2",
-  body: "bottom-16 left-4",
-  accessory: "top-4 right-4",
-  eyes: "top-16 left-1/2 -translate-x-1/2",
-  aura: "inset-0",
-};
+// Module-level cache: key = baseUrl + sorted traits + size → composited data URL
+const OVERLAY_CACHE = new Map<string, string>();
 
+function buildCacheKey(baseUrl: string, traits: string[], size: number): string {
+  return `${baseUrl}|${traits.slice().sort().join(",")}|${size}`;
+}
 
 export default function CharacterDisplay({
   archetype,
@@ -28,29 +27,48 @@ export default function CharacterDisplay({
   wallet,
   size = 320,
   showTraitBadges = true,
+  genesisImageUrl,
 }: Props) {
-  const [imageUrl, setImageUrl] = useState<string>(
-    `/archetypes/${archetype}_placeholder.svg`,
-  );
+  const defaultBase = `/archetypes/${archetype}_placeholder.svg`;
+  const baseImageUrl = genesisImageUrl ?? defaultBase;
+
+  const [displayUrl, setDisplayUrl] = useState<string>(baseImageUrl);
   const [composited, setComposited] = useState(false);
 
-  // Try to composite traits onto base image (client-side only)
+  // T3-05: Composite traits onto base image (client-side only)
+  // Re-runs when base image or traits change
   useEffect(() => {
-    if (state.active_traits.length === 0) return;
+    // Update display immediately to new base when genesisImageUrl changes
+    if (state.active_traits.length === 0) {
+      setDisplayUrl(baseImageUrl);
+      setComposited(false);
+      return;
+    }
     if (typeof window === "undefined") return;
+
+    const cacheKey = buildCacheKey(baseImageUrl, state.active_traits, size);
+    const cached = OVERLAY_CACHE.get(cacheKey);
+    if (cached) {
+      setDisplayUrl(cached);
+      setComposited(true);
+      return;
+    }
 
     const composite = async () => {
       try {
         const { renderOverlay } = await import("@/lib/overlay-renderer");
-        const result = await renderOverlay(imageUrl, state.active_traits as TraitId[], size);
-        setImageUrl(result.data_url);
+        const result = await renderOverlay(baseImageUrl, state.active_traits as TraitId[], size);
+        OVERLAY_CACHE.set(cacheKey, result.data_url);
+        setDisplayUrl(result.data_url);
         setComposited(true);
       } catch {
         // Silently keep base image — overlay assets missing in dev is expected
+        setDisplayUrl(baseImageUrl);
       }
     };
     composite();
-  }, [state.active_traits, archetype]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseImageUrl, state.active_traits.join(","), size]);
 
   const moodColors: Record<string, string> = {
     neutral: "border-gray-600",
@@ -70,7 +88,7 @@ export default function CharacterDisplay({
         className={`w-full h-full rounded-2xl overflow-hidden border-2 ${borderColor} transition-colors duration-500`}
       >
         <img
-          src={imageUrl}
+          src={displayUrl}
           alt={[
             archetype.replace(/_/g, " "),
             `level ${state.level}`,
