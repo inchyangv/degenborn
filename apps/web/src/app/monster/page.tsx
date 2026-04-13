@@ -90,11 +90,13 @@ function MonsterRoomContent() {
           archetype: ArchetypeResult;
           activity_counts?: ActivityCounts;
           loyalty?: LoyaltyScore;
+          derived_state?: CharacterState;
           data_source?: "live" | "demo" | "fixture";
         };
 
         const { createInitialState } = await import("@/lib/state-machine");
-        const state = createInitialState(wallet.toLowerCase(), analyzed.archetype.archetype as any);
+        // Use derived_state (built from real PnL events) if available, else create fresh initial state
+        const state = analyzed.derived_state ?? createInitialState(wallet.toLowerCase(), analyzed.archetype.archetype as any);
 
         setData({
           dna: analyzed.dna,

@@ -3,9 +3,10 @@ import { isAddress } from "viem";
 import { scoreDNA, computeLoyaltyScore } from "@degenborn/scoring";
 import { classify } from "@degenborn/archetype";
 import { fetchWalletActivity } from "@degenborn/data-adapter";
-import type { ActivityEvent, TimeWindow } from "@degenborn/shared";
+import type { ActivityEvent, TimeWindow, StateEvent, CharacterState, ArchetypeId } from "@degenborn/shared";
 import { setProfile } from "@/lib/profile-store";
 import { getDataSource } from "@/lib/runtime-env";
+import { createInitialState, applyStateEvent } from "@/lib/state-machine";
 import path from "path";
 
 export async function POST(req: NextRequest) {
@@ -76,12 +77,16 @@ export async function POST(req: NextRequest) {
     // Persist to profile store for metadata endpoint cache hits
     setProfile(walletLower, dna, archetypeResult);
 
+    // Derive character state from real event data — T3-04
+    const derivedState = deriveCharacterState(walletLower, archetypeResult.archetype as ArchetypeId, events);
+
     return NextResponse.json({
       dna,
       archetype: archetypeResult,
       event_count: events.length,
       activity_counts,
       loyalty,
+      derived_state: derivedState,
       data_source: dataSource,
     });
   } catch (err: unknown) {
@@ -89,6 +94,98 @@ export async function POST(req: NextRequest) {
     console.error("[analyze]", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+/**
+ * Derive a CharacterState by replaying activity events through the state machine.
+ * Converts ActivityEvents → StateEvents with real PnL/duration payloads,
+ * then applies each event to build an accurate character state.
+ */
+function deriveCharacterState(
+  wallet: string,
+  archetype: ArchetypeId,
+  events: ActivityEvent[],
+): CharacterState {
+  let state = createInitialState(wallet, archetype);
+  if (events.length === 0) return state;
+
+  const sorted = [...events].sort((a, b) => a.timestamp - b.timestamp);
+
+  // Track consecutive wins/losses for streaks
+  let consecutiveWins = 0;
+  let bigLossSeen = false;
+
+  for (const event of sorted) {
+    let stateEvent: StateEvent | null = null;
+
+    if (event.event_type === "rug") {
+      stateEvent = {
+        type: "rug_exposure",
+        wallet_address: wallet,
+        timestamp: event.timestamp,
+        payload: { amount: Math.abs(event.pnl_delta), token: event.token_address },
+      };
+      consecutiveWins = 0;
+      bigLossSeen = true;
+    } else if (event.event_type === "sell" && event.pnl_delta < -200) {
+      stateEvent = {
+        type: "big_loss",
+        wallet_address: wallet,
+        timestamp: event.timestamp,
+        payload: { amount: Math.abs(event.pnl_delta), token: event.token_address },
+      };
+      consecutiveWins = 0;
+      bigLossSeen = true;
+    } else if (event.event_type === "sell" && event.pnl_delta > 500) {
+      consecutiveWins++;
+      if (consecutiveWins >= 3) {
+        stateEvent = {
+          type: "win_streak_3",
+          wallet_address: wallet,
+          timestamp: event.timestamp,
+          payload: { amount: event.pnl_delta },
+        };
+        consecutiveWins = 0;
+      } else if (event.pnl_delta > 2000) {
+        stateEvent = {
+          type: "mega_win",
+          wallet_address: wallet,
+          timestamp: event.timestamp,
+          payload: { amount: event.pnl_delta },
+        };
+      } else if (bigLossSeen) {
+        stateEvent = {
+          type: "loss_recovery",
+          wallet_address: wallet,
+          timestamp: event.timestamp,
+          payload: { amount: event.pnl_delta },
+        };
+        bigLossSeen = false;
+      }
+    } else if (event.event_type === "recovery") {
+      stateEvent = {
+        type: "comeback",
+        wallet_address: wallet,
+        timestamp: event.timestamp,
+        payload: { amount: event.pnl_delta },
+      };
+      bigLossSeen = false;
+    } else if (event.event_type === "buy" && (event.hold_duration_seconds ?? 0) > 86400 * 7) {
+      stateEvent = {
+        type: "long_hold",
+        wallet_address: wallet,
+        timestamp: event.timestamp,
+        payload: { duration: event.hold_duration_seconds ?? 0, token: event.token_address },
+      };
+    }
+
+    if (stateEvent) {
+      const transition = applyStateEvent(state, stateEvent);
+      state = transition.state_after;
+    }
+  }
+
+  return state;
 }
 
 /** Generate deterministic demo events when no real data / fixture is available */
