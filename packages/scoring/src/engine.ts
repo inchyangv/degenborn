@@ -243,13 +243,14 @@ export function computeLoyaltyScore(events: ActivityEvent[]): LoyaltyScore {
   const daySet = new Set(events.map((e) => Math.floor(e.timestamp / 86400)));
   const activeDays = daySet.size;
 
-  // Score components (sum to 100)
+  // Score components (sum to 100).
+  // norm() returns 0-100, so divide by 100 before applying weight.
   // Trade count: 0-50 trades → 0-40 pts
-  const tradeScore = norm(tradeCount, 50) * 40;
+  const tradeScore = (norm(tradeCount, 50) / 100) * 40;
   // Unique tokens: 0-20 → 0-30 pts
-  const tokenScore = norm(uniqueTokens, 20) * 30;
+  const tokenScore = (norm(uniqueTokens, 20) / 100) * 30;
   // Activity span: 0-90 days → 0-30 pts
-  const spanScore = norm(spanDays, 90) * 30;
+  const spanScore = (norm(spanDays, 90) / 100) * 30;
 
   const score = clamp(Math.round(tradeScore + tokenScore + spanScore));
 
