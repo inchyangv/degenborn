@@ -1,22 +1,203 @@
 # TODO.md — DegenBorn v2 Product Improvement Roadmap
 
-> 2026-04-13 기준. 밈 전문가 + 프로덕트 기획자 + 시니어 엔지니어 공동 감사.
-> 현재 프로덕트의 핵심 문제: **"재미있는 구조는 있는데, 퍼질 이유가 없다."**
+> 2026-04-13 기준. 제출 마감 4월 22일 (D-9).
+> 핵심 전략 전환: **"Four.meme 데이터를 가져다 쓰는 프로젝트"에서 → "Four.meme 생태계를 더 가치있게 만드는 프로젝트"로.**
 
 ---
 
 ## 핵심 진단
 
-DegenBorn의 기술 아키텍처는 탄탄하다 — deterministic scoring, state machine, 6가지 아키타입, 10개 밈 템플릿, 타로/호로스코프/로스트/배틀 등 콘텐츠 레이어가 풍부하다.
+### 문제 1: Four.meme과의 관계가 일방적이다
+현재 DegenBorn은 Four.meme 라우터 주소로 트랜잭션을 필터링하는 게 전부다. Four.meme 입장에서 보면 **"우리 데이터 가져다 쓰는 프로젝트"**일 뿐, **"우리한테 도움이 되는 프로젝트"**가 아니다. 해커톤 주최자가 좋아하는 프로젝트 = 그들의 플랫폼을 더 가치있게 만드는 프로젝트.
 
-**문제는 이 모든 게 "안에서만 재밌다"는 것이다.**
+### 문제 2: 안에서만 재밌다
+기술 아키텍처는 탄탄하지만 밈이 퍼지려면:
+1. **즉시성** — 5초 안에 클릭하게 만드는 것
+2. **자기표현** — 공유하고 싶게 만드는 것
+3. **반응성** — 다른 사람이 "나도 해볼까" 하게 만드는 것
 
-밈이 퍼지려면 세 가지가 필요하다:
-1. **즉시성** — 5초 안에 "이거 뭐지?" 하고 클릭하게 만드는 것
-2. **자기표현** — "이게 나다" 하고 공유하고 싶게 만드는 것
-3. **반응성** — 다른 사람이 보고 "나도 해볼까" 하게 만드는 것
+### 전략적 포지셔닝
+> "Four.meme is where meme tokens are born. DegenBorn is where meme traders are born."
+> "Every trade on Four.meme shapes your monster. Every monster shared brings someone new to Four.meme."
 
-현재 DegenBorn은 2번은 부분적으로 해결했지만, 1번과 3번이 약하다.
+---
+
+## TIER F: Four.meme Symbiosis (해커톤 수상의 핵심)
+
+> 이 티어의 목표: **DegenBorn이 Four.meme 생태계의 일부로 보이게 만든다. 데이터 추출이 아니라 상호 가치 창출.**
+> **이 티어가 없으면 나머지 전부 해도 "Four.meme 해커톤에서 Four.meme과 무관한 프로젝트"가 된다.**
+
+### TF-01. [P0] "Powered by Four.meme" 브랜딩 전면 삽입
+**Estimate:** 0.5d
+**Depends on:** 없음 (기존 코드 수정)
+
+#### 목표
+모든 공유 표면에 Four.meme 브랜딩을 넣어서, DegenBorn이 공유될 때마다 Four.meme도 노출되게 한다.
+
+#### 작업
+- [ ] OG 이미지(`/api/og/[wallet]`)에 "Powered by Four.meme" 텍스트 또는 로고 추가
+- [ ] Share Card / Trading Card 하단에 "Built on Four.meme data" 워터마크
+- [ ] Birth 완료 화면에 "Your monster was born from Four.meme trades" 문구
+- [ ] Monster Room 헤더에 "Four.meme Trader Identity" 서브타이틀
+- [ ] Soul Core NFT metadata에 `birthplace: "four.meme"` 필드 추가
+- [ ] 랜딩 페이지 히어로에 Four.meme 연결 명시
+
+#### 왜 중요
+유저가 X에 공유할 때마다 Four.meme이 무료 브랜드 노출을 얻는다. 심사위원에게 "이 프로젝트는 우리 생태계의 마케팅 채널"이라는 인상을 준다.
+
+#### AC
+- [ ] 공유 카드에 Four.meme 워터마크가 보인다
+- [ ] OG 이미지에 Four.meme 텍스트가 포함된다
+- [ ] NFT metadata에 birthplace 필드가 존재한다
+- [ ] 랜딩/Birth/Monster Room 3개 화면 모두에 Four.meme 언급
+
+---
+
+### TF-02. [P0] Four.meme Loyalty Score — 생태계 기여도 시각화
+**Estimate:** 1d
+**Depends on:** 기존 scoring engine
+
+#### 목표
+단순 손익이 아니라 **"이 지갑이 Four.meme 생태계에 얼마나 기여하는가"**를 별도 지표로 계산하고 시각화한다.
+
+#### 작업
+- [ ] `FourMemeScore` 계산 로직 추가 (scoring engine 확장)
+  - 입력: Four.meme 거래 횟수, 참여 토큰 수, Four.meme 체류 기간(첫 거래~마지막 거래), 연속 활동 일수
+  - 출력: 0~100 점수 + 등급 (Bronze / Silver / Gold / Diamond / Legendary)
+- [ ] DNA Panel에 "Four.meme Loyalty" 6번째 축 추가 (또는 별도 배지)
+- [ ] Share Card에 Loyalty 등급 표시
+- [ ] "Top Four.meme Trader" 배지 — 상위 등급에 특별 시각 표시
+- [ ] Monster Room에 "Four.meme Activity" 섹션: 거래 수, 참여 토큰 수, 활동 기간
+
+#### 왜 중요
+Four.meme 입장: **충성 유저를 식별하고 보상할 수 있는 데이터 인프라**가 생긴다. "이걸 우리 플랫폼에 달면 리텐션 올라간다"라는 인사이트를 준다.
+
+#### AC
+- [ ] 샘플 지갑 3개에 대해 서로 다른 Loyalty Score가 나온다
+- [ ] DNA Panel 또는 별도 UI에 점수가 표시된다
+- [ ] 등급별 시각적 차이가 있다 (배지 색상, 테두리 등)
+
+---
+
+### TF-03. [P0] 공유 → Four.meme 리턴 루프 설계
+**Estimate:** 0.5d
+**Depends on:** TF-01
+
+#### 목표
+현재: 공유 → X → 끝. 변경: 공유 → X → DegenBorn → **"Trade on Four.meme to evolve"** → Four.meme. 순환 구조를 만든다.
+
+#### 작업
+- [ ] X 공유 텍스트에 "Born from @four_meme trades" 멘션 포함
+- [ ] 모든 공유 CTA 텍스트를 "My Four.meme soul" / "My trading monster on Four.meme" 톤으로 통일
+- [ ] Monster Room에 "Evolve Your Monster" CTA → "Trade on Four.meme to trigger new mutations" + Four.meme 링크
+- [ ] Birth 완료 후 "Your monster grows with every Four.meme trade" 안내
+- [ ] 랜딩 페이지 하단에 "Start trading on Four.meme → Come back to see your monster evolve" 플로우 다이어그램
+
+#### 왜 중요
+심사위원이 보고 싶은 것: **"이 프로젝트가 있으면 Four.meme DAU가 올라간다."** 공유 루프가 Four.meme 트래픽으로 돌아가는 구조를 명시적으로 보여줘야 한다.
+
+#### AC
+- [ ] X 공유 시 @four_meme 멘션 포함
+- [ ] Monster Room에 Four.meme 거래 유도 CTA 존재
+- [ ] 랜딩에서 Four.meme → DegenBorn → Four.meme 순환 플로우가 시각적으로 설명됨
+
+---
+
+### TF-04. [P0] 임베더블 Monster Widget API
+**Estimate:** 0.5d
+**Depends on:** 기존 /api/analyze, /api/og
+
+#### 목표
+Four.meme이 원하면 자기 플랫폼에 DegenBorn 몬스터 카드를 임베드할 수 있는 API를 제공한다. 데모에서 "이렇게 Four.meme 프로필에 붙을 수 있습니다" 한 장면을 보여주는 게 목적.
+
+#### 작업
+- [ ] `GET /api/widget/[wallet]` 엔드포인트 생성
+  - 반환: JSON (archetype, level, loyalty_score, image_url, share_url)
+- [ ] `GET /api/widget/[wallet]/image` — 미니 몬스터 카드 이미지 (300x400 PNG/SVG)
+  - 아키타입 + 레벨 + Loyalty 배지 + 캐릭터 이미지
+- [ ] `GET /api/widget/[wallet]/embed` — iframe 가능한 미니 카드 HTML
+- [ ] CORS 설정: Four.meme 도메인 허용 (데모용으로 `*` 가능)
+- [ ] API 문서 간단히 작성 (`docs/widget-api.md`)
+
+#### 왜 중요
+발표에서 "이 위젯을 Four.meme 프로필에 넣으면, 트레이더들이 자기 정체성을 보여줄 수 있습니다" 한 마디면 **Practical Value 점수**가 확 올라간다. 실제 통합 안 해도 API가 존재한다는 것만으로 "통합 가능성"을 입증한다.
+
+#### AC
+- [ ] `/api/widget/[wallet]` JSON 응답이 정상 반환
+- [ ] `/api/widget/[wallet]/image` 이미지가 렌더링됨
+- [ ] 데모에서 "Four.meme 프로필 임베드" 시나리오 보여줄 수 있음
+- [ ] API 문서가 존재함
+
+---
+
+### TF-05. [P1] Token Launch Creator Trait — Four.meme 토큰 런칭 연동
+**Estimate:** 1d
+**Depends on:** data-adapter, state-machine
+
+#### 목표
+유저가 Four.meme에서 토큰을 **런칭(생성)**하면 Soul Core에 특별한 "Creator" trait가 부여된다. 거래만 추적하는 게 아니라 **토큰 생성 행위**까지 연동해서, Four.meme 핵심 기능(토큰 런칭)과 직접 연결.
+
+#### 작업
+- [ ] Four.meme Factory/Deployer 컨트랙트 주소 확인 및 상수 등록
+- [ ] data-adapter에 `token_created` 이벤트 타입 추가
+  - Four.meme Factory 컨트랙트의 `TokenCreated` 또는 유사 이벤트 로그 파싱
+- [ ] normalizer에 `token_created` 이벤트 정규화 로직 추가
+- [ ] scoring engine: 토큰 런칭 횟수를 별도 필드로 기록
+- [ ] state-machine: `token_created` 이벤트 핸들러 추가
+  - 첫 런칭 → `creatorBadge: true`, mood 변경
+  - 런칭한 토큰이 성공(거래량 일정 이상) → "Kingmaker" 특수 trait
+  - 런칭한 토큰이 실패(0으로 수렴) → "Fallen Creator" scar
+- [ ] 새 trait 에셋: `creator_badge.svg`, `kingmaker_crown.svg`, `fallen_creator_mark.svg`
+- [ ] Monster Room에 "Creator" 섹션: 런칭한 토큰 리스트 + 결과
+
+#### 왜 중요
+Four.meme의 핵심 기능은 **토큰 런칭**이다. 거래 추적만 하면 DEX 분석 도구와 다를 바 없다. 토큰 런칭까지 캐릭터에 반영하면 **"Four.meme만의 정체성 엔진"**이 된다. 다른 DEX에서는 재현 불가능.
+
+#### AC
+- [ ] Four.meme에서 토큰 생성한 지갑에 Creator badge가 부여됨
+- [ ] Creator 이벤트가 mutation diary에 기록됨
+- [ ] 토큰 런칭 성공/실패에 따른 trait 분기가 동작함
+
+---
+
+### TF-06. [P0] 발표 내러티브 Four.meme 중심 재구성
+**Estimate:** 0.25d
+**Depends on:** TF-01 ~ TF-04
+
+#### 목표
+데모 발표의 전체 스토리라인을 "지갑 분석 도구" 관점에서 **"Four.meme 리텐션 엔진"** 관점으로 재구성한다.
+
+#### 작업
+- [ ] 발표 오프닝 멘트 확정:
+  > "Four.meme is where meme tokens are born. DegenBorn is where meme traders are born."
+- [ ] 데모 흐름에 Four.meme 연결점 3개 이상 명시적 삽입:
+  1. "이 몬스터는 Four.meme 거래 데이터로 태어났습니다"
+  2. "Four.meme에서 거래할수록 몬스터가 진화합니다"
+  3. "공유할 때마다 Four.meme 브랜드가 함께 노출됩니다"
+- [ ] Practical Value 슬라이드/화면: "Four.meme에게 주는 가치"
+  - 리텐션: 거래 = 캐릭터 성장 → 더 많이 거래
+  - UGC: 몬스터 카드 공유 → Four.meme 브랜드 확산
+  - 유저 프로필: Loyalty Score → 충성 유저 식별 가능
+- [ ] 위젯 API 데모 장면: "이렇게 Four.meme에 임베드 가능합니다"
+- [ ] Replay Mode 시나리오에 Four.meme 연결점 반영
+
+#### AC
+- [ ] 발표 2분 안에 Four.meme 언급이 3회 이상
+- [ ] "Four.meme에게 주는 가치"가 1장으로 요약됨
+- [ ] 데모에서 위젯 API 장면 포함
+
+---
+
+## TIER F 실행 우선순위
+
+| 태스크 | 난이도 | 임팩트 | 순서 |
+|--------|--------|--------|------|
+| TF-01 브랜딩 | 하 | 최고 | **즉시** — 30분이면 끝나고 효과 극대 |
+| TF-03 리턴 루프 | 하 | 최고 | **즉시** — CTA 텍스트 수정 수준 |
+| TF-06 발표 내러티브 | 하 | 최고 | **즉시** — 문서/데모 구성 |
+| TF-04 위젯 API | 중 | 높음 | **D-7 전** — 발표에서 한 장면 보여주면 강력 |
+| TF-02 Loyalty Score | 중 | 높음 | **D-7 전** — 차별화 핵심 지표 |
+| TF-05 Creator Trait | 중-상 | 높음 | **D-5 전** — P1이지만 있으면 킬러 |
 
 ---
 
@@ -445,8 +626,9 @@ DegenBorn의 기술 아키텍처는 탄탄하다 — deterministic scoring, stat
 
 | 티어 | 임팩트 | 난이도 | 추천 순서 |
 |------|--------|--------|-----------|
-| T0 (바이럴리티) | **최고** | 중 | **1순위** — 해커톤 심사에 직접 영향 |
-| T1 (콘텐츠 품질) | 높음 | 중-하 | **2순위** — 데모 시연 품질 |
+| **TF (Four.meme Symbiosis)** | **결정적** | **하-중** | **0순위** — 이게 없으면 수상 불가 |
+| T0 (바이럴리티) | 최고 | 중 | 1순위 — 해커톤 심사에 직접 영향 |
+| T1 (콘텐츠 품질) | 높음 | 중-하 | 2순위 — 데모 시연 품질 |
 | T2 (리텐션) | 높음 | 중 | 3순위 — 제출 후 유저 유지 |
 | T3 (완성도) | 중 | 하-중 | 4순위 — 기존 버그/가짜 데이터 수정 |
 | T4 (문화 심화) | 중-높 | 중 | 5순위 — post-hackathon 차별화 |
@@ -456,6 +638,6 @@ DegenBorn의 기술 아키텍처는 탄탄하다 — deterministic scoring, stat
 
 ## 한 줄 요약
 
-> **DegenBorn은 이미 "재미있는 장난감"이다. 이제 "퍼지는 밈"이 되어야 한다.**
-> **핵심은 "안에서 재밌는 것"을 "밖에서 보이는 것"으로 바꾸는 일이다.**
-> **모든 경험의 끝에 "이거 X에 올려야지" 하는 순간이 있어야 한다.**
+> **DegenBorn은 "Four.meme 데이터를 쓰는 프로젝트"가 아니라 "Four.meme을 더 재밌게 만드는 프로젝트"다.**
+> **모든 공유에 Four.meme이 보이고, 모든 거래가 캐릭터를 바꾸고, 모든 바이럴이 Four.meme으로 돌아간다.**
+> **We don't just use Four.meme data. We make Four.meme more fun to use.**
