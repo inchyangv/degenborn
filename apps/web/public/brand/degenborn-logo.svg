@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 900" fill="none">
+  <defs>
+    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(650 180) rotate(20) scale(1280 780)">
+      <stop stop-color="#131629"/>
+      <stop offset="0.4" stop-color="#0B0D16"/>
+      <stop offset="1" stop-color="#020307"/>
+    </radialGradient>
+    <linearGradient id="frame" x1="104" y1="98" x2="532" y2="526" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00FF88"/>
+      <stop offset="0.5" stop-color="#7B52FF"/>
+      <stop offset="1" stop-color="#FFD700"/>
+    </linearGradient>
+    <radialGradient id="orb" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(320 348) rotate(90) scale(182)">
+      <stop stop-color="#292E57"/>
+      <stop offset="0.55" stop-color="#111426"/>
+      <stop offset="1" stop-color="#05060A"/>
+    </radialGradient>
+    <linearGradient id="orbStroke" x1="196" y1="260" x2="444" y2="432" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9B5DFF"/>
+      <stop offset="0.52" stop-color="#00FF88"/>
+      <stop offset="1" stop-color="#FFD700"/>
+    </linearGradient>
+    <linearGradient id="crown" x1="210" y1="188" x2="430" y2="268" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF2A8"/>
+      <stop offset="0.45" stop-color="#FFD700"/>
+      <stop offset="1" stop-color="#FF8A00"/>
+    </linearGradient>
+    <radialGradient id="pupil" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(320 348) rotate(90) scale(78)">
+      <stop stop-color="#F4FFF9"/>
+      <stop offset="0.35" stop-color="#8FFFD0"/>
+      <stop offset="0.72" stop-color="#00FF88"/>
+      <stop offset="1" stop-color="#009D57"/>
+    </radialGradient>
+    <linearGradient id="irisEdge" x1="202" y1="306" x2="438" y2="390" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57FFD2"/>
+      <stop offset="1" stop-color="#00FF88"/>
+    </linearGradient>
+    <linearGradient id="bornText" x1="710" y1="538" x2="1370" y2="538" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#B7FFD2"/>
+      <stop offset="0.45" stop-color="#00FF88"/>
+      <stop offset="1" stop-color="#FFD700"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1800" height="900" rx="40" fill="url(#bg)"/>
+  <ellipse cx="354" cy="302" rx="280" ry="190" fill="#7B52FF" opacity="0.18"/>
+  <ellipse cx="1270" cy="512" rx="510" ry="180" fill="#00FF88" opacity="0.08"/>
+  <ellipse cx="1350" cy="244" rx="320" ry="120" fill="#7B52FF" opacity="0.06"/>
+
+  <g opacity="0.08" stroke="#E2E8F0" stroke-width="4" stroke-linecap="round">
+    <path d="M82 124H1718"/>
+    <path d="M112 162H1688"/>
+    <path d="M88 742H1712"/>
+    <path d="M132 780H1668"/>
+  </g>
+
+  <g>
+    <rect x="96" y="96" width="448" height="448" rx="116" fill="#020307"/>
+    <rect x="96" y="96" width="448" height="448" rx="116" fill="url(#bg)" opacity="0.96"/>
+    <rect x="96" y="96" width="448" height="448" rx="116" stroke="url(#frame)" stroke-width="12"/>
+    <rect x="120" y="120" width="400" height="400" rx="92" stroke="#2A3156" stroke-width="2" opacity="0.9"/>
+
+    <g opacity="0.1" stroke="#C8D4FF" stroke-width="4" stroke-linecap="round">
+      <path d="M184 218H456"/>
+      <path d="M168 256H472"/>
+      <path d="M186 294H454"/>
+      <path d="M170 436H470"/>
+      <path d="M190 474H450"/>
+    </g>
+
+    <path d="M210 246L260 196L320 232L380 196L430 246L400 276L368 252L320 286L272 252L240 276L210 246Z" fill="url(#crown)"/>
+    <path d="M320 208L344 234L320 250L296 234L320 208Z" fill="#FFF9D6" opacity="0.92"/>
+
+    <circle cx="320" cy="356" r="140" stroke="#7B52FF" stroke-width="20" opacity="0.24"/>
+    <circle cx="320" cy="356" r="126" fill="url(#orb)" stroke="url(#orbStroke)" stroke-width="10"/>
+
+    <path d="M280 244L296 268L278 300" stroke="#A960FF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+    <path d="M360 244L344 268L362 300" stroke="#00FF88" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+    <path d="M270 414L292 398L286 430" stroke="#FFD700" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.78"/>
+    <path d="M370 414L348 398L354 430" stroke="#FFD700" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.78"/>
+
+    <path d="M202 356C240 316 276 294 320 294C364 294 400 316 438 356C400 396 364 418 320 418C276 418 240 396 202 356Z" fill="#05070D" stroke="url(#irisEdge)" stroke-width="10"/>
+    <path d="M320 304C350 338 354 380 320 408C286 380 290 338 320 304Z" fill="url(#pupil)"/>
+    <path d="M320 314V398" stroke="#F8FFF5" stroke-width="10" stroke-linecap="round" opacity="0.32"/>
+    <circle cx="320" cy="356" r="10" fill="#F4FFF9"/>
+    <circle cx="284" cy="330" r="6" fill="#D6FFF1" opacity="0.75"/>
+    <circle cx="378" cy="382" r="7" fill="#D6FFF1" opacity="0.5"/>
+  </g>
+
+  <g fill="#00FF88" opacity="0.75">
+    <rect x="126" y="126" width="12" height="12" rx="2"/>
+    <rect x="464" y="162" width="10" height="10" rx="2"/>
+    <rect x="452" y="458" width="12" height="12" rx="2"/>
+  </g>
+  <g fill="#7B52FF" opacity="0.7">
+    <rect x="462" y="130" width="14" height="14" rx="2"/>
+    <rect x="134" y="458" width="10" height="10" rx="2"/>
+  </g>
+
+  <text x="706" y="266" fill="#00FF88" font-family="Courier New" font-size="30" letter-spacing="8">FOUR.MEME AI IDENTITY ENGINE</text>
+  <rect x="706" y="294" width="472" height="6" rx="3" fill="#00FF88" opacity="0.64"/>
+
+  <text x="716" y="436" fill="#7B52FF" opacity="0.4" font-family="Arial Black" font-size="178" letter-spacing="10">DEGEN</text>
+  <text x="706" y="420" fill="#F5F7FF" font-family="Arial Black" font-size="178" letter-spacing="10">DEGEN</text>
+
+  <text x="722" y="614" fill="#7B52FF" opacity="0.34" font-family="Arial Black" font-size="210" letter-spacing="12">BORN</text>
+  <text x="706" y="596" fill="url(#bornText)" font-family="Arial Black" font-size="210" letter-spacing="12">BORN</text>
+
+  <text x="706" y="696" fill="#CBD5E1" font-family="Courier New" font-size="34" letter-spacing="5">YOUR WALLET, REBORN AS A MONSTER</text>
+
+  <g opacity="0.12">
+    <rect x="706" y="734" width="620" height="2" fill="#00FF88"/>
+    <rect x="706" y="764" width="412" height="2" fill="#7B52FF"/>
+    <rect x="706" y="794" width="528" height="2" fill="#FFD700"/>
+  </g>
+</svg>
