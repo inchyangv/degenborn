@@ -32,14 +32,31 @@ const ARCHETYPE_FILTERS: ArchetypeId[] = [
   "ghost_bagholder",
 ];
 
-const SORT_OPTIONS = ["level", "traits", "random"] as const;
-type SortOption = typeof SORT_OPTIONS[number];
+type LeaderboardMode = "recent" | "prestige" | "survival" | "rugged";
+
+const LEADERBOARD_LABELS: Record<LeaderboardMode, { label: string; emoji: string; desc: string }> = {
+  recent: { label: "Recent", emoji: "🕐", desc: "Most recently analyzed" },
+  prestige: { label: "Hall of Fame", emoji: "👑", desc: "Highest prestige & luck" },
+  survival: { label: "Survivors", emoji: "💪", desc: "Highest survival streak" },
+  rugged: { label: "Most Rugged", emoji: "💀", desc: "Chaos + corruption kings" },
+};
+
+/** Derive a pseudo-prestige score from DNA for leaderboard sorting */
+function prestigeScore(p: GalleryProfile): number {
+  return Math.round(p.dna.luck * 0.5 + p.dna.survival * 0.3 + p.dna.conviction * 0.2);
+}
+function survivalScore(p: GalleryProfile): number {
+  return Math.round(p.dna.survival * 0.6 + p.dna.conviction * 0.4);
+}
+function ruggedScore(p: GalleryProfile): number {
+  return Math.round(p.dna.chaos * 0.5 + (100 - p.dna.luck) * 0.3 + p.dna.aggression * 0.2);
+}
 
 export default function GalleryPage() {
   const [profiles, setProfiles] = useState<GalleryProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ArchetypeId | "all">("all");
-  const [sort, setSort] = useState<SortOption>("level");
+  const [mode, setMode] = useState<LeaderboardMode>("recent");
   const [fromStore, setFromStore] = useState(false);
 
   useEffect(() => {
@@ -53,25 +70,55 @@ export default function GalleryPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = (filter === "all" ? profiles : profiles.filter((p) => p.archetype === filter)).slice().sort((a, b) => {
-    if (sort === "level") return (b.last_scored_at) - (a.last_scored_at);
-    if (sort === "traits") return a.archetype.localeCompare(b.archetype);
-    return Math.random() - 0.5;
-  });
+  const filtered = (filter === "all" ? profiles : profiles.filter((p) => p.archetype === filter))
+    .slice()
+    .sort((a, b) => {
+      if (mode === "prestige") return prestigeScore(b) - prestigeScore(a);
+      if (mode === "survival") return survivalScore(b) - survivalScore(a);
+      if (mode === "rugged") return ruggedScore(b) - ruggedScore(a);
+      return b.last_scored_at - a.last_scored_at;
+    });
+
+  const lb = LEADERBOARD_LABELS[mode];
 
   return (
     <div className="min-h-screen px-4 py-8 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <Link href="/" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">← Home</Link>
-        <h1 className="text-2xl font-black text-white">Monster Gallery</h1>
+        <div className="text-center">
+          <h1 className="text-2xl font-black text-white">Monster Gallery</h1>
+          <div className="text-[10px] text-[var(--neon-green)] opacity-60 tracking-widest uppercase">Four.meme Trader Leaderboard</div>
+        </div>
         <div className="text-xs text-gray-600">
           {fromStore ? `${profiles.length} souls` : "Demo souls"}
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      {/* Leaderboard tabs */}
+      <div className="flex gap-1.5 mb-4 bg-[var(--degen-card)] p-1 rounded-lg border border-[var(--degen-border)] overflow-x-auto">
+        {(Object.entries(LEADERBOARD_LABELS) as [LeaderboardMode, typeof lb][]).map(([key, info]) => (
+          <button
+            key={key}
+            onClick={() => setMode(key)}
+            className={`flex-shrink-0 flex-1 min-w-[80px] py-2 px-2 text-xs font-mono uppercase tracking-wide rounded-md transition-colors ${
+              mode === key
+                ? key === "rugged"
+                  ? "bg-[var(--neon-red)] text-black font-bold"
+                  : "bg-[var(--neon-gold)] text-black font-bold"
+                : "text-gray-500 hover:text-gray-300"
+            }`}
+          >
+            {info.emoji} {info.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Leaderboard description */}
+      <div className="text-[10px] text-gray-600 mb-4 italic">{lb.desc}</div>
+
+      {/* Archetype filter */}
+      <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={() => setFilter("all")}
           className={`px-3 py-1.5 text-xs rounded-full border transition-colors font-mono ${
@@ -97,20 +144,6 @@ export default function GalleryPage() {
         ))}
       </div>
 
-      {/* Sort */}
-      <div className="flex items-center gap-2 mb-6 text-xs text-gray-600">
-        <span>Sort:</span>
-        {SORT_OPTIONS.map((s) => (
-          <button
-            key={s}
-            onClick={() => setSort(s)}
-            className={`capitalize transition-colors ${sort === s ? "text-[var(--neon-green)]" : "hover:text-gray-400"}`}
-          >
-            {s === "level" ? "Most Recent" : s === "traits" ? "By Archetype" : "Random"}
-          </button>
-        ))}
-      </div>
-
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -119,8 +152,8 @@ export default function GalleryPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {filtered.map((p) => (
-            <GalleryCard key={p.wallet_address} profile={p} />
+          {filtered.map((p, rank) => (
+            <GalleryCard key={p.wallet_address} profile={p} rank={rank + 1} mode={mode} />
           ))}
           {/* "Want your own?" CTA card */}
           <Link
@@ -142,14 +175,20 @@ export default function GalleryPage() {
       )}
 
       <div className="mt-8 text-center text-xs text-gray-700">
-        Community gallery · Four.meme Hackathon
+        Community gallery · ⚡ Powered by Four.meme
         {!fromStore && <span className="ml-2 text-gray-800">· demo souls</span>}
       </div>
     </div>
   );
 }
 
-function GalleryCard({ profile }: { profile: GalleryProfile }) {
+interface GalleryCardProps {
+  profile: GalleryProfile;
+  rank: number;
+  mode: LeaderboardMode;
+}
+
+function GalleryCard({ profile, rank, mode }: GalleryCardProps) {
   const { wallet_address, wallet_short, archetype, dna } = profile;
   const profileInfo = ARCHETYPE_PROFILES[archetype as ArchetypeId];
   const color = ARCHETYPE_COLORS[archetype as ArchetypeId] ?? "#ffffff";
@@ -165,6 +204,15 @@ function GalleryCard({ profile }: { profile: GalleryProfile }) {
     active_traits: [],
   };
 
+  // Score badge for current leaderboard mode
+  const scoreLabel =
+    mode === "prestige" ? `✨ ${prestigeScore(profile)} prestige`
+    : mode === "survival" ? `💪 ${survivalScore(profile)} survival`
+    : mode === "rugged" ? `💀 ${ruggedScore(profile)} rugged`
+    : null;
+
+  const rankColor = rank === 1 ? "#ffd700" : rank === 2 ? "#94a3b8" : rank === 3 ? "#92400e" : "#444";
+
   return (
     <div
       className="bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-2xl overflow-hidden hover:border-opacity-80 transition-all hover:scale-[1.02]"
@@ -174,6 +222,13 @@ function GalleryCard({ profile }: { profile: GalleryProfile }) {
         className="relative flex items-center justify-center py-4"
         style={{ background: `radial-gradient(circle at 50% 60%, ${color}22, #0a0a0f)` }}
       >
+        {/* Rank badge */}
+        <div
+          className="absolute top-2 left-2 text-xs font-black px-1.5 py-0.5 rounded font-mono"
+          style={{ color: rankColor, background: "rgba(0,0,0,0.6)" }}
+        >
+          #{rank}
+        </div>
         <CharacterDisplay
           archetype={archetype as ArchetypeId}
           state={dummyState as CharacterState}
@@ -190,6 +245,16 @@ function GalleryCard({ profile }: { profile: GalleryProfile }) {
           "{profileInfo?.tagline}"
         </div>
 
+        {/* Leaderboard score badge */}
+        {scoreLabel && (
+          <div
+            className="text-[10px] font-bold mb-2 px-2 py-0.5 rounded-full inline-block border"
+            style={{ color: mode === "rugged" ? "#ff3d3d" : "#ffd700", borderColor: mode === "rugged" ? "#ff3d3d44" : "#ffd70044", background: "rgba(0,0,0,0.3)" }}
+          >
+            {scoreLabel}
+          </div>
+        )}
+
         <div className="space-y-1 mb-2">
           {(Object.entries(dna) as [string, number][]).slice(0, 5).map(([key, value]) => (
             <div key={key} className="flex items-center gap-1.5">
@@ -205,13 +270,22 @@ function GalleryCard({ profile }: { profile: GalleryProfile }) {
           ))}
         </div>
 
-        <Link
-          href={`/monster?wallet=${wallet_address}`}
-          className="mt-2 block text-center py-2 text-sm font-bold border rounded-lg transition-colors hover:brightness-125"
-          style={{ borderColor: `${color}44`, color }}
-        >
-          View Monster →
-        </Link>
+        <div className="flex gap-1.5 mt-2">
+          <Link
+            href={`/monster?wallet=${wallet_address}`}
+            className="flex-1 text-center py-1.5 text-xs font-bold border rounded-lg transition-colors hover:brightness-125"
+            style={{ borderColor: `${color}44`, color }}
+          >
+            View →
+          </Link>
+          <Link
+            href={`/challenge/${wallet_address}`}
+            className="px-2 py-1.5 text-xs font-bold border border-[var(--neon-red)] text-[var(--neon-red)] rounded-lg hover:brightness-125 transition-colors"
+            title="Challenge this monster"
+          >
+            ⚔
+          </Link>
+        </div>
       </div>
     </div>
   );
