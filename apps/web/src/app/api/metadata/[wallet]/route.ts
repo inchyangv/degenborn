@@ -33,6 +33,8 @@ export async function GET(
 
   const attributes: Array<{ trait_type: string; value: string | number; display_type?: string }> = [
     { trait_type: "Archetype", value: archetype },
+    { trait_type: "Birthplace", value: "four.meme" },
+    { trait_type: "Chain", value: "BNB Smart Chain" },
   ];
 
   if (dna) {
@@ -67,6 +69,7 @@ export async function GET(
     description: `A soulbound NFT representing the on-chain identity of ${walletLower}. Born from Four.meme wallet activity. Archetype: ${archetypeName}.`,
     image: `${appUrl}/api/og/${walletLower}`,
     external_url: `${appUrl}/monster?wallet=${walletLower}`,
+    birthplace: "four.meme",
     attributes,
   };
 

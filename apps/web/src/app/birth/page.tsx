@@ -324,6 +324,15 @@ function BirthContent() {
           )}
           <MintButton wallet={wallet} dna={data.dna} archetype={data.archetype} />
 
+          {/* Four.meme origin message — TF-01 */}
+          <div className="mt-4 mb-2 text-center px-4 py-3 rounded-xl border border-[var(--degen-border)] bg-[var(--degen-card)]">
+            <div className="text-xs text-[var(--neon-green)] font-bold mb-0.5">⚡ Born from Four.meme trades</div>
+            <div className="text-[11px] text-gray-500">
+              Your monster was shaped by your on-chain activity on Four.meme.
+              Every trade you make will evolve it further.
+            </div>
+          </div>
+
           {/* Share Your Birth CTA — T1-01 */}
           <div className="mt-6 text-center">
             <div className="text-xs text-gray-700 mb-3">Record this moment</div>

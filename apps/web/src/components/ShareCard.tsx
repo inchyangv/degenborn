@@ -219,7 +219,12 @@ export default function ShareCard({ dna, archetype, state, wallet }: Props) {
           {/* Bottom bar */}
           <div className="mt-auto flex justify-between items-end text-xs">
             <div className="text-gray-600">Lv.{state.level} · {state.mood}</div>
-            <div className="text-gray-700">#DegenBorn · four.meme</div>
+            <div className="text-right">
+              <div style={{ color: archetypeColor, opacity: 0.8 }} className="text-[10px] font-bold">
+                ⚡ Built on Four.meme data
+              </div>
+              <div className="text-gray-700">#DegenBorn</div>
+            </div>
           </div>
         </div>
       </div>

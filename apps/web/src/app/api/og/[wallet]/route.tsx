@@ -195,8 +195,20 @@ export async function GET(
           )}
 
           {/* Bottom label */}
-          <div style={{ color: "#333", fontSize: "14px" }}>
-            Soul Core · Soulbound · Non-transferable
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <div style={{ color: "#333", fontSize: "14px" }}>
+              Soul Core · Soulbound · Non-transferable
+            </div>
+            <div
+              style={{
+                color: accentColor,
+                fontSize: "13px",
+                fontWeight: "700",
+                opacity: 0.7,
+              }}
+            >
+              ⚡ Powered by Four.meme
+            </div>
           </div>
         </div>
       </div>

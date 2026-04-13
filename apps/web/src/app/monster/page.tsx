@@ -159,8 +159,13 @@ function MonsterRoomContent() {
       {/* Global nav */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--degen-border)] mb-0">
         <Link href="/" className="text-gray-600 hover:text-gray-400 text-xs transition-colors">← Home</Link>
-        <div className="text-xs text-gray-600 font-mono">
-          {wallet.slice(0, 6)}...{wallet.slice(-4)}
+        <div className="text-center">
+          <div className="text-xs text-gray-600 font-mono">
+            {wallet.slice(0, 6)}...{wallet.slice(-4)}
+          </div>
+          <div className="text-[10px] text-[var(--neon-green)] opacity-60 tracking-widest uppercase">
+            Four.meme Trader Identity
+          </div>
         </div>
         <Link href="/gallery" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">Gallery</Link>
       </div>

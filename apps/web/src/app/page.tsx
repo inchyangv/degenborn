@@ -223,8 +223,13 @@ function LandingContent() {
       <section className="w-full max-w-4xl flex flex-col md:flex-row items-center gap-10 pt-14 pb-10">
         {/* Left — text + CTA */}
         <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
-          <div className="text-xs tracking-[0.4em] text-[var(--neon-purple)] mb-4 uppercase">
-            Four.meme × AI Identity Engine
+          <div className="flex flex-col items-center md:items-start gap-1 mb-4">
+            <div className="text-xs tracking-[0.4em] text-[var(--neon-purple)] uppercase">
+              Four.meme × AI Identity Engine
+            </div>
+            <div className="text-[10px] text-[var(--neon-green)] opacity-70 tracking-widest uppercase">
+              ⚡ Powered by Four.meme
+            </div>
           </div>
           <h1
             className="text-5xl md:text-7xl font-black tracking-tight text-white mb-5 glitch-text"
