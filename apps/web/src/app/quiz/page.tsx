@@ -214,6 +214,23 @@ export default function QuizPage() {
     const profile = ARCHETYPE_PROFILES[result];
     const color = ARCHETYPE_COLORS[result];
 
+    const shareUrl = `${window?.location?.origin ?? ""}/quiz?result=${result}&agg=${dna.aggression}&con=${dna.conviction}&cha=${dna.chaos}&lck=${dna.luck}&srv=${dna.survival}`;
+    const shareText = `I'm a ${profile.name}. "${profile.tagline}" What degen are you?`;
+
+    const shareToX = () => {
+      const text = encodeURIComponent(`${shareText} #DegenBorn #fourmeme`);
+      const url = encodeURIComponent(shareUrl);
+      window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
+    };
+
+    const copyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+      } catch {
+        // fallback: select text
+      }
+    };
+
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 pb-16">
         <div className="max-w-md w-full text-center">
@@ -261,18 +278,35 @@ export default function QuizPage() {
             </div>
           </div>
 
+          {/* Share row — primary CTA */}
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={shareToX}
+              className="flex-1 py-3 font-black text-sm rounded-xl hover:brightness-110 transition-all text-black"
+              style={{ background: color }}
+            >
+              𝕏 &quot;I&apos;m a {profile.name}&quot;
+            </button>
+            <button
+              onClick={copyLink}
+              className="px-4 py-3 border-2 text-sm font-mono rounded-xl hover:opacity-80 transition-all"
+              style={{ borderColor: `${color}55`, color }}
+            >
+              Copy link
+            </button>
+          </div>
+
           <div className="flex flex-col gap-3">
             <Link
               href="/"
-              className="block px-10 py-4 font-black text-base rounded-xl hover:brightness-110 transition-all text-center text-black"
-              style={{ background: color }}
+              className="block px-10 py-4 border font-black text-base rounded-xl hover:brightness-110 transition-all text-center"
+              style={{ borderColor: `${color}44`, color }}
             >
               Connect Wallet to See Real Soul →
             </Link>
             <Link
               href="/replay"
-              className="block px-10 py-4 border-2 font-black text-base rounded-xl hover:brightness-125 transition-all text-center"
-              style={{ borderColor: `${color}55`, color }}
+              className="block px-10 py-4 border border-gray-800 font-bold text-sm rounded-xl hover:border-gray-600 transition-all text-center text-gray-500"
             >
               ▶ Watch Replay Demo
             </Link>
