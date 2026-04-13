@@ -138,7 +138,22 @@ export default function BrutalRoastCard({ wallet, dna, state, archetype }: Props
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => {
+                if (!roast) return;
+                const headline = roast.paragraph1.split(".")[0] ?? roast.paragraph1.slice(0, 80);
+                const text = encodeURIComponent(
+                  `I just got roasted by my own wallet data 💀\n\n"${headline}..."\n\n#DegenBorn #fourmeme`
+                );
+                const url = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
+                window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
+              }}
+              className="flex-1 py-2 text-xs font-black rounded border transition-all hover:brightness-110"
+              style={{ background: "#ff3d3d", color: "#000", borderColor: "#ff3d3d" }}
+            >
+              𝕏 Share Roast
+            </button>
             <button
               onClick={downloadCard}
               disabled={downloading}
