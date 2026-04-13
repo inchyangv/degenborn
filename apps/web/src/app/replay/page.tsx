@@ -494,6 +494,31 @@ function ReplayContent() {
         </div>
         <div className="text-[10px] text-gray-700">Space · ← →</div>
       </div>
+
+      {/* TF-06: Four.meme value proposition — always visible at bottom */}
+      {isFinished && (
+        <div className="mt-8 border border-[var(--neon-green)] rounded-2xl p-5 bg-[var(--degen-card)]">
+          <div className="text-[10px] text-[var(--neon-green)] uppercase tracking-widest mb-3">
+            What DegenBorn gives Four.meme
+          </div>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {[
+              { icon: "🔁", label: "Retention", desc: "Every trade = character growth" },
+              { icon: "📢", label: "Viral UGC", desc: "Every share = Four.meme brand exposure" },
+              { icon: "🏆", label: "Loyalty Data", desc: "Identify & reward power traders" },
+            ].map((item) => (
+              <div key={item.label} className="text-center">
+                <div className="text-xl mb-1">{item.icon}</div>
+                <div className="text-xs font-black text-white">{item.label}</div>
+                <div className="text-[10px] text-gray-500 mt-0.5">{item.desc}</div>
+              </div>
+            ))}
+          </div>
+          <div className="text-center text-[10px] text-gray-600 italic border-t border-gray-800 pt-3">
+            "Four.meme is where meme tokens are born. DegenBorn is where meme traders are born."
+          </div>
+        </div>
+      )}
     </div>
     </>
   );
@@ -521,14 +546,14 @@ const PRESET_RUG_NECROMANCER: ReplayPreset = {
   initial_dna: { aggression: 55, conviction: 45, chaos: 82, luck: 41, survival: 91 },
   archetype: "rug_necromancer",
   steps: [
-    { step: 1, label: "Connected", description: "0xrugN...0001 connected", subtitle_en: "Wallet connected. Soul record loading…", subtitle_ko: "지갑 연결됨. 소울 기록 로딩 중…", action: "connect_wallet", delay_ms: 0 },
-    { step: 2, label: "Awakening", description: "Chaos 82, Survival 91 — the necromancer stirs", subtitle_en: "Chaos 82 · Survival 91 — DNA awakened", subtitle_ko: "카오스 82 · 생존 91 — DNA가 깨어났다", action: "show_dna", dna: { aggression: 55, conviction: 45, chaos: 82, luck: 41, survival: 91 }, archetype: "rug_necromancer", delay_ms: 0 },
-    { step: 3, label: "Genesis", description: "You are: Rug Necromancer", subtitle_en: "You are: Rug Necromancer. Death is just a dip.", subtitle_ko: "당신은: 럭 네크로맨서. 죽음은 그냥 딥이다.", action: "show_genesis", delay_ms: 0 },
-    { step: 4, label: "Win Streak ×3", description: "3 consecutive wins → Crown acquired", subtitle_en: "3 consecutive wins — Crown trait unlocked", subtitle_ko: "3연승 — 왕관 특성 해금", action: "state_event", state_changes: { crown_count: 1, mood: "euphoria" as const, prestige: 10, level: 2, traits_added: ["crown"] }, caption: "Three in a row. The crown was always yours.", delay_ms: 0 },
-    { step: 5, label: "Rug Exposure", description: "DEAD3 rugged — corruption +40, zombie eyes", subtitle_en: "DEAD3 rug pull — Corruption +40, Zombie Eyes appear", subtitle_ko: "DEAD3 러그풀 — 오염 +40, 좀비 눈 등장", action: "state_event", state_changes: { corruption: 40, scar_count: 1, mood: "despair" as const, traits_added: ["zombie_eyes", "bandage"] }, caption: "The rug found you. Again. The eyes never lie.", delay_ms: 0 },
-    { step: 6, label: "Comeback", description: "UNDEAD 3x — survival streak 3, revenge aura", subtitle_en: "Recovery — Survival Streak ×3, Revenge Aura unlocked", subtitle_ko: "복귀 — 생존 스트릭 ×3, 복수 오라 해금", action: "state_event", state_changes: { survival_streak: 3, mood: "revenge" as const, traits_added: ["revenge_aura"] }, caption: "Down 1400. Back 1200. The necromancer returns.", delay_ms: 0 },
-    { step: 7, label: "Diary", description: "3 mutations logged", subtitle_en: "Mutation Diary — 3 soul changes recorded", subtitle_ko: "변이 일지 — 소울 변화 3개 기록됨", action: "show_diary", delay_ms: 0 },
-    { step: 8, label: "Share Card", description: "Your identity card is ready", subtitle_en: "Identity card generated — share your soul", subtitle_ko: "정체성 카드 생성됨 — 소울을 공유하라", action: "show_share_card", delay_ms: 0 },
+    { step: 1, label: "Connected", description: "0xrugN...0001 connected", subtitle_en: "Wallet connected — reading Four.meme trade history…", subtitle_ko: "지갑 연결됨 — Four.meme 거래 내역 로딩 중…", action: "connect_wallet", delay_ms: 0 },
+    { step: 2, label: "Awakening", description: "Chaos 82, Survival 91 — the necromancer stirs", subtitle_en: "Chaos 82 · Survival 91 — This monster was born from Four.meme trades", subtitle_ko: "카오스 82 · 생존 91 — 이 몬스터는 Four.meme 거래에서 태어났다", action: "show_dna", dna: { aggression: 55, conviction: 45, chaos: 82, luck: 41, survival: 91 }, archetype: "rug_necromancer", delay_ms: 0 },
+    { step: 3, label: "Genesis", description: "You are: Rug Necromancer", subtitle_en: "You are: Rug Necromancer — every Four.meme trade shaped this identity", subtitle_ko: "당신은: 럭 네크로맨서 — 모든 Four.meme 거래가 이 정체성을 만들었다", action: "show_genesis", delay_ms: 0 },
+    { step: 4, label: "Win Streak ×3", description: "3 consecutive wins → Crown acquired", subtitle_en: "3 wins on Four.meme — Crown trait unlocked", subtitle_ko: "Four.meme에서 3연승 — 왕관 특성 해금", action: "state_event", state_changes: { crown_count: 1, mood: "euphoria" as const, prestige: 10, level: 2, traits_added: ["crown"] }, caption: "Three wins on Four.meme. The crown was always yours.", delay_ms: 0 },
+    { step: 5, label: "Rug Exposure", description: "DEAD3 rugged — corruption +40, zombie eyes", subtitle_en: "DEAD3 rug on Four.meme — Corruption +40, Zombie Eyes appear", subtitle_ko: "Four.meme DEAD3 러그풀 — 오염 +40, 좀비 눈 등장", action: "state_event", state_changes: { corruption: 40, scar_count: 1, mood: "despair" as const, traits_added: ["zombie_eyes", "bandage"] }, caption: "The rug found you. Again. Four.meme recorded it all.", delay_ms: 0 },
+    { step: 6, label: "Comeback", description: "UNDEAD 3x — survival streak 3, revenge aura", subtitle_en: "Comeback on Four.meme — Survival Streak ×3, Revenge Aura unlocked", subtitle_ko: "Four.meme 복귀 — 생존 스트릭 ×3, 복수 오라 해금", action: "state_event", state_changes: { survival_streak: 3, mood: "revenge" as const, traits_added: ["revenge_aura"] }, caption: "Down 1400. Back 1200. Trade on Four.meme. The necromancer returns.", delay_ms: 0 },
+    { step: 7, label: "Diary", description: "3 mutations logged", subtitle_en: "Mutation Diary — 3 soul changes from Four.meme activity", subtitle_ko: "변이 일지 — Four.meme 활동에서 나온 소울 변화 3개", action: "show_diary", delay_ms: 0 },
+    { step: 8, label: "Share Card", description: "Your identity card is ready", subtitle_en: "Share your monster — \"Born from @four_meme trades\" · Every share brings new traders", subtitle_ko: "몬스터 공유 — \"@four_meme 거래에서 태어났다\" · 모든 공유가 새 트레이더를 불러온다", action: "show_share_card", delay_ms: 0 },
   ],
 };
 

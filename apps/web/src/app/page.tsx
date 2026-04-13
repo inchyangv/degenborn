@@ -232,11 +232,19 @@ function LandingContent() {
             </div>
           </div>
           <h1
-            className="text-5xl md:text-7xl font-black tracking-tight text-white mb-5 glitch-text"
+            className="text-5xl md:text-7xl font-black tracking-tight text-white mb-3 glitch-text"
             data-text="DEGENBORN"
           >
             DEGEN<span className="text-[var(--neon-green)]">BORN</span>
           </h1>
+
+          {/* TF-06: Core positioning tagline */}
+          <p className="text-sm text-gray-500 mb-5 max-w-sm italic leading-relaxed">
+            Four.meme is where meme tokens are born.{" "}
+            <span className="text-[var(--neon-green)] not-italic font-black">
+              DegenBorn is where meme traders are born.
+            </span>
+          </p>
 
           {/* Flow line — Wallet → Persona DNA → Soul Core */}
           <div className="flex items-center gap-2 mb-6 flex-wrap justify-center md:justify-start">
@@ -404,6 +412,79 @@ function LandingContent() {
         </div>
       </section>
 
+      {/* ═══ TF-06: Value for Four.meme — "Practical Value" slide ═══ */}
+      <section className="w-full max-w-4xl mb-14">
+        <div className="text-xs text-gray-600 uppercase tracking-widest text-center mb-2">
+          What DegenBorn gives Four.meme
+        </div>
+        <div className="text-center text-[10px] text-gray-700 mb-6 italic">
+          We don't just use Four.meme data. We make Four.meme more fun to use.
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              icon: "🔁",
+              title: "Retention Engine",
+              color: "var(--neon-green)",
+              points: [
+                "Every trade = character growth",
+                "Users return to see mutations",
+                "Trading becomes identity building",
+              ],
+            },
+            {
+              icon: "📢",
+              title: "Viral UGC Machine",
+              color: "var(--neon-gold)",
+              points: [
+                "Monster cards shared on X",
+                "Every share → Four.meme logo",
+                "\"Born from @four_meme trades\"",
+              ],
+            },
+            {
+              icon: "🏆",
+              title: "Loyalty Intelligence",
+              color: "var(--neon-purple)",
+              points: [
+                "Four.meme Loyalty Score per wallet",
+                "Bronze → Legendary tier system",
+                "Identify & reward power traders",
+              ],
+            },
+          ].map((card) => (
+            <div
+              key={card.title}
+              className="bg-[var(--degen-card)] border rounded-2xl p-5"
+              style={{ borderColor: `${card.color}44` }}
+            >
+              <div className="text-2xl mb-2">{card.icon}</div>
+              <div className="font-black text-white text-sm mb-3" style={{ color: card.color }}>
+                {card.title}
+              </div>
+              <ul className="space-y-1">
+                {card.points.map((pt) => (
+                  <li key={pt} className="text-xs text-gray-400 flex gap-1.5">
+                    <span style={{ color: card.color }}>›</span>
+                    {pt}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 text-center">
+          <Link
+            href="/api/widget/0xrugnecromancer000000000000000000000000001"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-gray-600 hover:text-[var(--neon-green)] transition-colors underline decoration-dotted"
+          >
+            → See the embeddable widget API (for Four.meme profile integration)
+          </Link>
+        </div>
+      </section>
+
       {/* ═══ Secondary links ═══ */}
       <div className="flex flex-wrap gap-6 justify-center text-sm text-gray-600 mb-10">
         <Link href="/gallery" className="hover:text-[var(--neon-green)] transition-colors">
@@ -412,8 +493,8 @@ function LandingContent() {
         <Link href="/studio" className="hover:text-[var(--neon-purple)] transition-colors">
           → Meme Studio
         </Link>
-        <Link href="/certificate/0xrugnecromancer000000000000000000000000001" className="hover:text-[var(--neon-gold)] transition-colors">
-          → Birth Certificate
+        <Link href="/report/0xrugnecromancer000000000000000000000000001" className="hover:text-[var(--neon-gold)] transition-colors">
+          → Report Card
         </Link>
         <Link href="/graveyard" className="hover:text-[var(--neon-red)] transition-colors">
           → Graveyard
