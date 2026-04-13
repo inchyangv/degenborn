@@ -38,6 +38,8 @@ export async function GET(
   const profile = getProfileStore(walletLower);
   const archetype = profile?.archetype ?? "unknown";
   const dna = profile?.dna;
+  // T3-03: Use real genesis image if persisted
+  const genesisImageUrl = profile?.image_url ?? null;
 
   const archetypeName = archetype === "unknown"
     ? "Unknown Monster"
@@ -77,7 +79,22 @@ export async function GET(
             background: `linear-gradient(180deg, ${accentColor}12 0%, transparent 100%)`,
           }}
         >
-          {/* Character placeholder — glowing circle */}
+          {/* T3-03: Character image — real genesis image if available, fallback emoji circle */}
+          {genesisImageUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={genesisImageUrl}
+              width={200}
+              height={200}
+              style={{
+                borderRadius: "16px",
+                border: `2px solid ${accentColor}66`,
+                objectFit: "cover",
+                marginBottom: "24px",
+              }}
+              alt="Character"
+            />
+          ) : (
           <div
             style={{
               width: "200px",
@@ -99,6 +116,7 @@ export async function GET(
              archetype === "sniper_jester" ? "🎯" :
              archetype === "ghost_bagholder" ? "👻" : "✦"}
           </div>
+          )}
 
           {/* Archetype name */}
           <div

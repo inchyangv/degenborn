@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/shared";
 import { getAppUrl } from "@/lib/runtime-env";
+import { getProfileStore } from "@/lib/profile-store";
 
 interface ShareRequest {
   wallet: string;
@@ -25,12 +26,18 @@ export async function POST(req: NextRequest) {
     // Generate meme caption
     const caption = generateShareCaption(dna, archetype, state);
 
+    // T3-03: Use real genesis image if available, fall back to placeholder
+    const storedProfile = getProfileStore(wallet.toLowerCase());
+    const characterImageUrl =
+      storedProfile?.image_url ??
+      `/archetypes/${archetype.archetype}_placeholder.svg`;
+
     // Card metadata for OG/Twitter cards
     const appUrl = getAppUrl();
     const cardMeta = {
       title: `${archetype.profile.name} — DegenBorn Soul Core`,
       description: caption,
-      image_url: `/archetypes/${archetype.archetype}_placeholder.svg`,
+      image_url: characterImageUrl,
       card_url: `${appUrl}/monster?wallet=${wallet.toLowerCase()}`,
     };
 
