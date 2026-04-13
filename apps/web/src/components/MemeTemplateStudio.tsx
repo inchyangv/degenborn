@@ -88,6 +88,27 @@ export default function MemeTemplateStudio({ wallet, archetype, state, character
 
   const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgContent)}`;
 
+  /** Randomize all text slots from dialogue bank */
+  const randomizeAll = () => {
+    const randomSeed = Math.floor(Math.random() * 9999);
+    const newTexts: Record<string, string> = {};
+    for (const slot of template.textSlots) {
+      if (slot.autoEvent) {
+        newTexts[slot.id] = pickDialogue(archetype, slot.autoEvent as DialogueEventType, randomSeed + slot.id.length).en;
+      }
+    }
+    setTexts((prev) => ({ ...prev, [template.id]: { ...getTexts(template), ...newTexts } }));
+  };
+
+  const shareToX = async () => {
+    const caption = Object.values(currentTexts).filter(Boolean).join(" / ");
+    const text = encodeURIComponent(
+      `${caption ? `"${caption}" ` : ""}— ${profile.name} meme built on DegenBorn\n\n#DegenBorn #fourmeme`
+    );
+    const url = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener");
+  };
+
   const downloadPng = async () => {
     setDownloading(true);
     try {
@@ -158,10 +179,21 @@ export default function MemeTemplateStudio({ wallet, archetype, state, character
 
   return (
     <div className="space-y-6">
-      {/* Template picker */}
+      {/* Template picker — scrollable chips */}
       <div>
-        <div className="text-xs tracking-widest uppercase opacity-50 mb-2">Template</div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs tracking-widest uppercase opacity-50">Template</div>
+          {template.textSlots.some((s) => s.autoEvent) && (
+            <button
+              onClick={randomizeAll}
+              className="text-xs px-3 py-1 rounded-lg font-mono hover:opacity-80 transition-all"
+              style={{ background: `${color}22`, color, border: `1px solid ${color}44` }}
+            >
+              🎲 Randomize
+            </button>
+          )}
+        </div>
+        <div className="flex gap-2 flex-wrap">
           {sortedTemplates.map((tmpl) => {
             const isPreferred = tmpl.preferredArchetypes.includes(archetype);
             const isSelected = tmpl.id === selectedId;
@@ -183,18 +215,18 @@ export default function MemeTemplateStudio({ wallet, archetype, state, character
         </div>
       </div>
 
-      {/* SVG preview */}
+      {/* SVG preview — large */}
       <div
         ref={svgContainerRef}
-        className="rounded border overflow-hidden"
-        style={{ borderColor: `${color}44` }}
+        className="rounded-xl border-2 overflow-hidden"
+        style={{ borderColor: `${color}55`, background: template.bg }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={svgDataUrl}
           alt={`${template.name} meme`}
           className="w-full"
-          style={{ maxHeight: 400, objectFit: "contain", background: template.bg }}
+          style={{ objectFit: "contain", display: "block" }}
         />
       </div>
 
@@ -211,7 +243,7 @@ export default function MemeTemplateStudio({ wallet, archetype, state, character
                   value={currentTexts[slot.id] ?? ""}
                   onChange={(e) => setSlotText(slot.id, e.target.value)}
                   maxLength={slot.maxChars * 2}
-                  placeholder={`Up to ${slot.maxChars} chars...`}
+                  placeholder={`e.g. ${slot.autoEvent ? pickDialogue(archetype, slot.autoEvent as DialogueEventType, 42).en.slice(0, 30) : ""}...`}
                   className="flex-1 bg-transparent border rounded px-3 py-1.5 text-sm focus:outline-none"
                   style={{ borderColor: `${color}44` }}
                 />
@@ -241,20 +273,27 @@ export default function MemeTemplateStudio({ wallet, archetype, state, character
       )}
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={shareToX}
+          className="flex-1 min-w-[120px] py-2.5 text-sm font-black rounded-lg transition-all hover:brightness-110"
+          style={{ background: color, color: "#000" }}
+        >
+          𝕏 Post to X
+        </button>
         <button
           onClick={copyToClipboard}
           disabled={copying}
-          className="flex-1 py-2 text-sm rounded border font-medium transition-all"
+          className="flex-1 min-w-[110px] py-2.5 text-sm rounded-lg border font-medium transition-all"
           style={{ borderColor: color, color, background: copying ? `${color}22` : "transparent" }}
         >
-          {copying ? "Copied!" : "Copy to Clipboard"}
+          {copying ? "Copied! ✓" : "Copy Image"}
         </button>
         <button
           onClick={downloadPng}
           disabled={downloading}
-          className="flex-1 py-2 text-sm rounded border font-medium transition-all"
-          style={{ borderColor: color, color }}
+          className="flex-1 min-w-[110px] py-2.5 text-sm rounded-lg border font-medium transition-all"
+          style={{ borderColor: `${color}66`, color: `${color}99` }}
         >
           {downloading ? "Saving..." : "Download PNG"}
         </button>

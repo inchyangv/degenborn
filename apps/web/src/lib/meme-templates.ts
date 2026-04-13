@@ -415,6 +415,110 @@ export const MEME_TEMPLATES: MemeTemplate[] = [
   ${svgText(`Is this ${texts["question"] ?? "alpha?"}`, 230, 380, { fontSize: 22, fill: "#fff", maxChars: 24, fontFamily: "Impact, sans-serif" })}
 </svg>`,
   },
+
+  // 11 — Bought the Dip / It Dipped More (2-panel)
+  {
+    id: "bought_the_dip",
+    name: "Bought the Dip",
+    preferredArchetypes: ["diamond_cultist", "ghost_bagholder", "mad_gambler"],
+    characterSlot: { x: 30, y: 80, size: 140 },
+    bg: "#0d0d0d",
+    textSlots: [
+      { id: "hopium", label: "The hopium", autoEvent: "recovery", maxChars: 26 },
+      { id: "despair", label: "What happened", autoEvent: "big_loss", maxChars: 26 },
+    ],
+    buildSvg: (texts, charUrl) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" width="600" height="500">
+  <rect width="600" height="500" fill="#0a0a0a"/>
+  <!-- Divider -->
+  <line x1="0" y1="250" x2="600" y2="250" stroke="#333" stroke-width="2"/>
+  <!-- Top half — hopium green -->
+  <rect width="600" height="250" fill="#0a1a0a"/>
+  <text x="300" y="30" font-size="16" font-family="Impact, sans-serif" fill="#00ff88" text-anchor="middle" font-weight="900">BOUGHT THE DIP</text>
+  ${characterImage(charUrl, { x: 30, y: 40, size: 140 })}
+  <!-- Arrow up -->
+  <path d="M 200 200 L 500 100" stroke="#00ff88" stroke-width="5" fill="none"/>
+  <polygon points="505,95 490,115 515,115" fill="#00ff88"/>
+  ${svgText(texts["hopium"] ?? "This is the bottom 🚀", 360, 150, { fontSize: 19, fill: "#00ff88", stroke: "#000", maxChars: 22, fontFamily: "Impact, sans-serif" })}
+  <!-- Bottom half — despair red -->
+  <rect y="250" width="600" height="250" fill="#1a0a0a"/>
+  <text x="300" y="275" font-size="16" font-family="Impact, sans-serif" fill="#ff3d3d" text-anchor="middle" font-weight="900">IT DIPPED MORE</text>
+  ${characterImage(charUrl, { x: 30, y: 295, size: 140 })}
+  <!-- Arrow down -->
+  <path d="M 200 310 L 500 420" stroke="#ff3d3d" stroke-width="5" fill="none"/>
+  <polygon points="505,425 490,405 510,405" fill="#ff3d3d"/>
+  ${svgText(texts["despair"] ?? "I averaged down again", 360, 380, { fontSize: 19, fill: "#ff3d3d", stroke: "#000", maxChars: 22, fontFamily: "Impact, sans-serif" })}
+</svg>`,
+  },
+
+  // 12 — Nobody: / My Portfolio:
+  {
+    id: "nobody_portfolio",
+    name: "Nobody: My Portfolio:",
+    preferredArchetypes: ["mad_gambler", "ghost_bagholder", "diamond_cultist"],
+    characterSlot: { x: 340, y: 150, size: 200 },
+    bg: "#111",
+    textSlots: [
+      { id: "portfolio_behavior", label: "My portfolio does...", autoEvent: "rug_event", maxChars: 28 },
+    ],
+    buildSvg: (texts, charUrl) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" width="600" height="500">
+  <rect width="600" height="500" fill="#0d0d0d"/>
+  <!-- Nobody: line -->
+  ${svgText("Nobody:", 300, 55, { fontSize: 38, fill: "#888", fontFamily: "Impact, sans-serif" })}
+  <!-- My portfolio line -->
+  ${svgText("My portfolio:", 300, 105, { fontSize: 38, fill: "#ffd700", stroke: "#000", fontFamily: "Impact, sans-serif" })}
+  <!-- Chart going insane -->
+  <polyline points="30,350 80,200 130,400 180,150 230,420 280,100 330,380 380,50 430,300 480,180 530,400" stroke="#ff3d3d" stroke-width="4" fill="none"/>
+  <!-- Character looking at chart -->
+  ${characterImage(charUrl, { x: 340, y: 150, size: 180 })}
+  ${svgText(texts["portfolio_behavior"] ?? "random walk to zero", 200, 460, { fontSize: 20, fill: "#fff", stroke: "#000", maxChars: 26, fontFamily: "Impact, sans-serif" })}
+</svg>`,
+  },
+
+  // 13 — Rug Pull Stages of Grief (5 stages)
+  {
+    id: "rug_grief",
+    name: "Rug Pull Stages of Grief",
+    preferredArchetypes: ["rug_necromancer", "ghost_bagholder", "diamond_cultist"],
+    characterSlot: { x: 10, y: 130, size: 80 },
+    bg: "#0a0005",
+    textSlots: [
+      { id: "s1", label: "Denial", autoEvent: "idle", maxChars: 16 },
+      { id: "s2", label: "Anger", autoEvent: "rug_event", maxChars: 16 },
+      { id: "s3", label: "Bargaining", autoEvent: "big_loss", maxChars: 16 },
+      { id: "s4", label: "Depression", autoEvent: "idle", maxChars: 16 },
+      { id: "s5", label: "Acceptance", autoEvent: "recovery", maxChars: 16 },
+    ],
+    buildSvg: (texts, charUrl) => {
+      const stages = [
+        { label: "DENIAL", text: texts["s1"] ?? "Dev is sleeping", color: "#00d4ff", y: 55 },
+        { label: "ANGER", text: texts["s2"] ?? "I'll find the dev", color: "#ff6600", y: 155 },
+        { label: "BARGAINING", text: texts["s3"] ?? "Just 2x pls", color: "#ffd700", y: 255 },
+        { label: "DEPRESSION", text: texts["s4"] ?? "I'm a ghost now", color: "#9945ff", y: 355 },
+        { label: "ACCEPTANCE", text: texts["s5"] ?? "gm degens", color: "#00ff88", y: 455 },
+      ];
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" width="600" height="500">
+  <rect width="600" height="500" fill="#080005"/>
+  ${stages.map(({ label, text, color, y }) => `
+    <rect x="0" y="${y - 45}" width="600" height="90" fill="${color}0a"/>
+    <line x1="0" y1="${y - 45}" x2="600" y2="${y - 45}" stroke="${color}22" stroke-width="1"/>
+    ${svgText(label, 160, y, { fontSize: 15, fill: color, maxChars: 14, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+    ${svgText(text, 430, y, { fontSize: 16, fill: "#ccc", maxChars: 18, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  `).join("")}
+  <!-- Character column -->
+  ${characterImage(charUrl, { x: 10, y: 130, size: 80 })}
+  ${characterImage(charUrl, { x: 10, y: 230, size: 80 })}
+  ${characterImage(charUrl, { x: 10, y: 330, size: 80 })}
+  ${characterImage(charUrl, { x: 10, y: 395, size: 80 })}
+  ${characterImage(charUrl, { x: 10, y: 425, size: 60 })}
+  <!-- Title -->
+  ${svgText("RUG PULL", 300, 25, { fontSize: 22, fill: "#ff3d3d", stroke: "#000", fontFamily: "Impact, sans-serif" })}
+  ${svgText("Stages of Grief", 300, 42, { fontSize: 14, fill: "#888", fontFamily: "Impact, sans-serif" })}
+  <!-- Stage column header -->
+  ${svgText("Stage", 160, 12, { fontSize: 12, fill: "#555", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  ${svgText("Thought", 430, 12, { fontSize: 12, fill: "#555", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+</svg>`;
+    },
+  },
 ];
 
 /** Get the best default text for a slot based on archetype/state */
