@@ -89,6 +89,8 @@ export default function MonsterClient({ wallet = "" }: MonsterClientProps) {
   const [relicTxHashes, setRelicTxHashes] = useState<Record<number, string>>({});
   const [showArchetypeModal, setShowArchetypeModal] = useState(false);
   const [horoscopeOpen, setHoroscopeOpen] = useState(false);
+  const [newMilestones, setNewMilestones] = useState<Array<{ milestone_type: number; name: string; description: string }>>([]);
+  const [milestoneAlertDismissed, setMilestoneAlertDismissed] = useState(false);
 
   useEffect(() => {
     if (!normalizedWallet) {
@@ -158,6 +160,22 @@ export default function MonsterClient({ wallet = "" }: MonsterClientProps) {
           }
         } catch (error) {
           console.warn("[monster] diary fetch failed:", error);
+        }
+
+        // 4.1: Check for newly eligible Snapshot Relic milestones
+        try {
+          const eligibleResp = await fetch(`/api/relic/eligible?wallet=${normalizedWallet.toLowerCase()}`);
+          if (eligibleResp.ok) {
+            const eligibleData = await eligibleResp.json() as {
+              eligible: Array<{ milestone_type: number; name: string; description: string; minted: boolean }>;
+              any_new: boolean;
+            };
+            if (!cancelled && eligibleData.any_new) {
+              setNewMilestones(eligibleData.eligible.filter((e) => !e.minted));
+            }
+          }
+        } catch {
+          // non-critical
         }
       } catch (error) {
         if (cancelled) return;
@@ -238,6 +256,37 @@ export default function MonsterClient({ wallet = "" }: MonsterClientProps) {
         </div>
         <Link href="/gallery" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">Gallery</Link>
       </div>
+      {/* 4.1: Snapshot Relic milestone alert */}
+      {newMilestones.length > 0 && !milestoneAlertDismissed && (
+        <div className="mx-4 mt-3 p-3 bg-yellow-900/20 border border-[var(--neon-gold)] rounded-xl">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <div className="text-[var(--neon-gold)] text-xs font-black mb-1">
+                🏆 {newMilestones.length} Snapshot Relic{newMilestones.length > 1 ? "s" : ""} unlocked
+              </div>
+              {newMilestones.slice(0, 2).map((m) => (
+                <div key={m.milestone_type} className="text-gray-400 text-[10px]">
+                  • {m.name} — {m.description}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <button
+                onClick={() => setActiveTab("relics")}
+                className="text-[10px] px-2 py-1 bg-[var(--neon-gold)] text-black font-bold rounded"
+              >
+                Mint
+              </button>
+              <button
+                onClick={() => setMilestoneAlertDismissed(true)}
+                className="text-[10px] px-2 py-1 border border-gray-600 text-gray-400 rounded"
+              >
+                Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* T3-01: Data source badge */}
       {data_source !== "live" && (
         <div className="flex justify-center py-2">
