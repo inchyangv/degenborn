@@ -7,6 +7,8 @@ import type { ActivityEvent, TimeWindow, StateEvent, CharacterState, ArchetypeId
 import { setProfile, getProfileStore, setCharacterState } from "@/lib/profile-store";
 import { getDataSource } from "@/lib/runtime-env";
 import { createInitialState, applyStateEvent } from "@/lib/state-machine";
+import { canonicalizeWallet, isDemoWallet, isWalletInputSupported } from "@/lib/demo-wallets";
+import { deriveTokenOverlay } from "@/lib/token-trait";
 import path from "path";
 
 export async function POST(req: NextRequest) {
@@ -22,15 +24,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "wallet address required" }, { status: 400 });
     }
 
-    const walletLower = wallet.toLowerCase();
+    const walletLower = canonicalizeWallet(wallet);
 
-    if (!isAddress(walletLower)) {
+    if (!isWalletInputSupported(walletLower) || !isAddress(walletLower)) {
       return NextResponse.json({ error: "invalid Ethereum address" }, { status: 400 });
     }
     let events: ActivityEvent[];
     let dataSource: "live" | "demo" | "fixture" = "live";
 
-    if (useFixture) {
+    if (useFixture || isDemoWallet(wallet)) {
       // Demo/replay mode: load from fixture file, fall back to deterministic demo events
       try {
         const fixtureDir = path.join(process.cwd(), "../../fixtures/wallets");
@@ -61,6 +63,11 @@ export async function POST(req: NextRequest) {
         dataSource = "demo";
       }
     }
+
+    events = events.map((event) => ({
+      ...event,
+      wallet_address: walletLower,
+    }));
 
     const { dna } = scoreDNA(walletLower, events);
     const archetypeResult = classify(dna);
@@ -116,6 +123,9 @@ export async function POST(req: NextRequest) {
     // Persist the accumulated state for next visit
     setCharacterState(walletLower, derivedState);
 
+    // 2.1: Token-to-Trait overlay — top held token drives monster appearance badge
+    const token_overlay = deriveTokenOverlay(walletLower, events);
+
     return NextResponse.json({
       dna,
       archetype: archetypeResult,
@@ -125,6 +135,7 @@ export async function POST(req: NextRequest) {
       derived_state: derivedState,
       data_source: dataSource,
       creator_stats,
+      token_overlay,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

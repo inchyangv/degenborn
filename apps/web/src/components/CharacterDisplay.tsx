@@ -4,6 +4,13 @@ import type { CharacterState, ArchetypeId, TraitId } from "@degenborn/shared";
 import { TRAIT_DEFINITIONS, TRAIT_EMOJI } from "@degenborn/shared";
 import { useEffect, useState } from "react";
 
+export interface TokenOverlayProps {
+  token_symbol: string;
+  token_emoji: string;
+  token_color: string;
+  overlay_label: string;
+}
+
 interface Props {
   archetype: ArchetypeId;
   state: CharacterState;
@@ -12,6 +19,8 @@ interface Props {
   showTraitBadges?: boolean;
   /** Optional override for the base image URL (e.g., DALL-E genesis image) — T3-05 */
   genesisImageUrl?: string | null;
+  /** 2.1: Token-to-Trait overlay — top held Four.meme token shown as badge */
+  tokenOverlay?: TokenOverlayProps | null;
 }
 
 // Module-level cache: key = baseUrl + sorted traits + size → composited data URL
@@ -28,6 +37,7 @@ export default function CharacterDisplay({
   size = 320,
   showTraitBadges = true,
   genesisImageUrl,
+  tokenOverlay,
 }: Props) {
   const defaultBase = `/archetypes/${archetype}_placeholder.svg`;
   const baseImageUrl = genesisImageUrl ?? defaultBase;
@@ -146,6 +156,23 @@ export default function CharacterDisplay({
               +{state.active_traits.length - 4}
             </div>
           )}
+        </div>
+      )}
+
+      {/* 2.1: Token-to-Trait overlay badge — top held Four.meme token */}
+      {tokenOverlay && size >= 100 && (
+        <div
+          className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-black border"
+          style={{
+            background: `${tokenOverlay.token_color}22`,
+            borderColor: `${tokenOverlay.token_color}66`,
+            color: tokenOverlay.token_color,
+            fontSize: size < 180 ? "8px" : "10px",
+          }}
+          title={tokenOverlay.overlay_label}
+        >
+          <span>{tokenOverlay.token_emoji}</span>
+          <span>{tokenOverlay.token_symbol}</span>
         </div>
       )}
     </div>
