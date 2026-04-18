@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import path from "path";
+import { DEMO_WALLETS, canonicalizeWallet } from "@/lib/demo-wallets";
 
 export async function GET() {
   try {
     const fs = await import("fs/promises");
     const presetPath = path.join(process.cwd(), "../../fixtures/replay/demo_preset.json");
     const raw = await fs.readFile(presetPath, "utf-8");
-    return NextResponse.json(JSON.parse(raw));
+    const preset = JSON.parse(raw) as typeof EMBEDDED_PRESET;
+    return NextResponse.json({
+      ...preset,
+      wallet_address: canonicalizeWallet(preset.wallet_address),
+    });
   } catch {
     // Return embedded preset if fixture file not accessible
     return NextResponse.json(EMBEDDED_PRESET);
@@ -17,7 +22,7 @@ const EMBEDDED_PRESET = {
   preset_id: "hackathon_demo_v1",
   name: "DegenBorn Hackathon Demo",
   description: "Full story arc: Rug Necromancer — rugged, recovered, crowned",
-  wallet_address: "0xrugnecromancer000000000000000000000000001",
+  wallet_address: DEMO_WALLETS.rug_necromancer,
   initial_dna: { aggression: 55, conviction: 45, chaos: 82, luck: 41, survival: 91 },
   archetype: "rug_necromancer",
   steps: [

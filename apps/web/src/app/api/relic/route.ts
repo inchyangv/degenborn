@@ -22,6 +22,7 @@ import { bscTestnet } from "viem/chains";
 import type { CharacterState, ArchetypeResult } from "@degenborn/shared";
 import { getAppUrl } from "@/lib/runtime-env";
 import { MILESTONE_NAMES } from "@/lib/relic-milestones";
+import { canonicalizeWallet, isDemoWallet, isWalletInputSupported } from "@/lib/demo-wallets";
 
 const SNAPSHOT_RELIC_ABI = [
   {
@@ -62,14 +63,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "wallet and milestone_type required" }, { status: 400 });
     }
 
-    const walletAddr = wallet.toLowerCase() as `0x${string}`;
-    if (!isAddress(walletAddr)) {
+    const walletAddr = canonicalizeWallet(wallet) as `0x${string}`;
+    if (!isWalletInputSupported(walletAddr) || !isAddress(walletAddr)) {
       return NextResponse.json({ error: "invalid Ethereum address" }, { status: 400 });
     }
 
     const milestoneIndex = Number(milestone_type);
     if (milestoneIndex < 0 || milestoneIndex > 5) {
       return NextResponse.json({ error: "milestone_type must be 0–5" }, { status: 400 });
+    }
+
+    if (isDemoWallet(walletAddr)) {
+      return NextResponse.json({
+        demo_mode: true,
+        token_id: ((BigInt(milestoneIndex) + 1n) * 1000n + (BigInt(walletAddr) % 100n)).toString(),
+        milestone: MILESTONE_NAMES[milestoneIndex],
+        milestone_type: milestoneIndex,
+      });
     }
 
     const pk = (process.env.PRIVATE_KEY ?? "").trim();

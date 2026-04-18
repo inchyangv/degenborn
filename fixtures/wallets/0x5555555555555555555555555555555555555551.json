@@ -1,0 +1,24 @@
+{
+  "wallet_address": "0xghost000000000000000000000000000000000001",
+  "fetched_at": 1712700000,
+  "source": "fixture",
+  "archetype_label": "ghost_bagholder",
+  "description": "Ghost Bagholder: high conviction, high chaos, low survival. Holds through rugs, never recovers.",
+  "events": [
+    { "id": "gb001", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_bag1", "token_symbol": "BAG1", "value_usd": 5000, "pnl_delta": 0, "hold_duration_seconds": 2592000, "timestamp": 1709000000, "chain_id": 56 },
+    { "id": "gb002", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_bag1", "token_symbol": "BAG1", "value_usd": 3000, "pnl_delta": 0, "hold_duration_seconds": 2592000, "timestamp": 1709200000, "chain_id": 56 },
+    { "id": "gb003", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "rug", "token_address": "0xtoken_rug_a", "token_symbol": "RUGA", "value_usd": 0, "pnl_delta": -2000, "timestamp": 1709500000, "chain_id": 56 },
+    { "id": "gb004", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_bag2", "token_symbol": "BAG2", "value_usd": 4000, "pnl_delta": 0, "hold_duration_seconds": 1728000, "timestamp": 1709600000, "chain_id": 56 },
+    { "id": "gb005", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_bag2", "token_symbol": "BAG2", "value_usd": 2000, "pnl_delta": 0, "hold_duration_seconds": 1728000, "timestamp": 1709700000, "chain_id": 56 },
+    { "id": "gb006", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "rug", "token_address": "0xtoken_rug_b", "token_symbol": "RUGB", "value_usd": 0, "pnl_delta": -3000, "timestamp": 1710000000, "chain_id": 56 },
+    { "id": "gb007", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_bag1", "token_symbol": "BAG1", "value_usd": 2000, "pnl_delta": -6000, "hold_duration_seconds": 2592000, "timestamp": 1710500000, "chain_id": 56 },
+    { "id": "gb008", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_hope1", "token_symbol": "HOPE1", "value_usd": 1000, "pnl_delta": 0, "hold_duration_seconds": 864000, "timestamp": 1710600000, "chain_id": 56 },
+    { "id": "gb009", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_hope1", "token_symbol": "HOPE1", "value_usd": 500, "pnl_delta": 0, "hold_duration_seconds": 864000, "timestamp": 1710700000, "chain_id": 56 },
+    { "id": "gb010", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "rug", "token_address": "0xtoken_rug_c", "token_symbol": "RUGC", "value_usd": 0, "pnl_delta": -800, "timestamp": 1711000000, "chain_id": 56 },
+    { "id": "gb011", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_bag2", "token_symbol": "BAG2", "value_usd": 800, "pnl_delta": -5200, "hold_duration_seconds": 1728000, "timestamp": 1711500000, "chain_id": 56 },
+    { "id": "gb012", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_bag3", "token_symbol": "BAG3", "value_usd": 2000, "pnl_delta": 0, "hold_duration_seconds": 1296000, "timestamp": 1711600000, "chain_id": 56 },
+    { "id": "gb013", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_bag3", "token_symbol": "BAG3", "value_usd": 1000, "pnl_delta": 0, "hold_duration_seconds": 1296000, "timestamp": 1711700000, "chain_id": 56 },
+    { "id": "gb014", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_hope1", "token_symbol": "HOPE1", "value_usd": 300, "pnl_delta": -1200, "hold_duration_seconds": 864000, "timestamp": 1712000000, "chain_id": 56 },
+    { "id": "gb015", "wallet_address": "0xghost000000000000000000000000000000000001", "event_type": "rug", "token_address": "0xtoken_rug_d", "token_symbol": "RUGD", "value_usd": 0, "pnl_delta": -1500, "timestamp": 1712300000, "chain_id": 56 }
+  ]
+}

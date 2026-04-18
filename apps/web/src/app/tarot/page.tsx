@@ -6,12 +6,13 @@ import { drawWeeklyTarot, ARCHETYPE_COLORS } from "@degenborn/shared";
 import type { WeeklyTarotDraw } from "@degenborn/shared";
 import Link from "next/link";
 import html2canvas from "html2canvas";
+import { DEMO_WALLETS } from "@/lib/demo-wallets";
 
 const SAMPLE_WALLETS = [
-  { label: "Rug Necromancer", wallet: "0xrugnecromancer000000000000000000000000001" },
-  { label: "Ice Whale", wallet: "0xicewhale000000000000000000000000000000001" },
-  { label: "Mad Gambler", wallet: "0xmadgambler0000000000000000000000000000001" },
-  { label: "Ghost Bagholder", wallet: "0xghostbagholder00000000000000000000000001" },
+  { label: "Rug Necromancer", wallet: DEMO_WALLETS.rug_necromancer },
+  { label: "Ice Whale", wallet: DEMO_WALLETS.ice_whale },
+  { label: "Mad Gambler", wallet: DEMO_WALLETS.mad_gambler },
+  { label: "Ghost Bagholder", wallet: DEMO_WALLETS.ghost_bagholder },
 ];
 
 // Archetype color from affinity

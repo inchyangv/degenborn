@@ -14,6 +14,7 @@ import type { PersonaDNA, ArchetypeId } from "@degenborn/shared";
 import { ARCHETYPE_COLORS, ARCHETYPE_PROFILES } from "@degenborn/shared";
 import CharacterDisplay from "./CharacterDisplay";
 import type { CharacterState } from "@degenborn/shared";
+import { DEMO_WALLETS } from "@/lib/demo-wallets";
 
 // ── Sample corpus ──────────────────────────────────────────────────────────
 interface CorpusEntry {
@@ -26,12 +27,12 @@ interface CorpusEntry {
 
 const CORPUS: CorpusEntry[] = [
   {
-    wallet: "0xrugnecromancer000000000000000000000000001",
+    wallet: DEMO_WALLETS.rug_necromancer,
     short: "0xrugN...0001",
     archetype: "rug_necromancer",
     dna: [55, 45, 82, 41, 91],
     state: {
-      wallet_address: "0xrugnecromancer000000000000000000000000001",
+      wallet_address: DEMO_WALLETS.rug_necromancer,
       archetype: "rug_necromancer",
       level: 5, mood: "revenge", corruption: 40, prestige: 15,
       scar_count: 2, crown_count: 1, survival_streak: 3,
@@ -40,12 +41,12 @@ const CORPUS: CorpusEntry[] = [
     },
   },
   {
-    wallet: "0xicewhale000000000000000000000000000000001",
+    wallet: DEMO_WALLETS.ice_whale,
     short: "0xiceW...0001",
     archetype: "ice_whale",
     dna: [18, 91, 12, 78, 85],
     state: {
-      wallet_address: "0xicewhale000000000000000000000000000000001",
+      wallet_address: DEMO_WALLETS.ice_whale,
       archetype: "ice_whale",
       level: 7, mood: "neutral", corruption: 0, prestige: 75,
       scar_count: 0, crown_count: 3, survival_streak: 2,
@@ -54,12 +55,12 @@ const CORPUS: CorpusEntry[] = [
     },
   },
   {
-    wallet: "0xmadgambler0000000000000000000000000000001",
+    wallet: DEMO_WALLETS.mad_gambler,
     short: "0xmadG...0001",
     archetype: "mad_gambler",
     dna: [94, 22, 88, 55, 48],
     state: {
-      wallet_address: "0xmadgambler0000000000000000000000000000001",
+      wallet_address: DEMO_WALLETS.mad_gambler,
       archetype: "mad_gambler",
       level: 3, mood: "greed", corruption: 20, prestige: 10,
       scar_count: 1, crown_count: 1, survival_streak: 0,
@@ -68,12 +69,12 @@ const CORPUS: CorpusEntry[] = [
     },
   },
   {
-    wallet: "0xsniperjester000000000000000000000000001",
+    wallet: DEMO_WALLETS.sniper_jester,
     short: "0xsniJ...0001",
     archetype: "sniper_jester",
     dna: [82, 30, 40, 89, 55],
     state: {
-      wallet_address: "0xsniperjester000000000000000000000000001",
+      wallet_address: DEMO_WALLETS.sniper_jester,
       archetype: "sniper_jester",
       level: 4, mood: "euphoria", corruption: 5, prestige: 25,
       scar_count: 0, crown_count: 2, survival_streak: 1,
@@ -82,12 +83,12 @@ const CORPUS: CorpusEntry[] = [
     },
   },
   {
-    wallet: "0xghostbagholder00000000000000000000000001",
+    wallet: DEMO_WALLETS.ghost_bagholder,
     short: "0xghst...0001",
     archetype: "ghost_bagholder",
     dna: [30, 87, 72, 19, 28],
     state: {
-      wallet_address: "0xghostbagholder00000000000000000000000001",
+      wallet_address: DEMO_WALLETS.ghost_bagholder,
       archetype: "ghost_bagholder",
       level: 2, mood: "ghost", corruption: 60, prestige: 0,
       scar_count: 3, crown_count: 0, survival_streak: 0,
@@ -96,12 +97,12 @@ const CORPUS: CorpusEntry[] = [
     },
   },
   {
-    wallet: "0xdiamondcultist000000000000000000000001",
+    wallet: DEMO_WALLETS.diamond_cultist,
     short: "0xdiaC...0001",
     archetype: "diamond_cultist",
     dna: [25, 90, 30, 20, 80],
     state: {
-      wallet_address: "0xdiamondcultist000000000000000000000001",
+      wallet_address: DEMO_WALLETS.diamond_cultist,
       archetype: "diamond_cultist",
       level: 4, mood: "neutral", corruption: 10, prestige: 20,
       scar_count: 1, crown_count: 0, survival_streak: 2,

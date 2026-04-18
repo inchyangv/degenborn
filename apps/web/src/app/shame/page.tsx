@@ -13,6 +13,7 @@ import type { ArchetypeId } from "@degenborn/shared";
 import { ARCHETYPE_COLORS, ARCHETYPE_PROFILES } from "@degenborn/shared";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import type { CharacterState } from "@degenborn/shared";
+import { DEMO_WALLETS } from "@/lib/demo-wallets";
 
 interface ShameEntry {
   wallet: string;
@@ -27,7 +28,7 @@ interface ShameEntry {
 
 const WALL_OF_SHAME: ShameEntry[] = [
   {
-    wallet: "0xghostbagholder00000000000000000000000001",
+    wallet: DEMO_WALLETS.ghost_bagholder,
     wallet_short: "0xghst...0001",
     archetype: "ghost_bagholder",
     level: 2,
@@ -37,7 +38,7 @@ const WALL_OF_SHAME: ShameEntry[] = [
     achievement: "🏆 Ultimate Bagholder of Q1 2024",
   },
   {
-    wallet: "0xdiamond0cultist00000000000000000000000002",
+    wallet: DEMO_WALLETS.diamond_cultist_alt,
     wallet_short: "0xdiaC...0002",
     archetype: "diamond_cultist",
     level: 3,
@@ -47,7 +48,7 @@ const WALL_OF_SHAME: ShameEntry[] = [
     achievement: "🎖️ Conviction Hall of Pain",
   },
   {
-    wallet: "0xmadgambler0000000000000000000000000000002",
+    wallet: DEMO_WALLETS.mad_gambler_alt,
     wallet_short: "0xmadG...0002",
     archetype: "mad_gambler",
     level: 2,
@@ -57,7 +58,7 @@ const WALL_OF_SHAME: ShameEntry[] = [
     achievement: "⚡ Most Active Loser, 24h Record",
   },
   {
-    wallet: "0xrugnecromancer000000000000000000000000002",
+    wallet: DEMO_WALLETS.rug_necromancer_alt,
     wallet_short: "0xrugN...0002",
     archetype: "rug_necromancer",
     level: 4,
@@ -67,7 +68,7 @@ const WALL_OF_SHAME: ShameEntry[] = [
     achievement: "☠️ Rug Magnet, Undefeated",
   },
   {
-    wallet: "0xflatlineddemo00000000000000000000000002",
+    wallet: DEMO_WALLETS.flatline_2,
     wallet_short: "0xflat...0002",
     archetype: "diamond_cultist",
     level: 5,

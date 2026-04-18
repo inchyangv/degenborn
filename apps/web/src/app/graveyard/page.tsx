@@ -16,6 +16,7 @@ import Link from "next/link";
 import { ARCHETYPE_COLORS, ARCHETYPE_PROFILES } from "@degenborn/shared";
 import type { ArchetypeId } from "@degenborn/shared";
 import { formatDate } from "@/lib/flatline";
+import { DEMO_WALLETS } from "@/lib/demo-wallets";
 
 interface FlatlinedSoul {
   wallet: string;
@@ -36,7 +37,7 @@ const now = Math.floor(Date.now() / 1000);
 // Static fixture list — includes both Ghost-state (corruption 80+) and legacy
 const FLATLINED_SOULS: FlatlinedSoul[] = [
   {
-    wallet: "0xflatlineddemo00000000000000000000000001",
+    wallet: DEMO_WALLETS.flatline_1,
     archetype: "ghost_bagholder",
     name: "Wraith",
     title: "the Still-Holding",
@@ -49,7 +50,7 @@ const FLATLINED_SOULS: FlatlinedSoul[] = [
     epitaph: "Held $GHOSTCOIN for 127 days. Price: $0.000000.",
   },
   {
-    wallet: "0xflatlineddemo00000000000000000000000002",
+    wallet: DEMO_WALLETS.flatline_2,
     archetype: "diamond_cultist",
     name: "Krag",
     title: "the Unflinching",
@@ -62,7 +63,7 @@ const FLATLINED_SOULS: FlatlinedSoul[] = [
     epitaph: "Held $RUGPULL2X for 83 days. Down 99.8%.",
   },
   {
-    wallet: "0xflatlineddemo00000000000000000000000003",
+    wallet: DEMO_WALLETS.flatline_3,
     archetype: "mad_gambler",
     name: "Vex",
     title: "the All-In",
@@ -75,7 +76,7 @@ const FLATLINED_SOULS: FlatlinedSoul[] = [
     epitaph: "Sent everything into $MOONSHOT. Dev wallet dumped in 4 minutes.",
   },
   {
-    wallet: "0xflatlineddemo00000000000000000000000004",
+    wallet: DEMO_WALLETS.flatline_4,
     archetype: "rug_necromancer",
     name: "Drex",
     title: "the Thrice-Rugged",
@@ -88,7 +89,7 @@ const FLATLINED_SOULS: FlatlinedSoul[] = [
     epitaph: "Survived 3 rugs. Then went quiet. Probably buying again.",
   },
   {
-    wallet: "0xflatlineddemo00000000000000000000000005",
+    wallet: DEMO_WALLETS.flatline_5,
     archetype: "sniper_jester",
     name: "Mox",
     title: "the Missed Exit",
@@ -101,7 +102,7 @@ const FLATLINED_SOULS: FlatlinedSoul[] = [
     epitaph: "Held $PUMPIT48H for 51 hours past the optimal exit.",
   },
   {
-    wallet: "0xflatlineddemo00000000000000000000000006",
+    wallet: DEMO_WALLETS.flatline_6,
     archetype: "ice_whale",
     name: "Seryn",
     title: "the Frozen",
@@ -114,7 +115,7 @@ const FLATLINED_SOULS: FlatlinedSoul[] = [
     epitaph: "The right moment never came. Held $WHALE4EVER for 180 days.",
   },
   {
-    wallet: "0xflatlineddemo00000000000000000000000007",
+    wallet: DEMO_WALLETS.flatline_7,
     archetype: "ghost_bagholder",
     name: "Phasm",
     title: "the Invisible",
@@ -127,7 +128,7 @@ const FLATLINED_SOULS: FlatlinedSoul[] = [
     epitaph: "Never spoke. Never sold. $SPECTRE3 is at $0. Still in the wallet.",
   },
   {
-    wallet: "0xflatlineddemo00000000000000000000000008",
+    wallet: DEMO_WALLETS.flatline_8,
     archetype: "rug_necromancer",
     name: "Zael",
     title: "the Resurrected",

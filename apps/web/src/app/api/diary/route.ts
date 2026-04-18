@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMutationDiary } from "@/lib/diary-store";
+import { canonicalizeWallet, isWalletInputSupported } from "@/lib/demo-wallets";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -11,7 +12,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "wallet required" }, { status: 400 });
   }
 
-  const diary = getMutationDiary(wallet.toLowerCase(), limit);
+  if (!isWalletInputSupported(wallet)) {
+    return NextResponse.json({ error: "invalid wallet address" }, { status: 400 });
+  }
+
+  const diary = getMutationDiary(canonicalizeWallet(wallet), limit);
   return NextResponse.json(diary);
 }
 
@@ -24,10 +29,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "wallet and event required" }, { status: 400 });
     }
 
+    if (!isWalletInputSupported(wallet)) {
+      return NextResponse.json({ error: "invalid wallet address" }, { status: 400 });
+    }
+
     // In production this would write to Postgres
     // For demo: use in-memory store
     const { addMutationEntry } = await import("@/lib/diary-store");
-    addMutationEntry(wallet.toLowerCase(), event);
+    addMutationEntry(canonicalizeWallet(wallet), event);
 
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {

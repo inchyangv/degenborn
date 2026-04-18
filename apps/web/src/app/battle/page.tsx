@@ -9,6 +9,7 @@ import { runBattle } from "@/lib/battle-engine";
 import type { BattleResult, BattleSoulInput } from "@/lib/battle-engine";
 import Link from "next/link";
 import html2canvas from "html2canvas";
+import { DEMO_WALLETS } from "@/lib/demo-wallets";
 
 interface MonsterData {
   dna: PersonaDNA;
@@ -45,11 +46,11 @@ function toSoulInput(wallet: string, data: MonsterData): BattleSoulInput {
 }
 
 const SAMPLE_WALLETS = [
-  { label: "Rug Necromancer", wallet: "0xrugnecromancer000000000000000000000000001" },
-  { label: "Ice Whale", wallet: "0xicewhale000000000000000000000000000000001" },
-  { label: "Mad Gambler", wallet: "0xmadgambler0000000000000000000000000000001" },
-  { label: "Sniper Jester", wallet: "0xsniperjester000000000000000000000000001" },
-  { label: "Ghost Bagholder", wallet: "0xghostbagholder00000000000000000000000001" },
+  { label: "Rug Necromancer", wallet: DEMO_WALLETS.rug_necromancer },
+  { label: "Ice Whale", wallet: DEMO_WALLETS.ice_whale },
+  { label: "Mad Gambler", wallet: DEMO_WALLETS.mad_gambler },
+  { label: "Sniper Jester", wallet: DEMO_WALLETS.sniper_jester },
+  { label: "Ghost Bagholder", wallet: DEMO_WALLETS.ghost_bagholder },
 ];
 
 function BattleContent() {

@@ -18,6 +18,7 @@ interface MintResponse {
   tx_hash?: string;
   token_id?: string | null;
   already_minted?: boolean;
+  demo_mode?: boolean;
   dna_hash: string;
   state_hash: string;
   metadata_uri: string;
@@ -88,7 +89,7 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
 
   if (status === "born" || status === "done") {
     const glowColor = ARCHETYPE_COLORS[archetype.archetype as keyof typeof ARCHETYPE_COLORS] ?? "#9945ff";
-    const bscScanUrl = mintData?.tx_hash
+    const bscScanUrl = mintData?.tx_hash && !mintData.demo_mode
       ? `https://testnet.bscscan.com/tx/${mintData.tx_hash}`
       : null;
 
@@ -123,7 +124,11 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
           </div>
           <div className="text-center">
             <div className="text-[var(--neon-green)] text-xl font-black mb-1">
-              {mintData?.already_minted ? "✓ SOUL CORE ALREADY BOUND" : "✓ SOUL CORE BORN"}
+              {mintData?.already_minted
+                ? "✓ SOUL CORE ALREADY BOUND"
+                : mintData?.demo_mode
+                ? "✓ SOUL CORE SIMULATED"
+                : "✓ SOUL CORE BORN"}
             </div>
             <div className="text-gray-400 text-sm mb-1">"{archetype.profile.tagline}"</div>
             {mintData?.token_id && (
@@ -139,7 +144,11 @@ export default function MintButton({ wallet, dna, archetype }: Props) {
                 View on BSCScan →
               </a>
             )}
-            <div className="text-xs text-gray-600 font-mono mt-1">Soulbound · Non-transferable · Yours alone</div>
+            <div className="text-xs text-gray-600 font-mono mt-1">
+              {mintData?.demo_mode
+                ? "Demo mode · On-chain tx skipped · Flow continues"
+                : "Soulbound · Non-transferable · Yours alone"}
+            </div>
           </div>
           <button
             onClick={() => router.push(`/monster?wallet=${wallet}`)}

@@ -8,6 +8,7 @@
     "dev": "pnpm -r --parallel dev",
     "lint": "pnpm -r lint",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\" --ignore-path .prettierignore",
+    "scenario:harness": "node scripts/scenario-harness.mjs",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck"
   },

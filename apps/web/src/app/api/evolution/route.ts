@@ -4,6 +4,7 @@ import { checkEvolutionTrigger, attemptEvolution } from "@/lib/major-evolution";
 import { createWalletClient, createPublicClient, http, keccak256, toBytes, isAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { bscTestnet } from "viem/chains";
+import { canonicalizeWallet, isWalletInputSupported } from "@/lib/demo-wallets";
 
 // Minimal SoulCore ABI — only updateState
 const SOUL_CORE_ABI = [
@@ -116,11 +117,16 @@ export async function POST(req: NextRequest) {
 
     // Update on-chain if wallet address is provided and Soul Core is minted
     let txHash: string | null = null;
-    if (wallet && isAddress(wallet.toLowerCase())) {
+    if (wallet && isWalletInputSupported(wallet)) {
+      const canonicalWallet = canonicalizeWallet(wallet);
+      if (!isAddress(canonicalWallet)) {
+        return NextResponse.json({ error: "invalid Ethereum address" }, { status: 400 });
+      }
+
       const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").trim();
-      const metadataUri = `${appUrl}/api/metadata/${wallet.toLowerCase()}`;
+      const metadataUri = `${appUrl}/api/metadata/${canonicalWallet}`;
       try {
-        txHash = await updateOnChain(wallet, state_after, metadataUri);
+        txHash = await updateOnChain(canonicalWallet, state_after, metadataUri);
       } catch (err) {
         console.warn("[evolution] On-chain update failed (non-fatal):", err);
       }

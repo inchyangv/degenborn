@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/shared";
 import { getAppUrl } from "@/lib/runtime-env";
 import { getProfileStore } from "@/lib/profile-store";
+import { canonicalizeWallet, isWalletInputSupported } from "@/lib/demo-wallets";
+import { loadWalletProfile } from "@/lib/db";
 
 interface ShareRequest {
   wallet: string;
@@ -23,11 +25,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "wallet, dna, archetype, state required" }, { status: 400 });
     }
 
+    if (!isWalletInputSupported(wallet)) {
+      return NextResponse.json({ error: "invalid wallet address" }, { status: 400 });
+    }
+    const canonicalWallet = canonicalizeWallet(wallet);
+
     // Generate meme caption
     const caption = generateShareCaption(dna, archetype, state);
 
     // T3-03: Use real genesis image if available, fall back to placeholder
-    const storedProfile = getProfileStore(wallet.toLowerCase());
+    const storedProfile = getProfileStore(canonicalWallet) ?? await loadWalletProfile(canonicalWallet);
     const characterImageUrl =
       storedProfile?.image_url ??
       `/archetypes/${archetype.archetype}_placeholder.svg`;
@@ -38,7 +45,7 @@ export async function POST(req: NextRequest) {
       title: `${archetype.profile.name} — DegenBorn Soul Core`,
       description: caption,
       image_url: characterImageUrl,
-      card_url: `${appUrl}/monster?wallet=${wallet.toLowerCase()}`,
+      card_url: `${appUrl}/monster?wallet=${canonicalWallet}`,
     };
 
     // Detect spam-like patterns (auto-post guard)

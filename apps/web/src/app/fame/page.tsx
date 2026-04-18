@@ -12,6 +12,7 @@ import type { ArchetypeId } from "@degenborn/shared";
 import { ARCHETYPE_COLORS, ARCHETYPE_PROFILES } from "@degenborn/shared";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import type { CharacterState } from "@degenborn/shared";
+import { DEMO_WALLETS } from "@/lib/demo-wallets";
 
 interface FameEntry {
   wallet: string;
@@ -27,7 +28,7 @@ interface FameEntry {
 
 const HALL_OF_FAME: FameEntry[] = [
   {
-    wallet: "0xicewhale000000000000000000000000000000001",
+    wallet: DEMO_WALLETS.ice_whale,
     wallet_short: "0xiceW...0001",
     archetype: "ice_whale",
     level: 9,
@@ -38,7 +39,7 @@ const HALL_OF_FAME: FameEntry[] = [
     tagline: "Patience incarnate.",
   },
   {
-    wallet: "0xsniperjester000000000000000000000000001",
+    wallet: DEMO_WALLETS.sniper_jester,
     wallet_short: "0xsniJ...0001",
     archetype: "sniper_jester",
     level: 8,
@@ -49,7 +50,7 @@ const HALL_OF_FAME: FameEntry[] = [
     tagline: "In and out. Always green.",
   },
   {
-    wallet: "0xrugnecromancer000000000000000000000000001",
+    wallet: DEMO_WALLETS.rug_necromancer,
     wallet_short: "0xrugN...0001",
     archetype: "rug_necromancer",
     level: 7,
@@ -60,7 +61,7 @@ const HALL_OF_FAME: FameEntry[] = [
     tagline: "Death is just a dip.",
   },
   {
-    wallet: "0xdiamond0cultist00000000000000000000000001",
+    wallet: DEMO_WALLETS.diamond_cultist,
     wallet_short: "0xdiaC...0001",
     archetype: "diamond_cultist",
     level: 7,

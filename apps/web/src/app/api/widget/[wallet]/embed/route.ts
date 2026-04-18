@@ -3,6 +3,8 @@ import { isAddress } from "viem";
 import { getProfileStore } from "@/lib/profile-store";
 import { ARCHETYPE_COLORS } from "@degenborn/shared";
 import { getAppUrl } from "@/lib/runtime-env";
+import { canonicalizeWallet, isWalletInputSupported } from "@/lib/demo-wallets";
+import { loadWalletProfile } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -20,13 +22,13 @@ export async function GET(
   { params }: { params: { wallet: string } },
 ): Promise<NextResponse> {
   const { wallet } = params;
-  const walletLower = wallet.toLowerCase();
+  const walletLower = canonicalizeWallet(wallet);
 
-  if (!isAddress(walletLower)) {
+  if (!isWalletInputSupported(walletLower) || !isAddress(walletLower)) {
     return new NextResponse("Invalid wallet address", { status: 400 });
   }
 
-  const profile = getProfileStore(walletLower);
+  const profile = getProfileStore(walletLower) ?? await loadWalletProfile(walletLower);
   const archetype = profile?.archetype ?? "unknown";
   const dna = profile?.dna;
 

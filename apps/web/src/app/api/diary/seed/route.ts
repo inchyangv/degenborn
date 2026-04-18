@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { seedDiaryFromReplay } from "@/lib/diary-store";
 import type { MutationEvent } from "@degenborn/shared";
+import { canonicalizeWallet, isWalletInputSupported } from "@/lib/demo-wallets";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +18,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "wallet and entries required" }, { status: 400 });
     }
 
-    seedDiaryFromReplay(wallet.toLowerCase(), entries);
+    if (!isWalletInputSupported(wallet)) {
+      return NextResponse.json({ error: "invalid wallet address" }, { status: 400 });
+    }
+
+    const canonicalWallet = canonicalizeWallet(wallet);
+    seedDiaryFromReplay(
+      canonicalWallet,
+      entries.map((entry) => ({
+        ...entry,
+        wallet_address: canonicalWallet,
+      })),
+    );
     return NextResponse.json({ ok: true, seeded: entries.length });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

@@ -2,6 +2,8 @@ import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 import { getProfileStore } from "@/lib/profile-store";
 import { ARCHETYPE_COLORS } from "@degenborn/shared";
+import { canonicalizeWallet, isWalletInputSupported } from "@/lib/demo-wallets";
+import { loadWalletProfile } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -50,13 +52,13 @@ export async function GET(
   { params }: { params: { wallet: string } },
 ): Promise<Response> {
   const { wallet } = params;
-  const walletLower = wallet.toLowerCase();
+  const walletLower = canonicalizeWallet(wallet);
 
-  if (!/^0x[0-9a-f]{40}$/i.test(walletLower)) {
+  if (!isWalletInputSupported(walletLower)) {
     return new Response("Invalid wallet address", { status: 400 });
   }
 
-  const profile = getProfileStore(walletLower);
+  const profile = getProfileStore(walletLower) ?? await loadWalletProfile(walletLower);
   const archetype = profile?.archetype ?? "unknown";
   const dna = profile?.dna;
 
@@ -103,16 +105,16 @@ export async function GET(
           }}
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ color: "#ffd700", fontSize: "28px", fontWeight: "900", letterSpacing: "4px" }}>
+            <div style={{ color: "#ffd700", display: "flex", fontSize: "28px", fontWeight: "900", letterSpacing: "4px" }}>
               DEGENBORN ACADEMY
             </div>
-            <div style={{ color: "#666", fontSize: "12px", letterSpacing: "2px" }}>
+            <div style={{ color: "#666", display: "flex", fontSize: "12px", letterSpacing: "2px" }}>
               Est. 2024 · Powered by Four.meme · BNB Smart Chain Campus
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-            <div style={{ color: "#888", fontSize: "11px" }}>STUDENT ID</div>
-            <div style={{ color: "#ccc", fontSize: "14px", fontFamily: "monospace" }}>{short}</div>
+            <div style={{ color: "#888", display: "flex", fontSize: "11px" }}>STUDENT ID</div>
+            <div style={{ color: "#ccc", display: "flex", fontSize: "14px", fontFamily: "monospace" }}>{short}</div>
           </div>
         </div>
 
@@ -127,7 +129,7 @@ export async function GET(
         >
           {/* Left column — grades */}
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: "14px", color: "#666", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "12px" }}>
+            <div style={{ fontSize: "14px", color: "#666", display: "flex", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "12px" }}>
               Academic Performance
             </div>
 
@@ -145,8 +147,8 @@ export async function GET(
                     padding: "8px 0",
                   }}
                 >
-                  <div style={{ color: "#333", fontSize: "18px", fontWeight: "bold", flex: 1 }}>{name}</div>
-                  <div style={{ color: "#888", fontSize: "14px", width: "80px", textAlign: "center" }}>
+                  <div style={{ color: "#333", display: "flex", fontSize: "18px", fontWeight: "bold", flex: 1 }}>{name}</div>
+                  <div style={{ color: "#888", display: "flex", justifyContent: "center", fontSize: "14px", width: "80px", textAlign: "center" }}>
                     {score}/100
                   </div>
                   <div
@@ -168,15 +170,15 @@ export async function GET(
                 </div>
               );
             }) : (
-              <div style={{ color: "#999", fontSize: "16px", marginTop: "20px" }}>
+              <div style={{ color: "#999", display: "flex", fontSize: "16px", marginTop: "20px" }}>
                 No DNA data on record. Wallet not yet analyzed.
               </div>
             )}
 
             {/* "Parents' signature" */}
-            <div style={{ marginTop: "auto", borderTop: "1px solid #ccc", paddingTop: "12px" }}>
-              <div style={{ fontSize: "12px", color: "#999" }}>Parent / Guardian Signature:</div>
-              <div style={{ fontSize: "20px", color: "#ddd", fontStyle: "italic", marginTop: "4px" }}>
+            <div style={{ marginTop: "auto", borderTop: "1px solid #ccc", paddingTop: "12px", display: "flex", flexDirection: "column" }}>
+              <div style={{ fontSize: "12px", color: "#999", display: "flex" }}>Parent / Guardian Signature:</div>
+              <div style={{ fontSize: "20px", color: "#ddd", display: "flex", fontStyle: "italic", marginTop: "4px" }}>
                 _________________________________
               </div>
             </div>
@@ -197,8 +199,8 @@ export async function GET(
                 gap: "8px",
               }}
             >
-              <div style={{ color: "#666", fontSize: "11px", letterSpacing: "3px" }}>ARCHETYPE</div>
-              <div style={{ color: accentColor, fontSize: "24px", fontWeight: "900", textAlign: "center", textTransform: "uppercase" }}>
+              <div style={{ color: "#666", display: "flex", fontSize: "11px", letterSpacing: "3px" }}>ARCHETYPE</div>
+              <div style={{ color: accentColor, display: "flex", fontSize: "24px", fontWeight: "900", textAlign: "center", textTransform: "uppercase" }}>
                 {archetypeName}
               </div>
             </div>
@@ -211,15 +213,17 @@ export async function GET(
                 borderRadius: "8px",
                 padding: "14px",
                 flex: 1,
+                display: "flex",
+                flexDirection: "column",
               }}
             >
-              <div style={{ fontSize: "11px", color: "#888", letterSpacing: "2px", marginBottom: "8px" }}>
+              <div style={{ fontSize: "11px", color: "#888", display: "flex", letterSpacing: "2px", marginBottom: "8px" }}>
                 HOMEROOM TEACHER'S COMMENT
               </div>
-              <div style={{ fontSize: "15px", color: "#333", fontStyle: "italic", lineHeight: "1.5" }}>
-                "{teacherComment}"
+              <div style={{ fontSize: "15px", color: "#333", display: "flex", fontStyle: "italic", lineHeight: "1.5" }}>
+                {`"${teacherComment}"`}
               </div>
-              <div style={{ marginTop: "12px", fontSize: "11px", color: "#999" }}>
+              <div style={{ marginTop: "12px", fontSize: "11px", color: "#999", display: "flex" }}>
                 — Prof. On-Chain · Dept. of Market Psychology
               </div>
             </div>
@@ -239,13 +243,13 @@ export async function GET(
                 opacity: 0.8,
               }}
             >
-              <div style={{ color: accentColor, fontSize: "9px", fontWeight: "900", letterSpacing: "1px", textAlign: "center" }}>
+              <div style={{ color: accentColor, display: "flex", fontSize: "9px", fontWeight: "900", letterSpacing: "1px", textAlign: "center" }}>
                 DEGENBORN
               </div>
-              <div style={{ color: accentColor, fontSize: "7px", textAlign: "center" }}>
+              <div style={{ color: accentColor, display: "flex", fontSize: "7px", textAlign: "center" }}>
                 ACADEMY
               </div>
-              <div style={{ color: accentColor, fontSize: "7px" }}>EST. 2024</div>
+              <div style={{ color: accentColor, display: "flex", fontSize: "7px" }}>EST. 2024</div>
             </div>
           </div>
         </div>

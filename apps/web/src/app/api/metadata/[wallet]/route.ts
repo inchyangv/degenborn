@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAddress } from "viem";
-import { getMutationDiary } from "@/lib/diary-store";
+import { getMutationDiaryAsync } from "@/lib/diary-store";
 import { getProfileStore } from "@/lib/profile-store";
 import { getAppUrl } from "@/lib/runtime-env";
+import { canonicalizeWallet, isWalletInputSupported } from "@/lib/demo-wallets";
+import { loadWalletProfile } from "@/lib/db";
 
 /**
  * GET /api/metadata/[wallet]
@@ -17,15 +19,15 @@ export async function GET(
   { params }: { params: { wallet: string } },
 ) {
   const { wallet } = params;
-  const walletLower = wallet.toLowerCase();
+  const walletLower = canonicalizeWallet(wallet);
 
-  if (!isAddress(walletLower)) {
+  if (!isWalletInputSupported(walletLower) || !isAddress(walletLower)) {
     return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
   }
 
   // Retrieve the latest character state from the profile store (or diary as fallback)
-  const profile = getProfileStore(walletLower);
-  const diary = getMutationDiary(walletLower, 1);
+  const profile = getProfileStore(walletLower) ?? await loadWalletProfile(walletLower);
+  const diary = await getMutationDiaryAsync(walletLower, 1);
   const latestState = diary.entries[0]?.state_after ?? null;
 
   const archetype = profile?.archetype ?? latestState?.archetype ?? "unknown";

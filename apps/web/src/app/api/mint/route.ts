@@ -5,6 +5,7 @@ import { bscTestnet } from "viem/chains";
 import type { PersonaDNA, ArchetypeResult } from "@degenborn/shared";
 import { generateNarrative } from "@/lib/narrative";
 import { getAppUrl } from "@/lib/runtime-env";
+import { canonicalizeWallet, isDemoWallet, isWalletInputSupported } from "@/lib/demo-wallets";
 
 // Minimal ABI — only the functions we call
 const SOUL_CORE_ABI = [
@@ -54,6 +55,21 @@ function getDeployerAccount() {
   return privateKeyToAccount(key as `0x${string}`);
 }
 
+function simulateMint(wallet: `0x${string}`, archetype: ArchetypeResult, dnaHash: `0x${string}`, stateHash: `0x${string}`, metadataUri: string, narrative: Awaited<ReturnType<typeof generateNarrative>>) {
+  const seed = keccak256(toBytes(`${wallet}:${archetype.archetype}:${metadataUri}`));
+  const tokenId = (BigInt(seed) % 100000n) + 1n;
+
+  return {
+    demo_mode: true,
+    token_id: tokenId.toString(),
+    metadata_uri: metadataUri,
+    dna_hash: dnaHash,
+    state_hash: stateHash,
+    archetype: archetype.archetype,
+    narrative,
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -67,8 +83,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "wallet, dna, archetype required" }, { status: 400 });
     }
 
-    const walletAddr = wallet.toLowerCase() as `0x${string}`;
-    if (!isAddress(walletAddr)) {
+    const walletAddr = canonicalizeWallet(wallet) as `0x${string}`;
+    if (!isWalletInputSupported(walletAddr) || !isAddress(walletAddr)) {
       return NextResponse.json({ error: "invalid Ethereum address" }, { status: 400 });
     }
 
@@ -92,6 +108,10 @@ export async function POST(req: NextRequest) {
 
     // Generate narrative (used for metadata + response)
     const narrative = await generateNarrative(dna, archetype);
+
+    if (isDemoWallet(walletAddr)) {
+      return NextResponse.json(simulateMint(walletAddr, archetype, dnaHash, stateHash, metadataUri, narrative));
+    }
 
     // ── On-chain mint (deployer signs on behalf of user) ──────────────────────
     const account = getDeployerAccount();

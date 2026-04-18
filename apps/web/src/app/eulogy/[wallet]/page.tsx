@@ -13,6 +13,7 @@ import type { PersonaDNA, ArchetypeResult, CharacterState } from "@degenborn/sha
 import Link from "next/link";
 import EulogyCard from "@/components/EulogyCard";
 import { deriveFlatlineStatus } from "@/lib/flatline";
+import { DEMO_WALLETS } from "@/lib/demo-wallets";
 
 interface MonsterData {
   dna: PersonaDNA;
@@ -21,7 +22,7 @@ interface MonsterData {
 }
 
 // Fixture: flatlined wallet for demo
-const FLATLINE_FIXTURE_WALLET = "0xflatlineddemo00000000000000000000000001";
+const FLATLINE_FIXTURE_WALLET = DEMO_WALLETS.flatline_1;
 
 export default function EulogyPage() {
   const params = useParams<{ wallet: string }>();

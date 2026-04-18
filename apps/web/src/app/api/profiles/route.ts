@@ -10,39 +10,39 @@
  *   archetype — filter by archetype slug
  */
 import { NextRequest, NextResponse } from "next/server";
-import { listProfiles } from "@/lib/profile-store";
-import { classify } from "@degenborn/archetype";
+import { listProfilesAsync } from "@/lib/profile-store";
 import type { PersonaDNA } from "@degenborn/shared";
+import { DEMO_WALLETS } from "@/lib/demo-wallets";
 
 // Fixture profiles for when profile store is empty (fresh server / no analyses run yet)
 const FIXTURE_PROFILES = [
   {
-    wallet_address: "0xmad_gambler0000000000000000000000000001",
+    wallet_address: DEMO_WALLETS.mad_gambler,
     dna: { aggression: 85, conviction: 22, chaos: 72, luck: 48, survival: 30 },
     archetype: "mad_gambler",
   },
   {
-    wallet_address: "0xrug_necromancer000000000000000000000001",
+    wallet_address: DEMO_WALLETS.rug_necromancer,
     dna: { aggression: 45, conviction: 38, chaos: 80, luck: 42, survival: 88 },
     archetype: "rug_necromancer",
   },
   {
-    wallet_address: "0xice_whale0000000000000000000000000000001",
+    wallet_address: DEMO_WALLETS.ice_whale,
     dna: { aggression: 12, conviction: 91, chaos: 8, luck: 85, survival: 70 },
     archetype: "ice_whale",
   },
   {
-    wallet_address: "0xdiamond_cultist00000000000000000000001",
+    wallet_address: DEMO_WALLETS.diamond_cultist,
     dna: { aggression: 20, conviction: 88, chaos: 30, luck: 18, survival: 82 },
     archetype: "diamond_cultist",
   },
   {
-    wallet_address: "0xsniper_jester000000000000000000000001",
+    wallet_address: DEMO_WALLETS.sniper_jester,
     dna: { aggression: 78, conviction: 15, chaos: 45, luck: 90, survival: 40 },
     archetype: "sniper_jester",
   },
   {
-    wallet_address: "0xghost_bagholder00000000000000000000001",
+    wallet_address: DEMO_WALLETS.ghost_bagholder,
     dna: { aggression: 18, conviction: 75, chaos: 55, luck: 25, survival: 20 },
     archetype: "ghost_bagholder",
   },
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get("limit") ?? "20", 10), 100);
   const archetypeFilter = searchParams.get("archetype");
 
-  const stored = listProfiles();
+  const stored = await listProfilesAsync(limit);
 
   // Use stored profiles if available, otherwise return fixture profiles
   const source = stored.length > 0 ? stored : FIXTURE_PROFILES.map((f) => ({

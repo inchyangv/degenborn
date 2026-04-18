@@ -1,0 +1,22 @@
+{
+  "wallet_address": "0xdiamond0000000000000000000000000000000001",
+  "fetched_at": 1712700000,
+  "source": "fixture",
+  "archetype_label": "diamond_cultist",
+  "description": "Diamond Cultist: high conviction, low luck, high survival. Long holds with losses, keeps holding.",
+  "events": [
+    { "id": "dc001", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_gem1", "token_symbol": "GEM1", "value_usd": 2000, "pnl_delta": 0, "hold_duration_seconds": 2592000, "timestamp": 1709500000, "chain_id": 56 },
+    { "id": "dc002", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_gem1", "token_symbol": "GEM1", "value_usd": 1500, "pnl_delta": 0, "hold_duration_seconds": 2592000, "timestamp": 1709600000, "chain_id": 56 },
+    { "id": "dc003", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_gem1", "token_symbol": "GEM1", "value_usd": 1000, "pnl_delta": 0, "hold_duration_seconds": 1296000, "timestamp": 1709700000, "chain_id": 56 },
+    { "id": "dc004", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_gem1", "token_symbol": "GEM1", "value_usd": 3000, "pnl_delta": -1500, "hold_duration_seconds": 2592000, "timestamp": 1712000000, "chain_id": 56 },
+    { "id": "dc005", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_hold2", "token_symbol": "HOLD2", "value_usd": 3000, "pnl_delta": 0, "hold_duration_seconds": 864000, "timestamp": 1712100000, "chain_id": 56 },
+    { "id": "dc006", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_hold2", "token_symbol": "HOLD2", "value_usd": 2000, "pnl_delta": 0, "hold_duration_seconds": 864000, "timestamp": 1712200000, "chain_id": 56 },
+    { "id": "dc007", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_hold2", "token_symbol": "HOLD2", "value_usd": 3500, "pnl_delta": -1500, "hold_duration_seconds": 864000, "timestamp": 1712500000, "chain_id": 56 },
+    { "id": "dc008", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_diamond3", "token_symbol": "DIA3", "value_usd": 4000, "pnl_delta": 0, "hold_duration_seconds": 604800, "timestamp": 1712550000, "chain_id": 56 },
+    { "id": "dc009", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_diamond3", "token_symbol": "DIA3", "value_usd": 1000, "pnl_delta": 0, "hold_duration_seconds": 604800, "timestamp": 1712560000, "chain_id": 56 },
+    { "id": "dc010", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "sell", "token_address": "0xtoken_diamond3", "token_symbol": "DIA3", "value_usd": 4500, "pnl_delta": -500, "hold_duration_seconds": 604800, "timestamp": 1712620000, "chain_id": 56 },
+    { "id": "dc011", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "recovery", "token_address": "0xtoken_diamond3", "token_symbol": "DIA3", "value_usd": 4500, "pnl_delta": 300, "timestamp": 1712650000, "chain_id": 56 },
+    { "id": "dc012", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "buy", "token_address": "0xtoken_gem1", "token_symbol": "GEM1", "value_usd": 2500, "pnl_delta": 0, "hold_duration_seconds": 1728000, "timestamp": 1712660000, "chain_id": 56 },
+    { "id": "dc013", "wallet_address": "0xdiamond0000000000000000000000000000000001", "event_type": "recovery", "token_address": "0xtoken_hold2", "token_symbol": "HOLD2", "value_usd": 1000, "pnl_delta": 200, "timestamp": 1712680000, "chain_id": 56 }
+  ]
+}
