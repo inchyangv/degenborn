@@ -9,6 +9,7 @@ import { getDataSource } from "@/lib/runtime-env";
 import { createInitialState, applyStateEvent } from "@/lib/state-machine";
 import { canonicalizeWallet, isDemoWallet, isWalletInputSupported } from "@/lib/demo-wallets";
 import { deriveTokenOverlay } from "@/lib/token-trait";
+import { deriveBondingCurveTraits } from "@/lib/bonding-curve-trait";
 import path from "path";
 
 export async function POST(req: NextRequest) {
@@ -126,16 +127,31 @@ export async function POST(req: NextRequest) {
     // 2.1: Token-to-Trait overlay — top held token drives monster appearance badge
     const token_overlay = deriveTokenOverlay(walletLower, events);
 
+    // 2.2: Bonding Curve Stage Traits — early believer / graduate medal
+    const bonding_curve_traits = deriveBondingCurveTraits(walletLower, events);
+
+    // Apply bonding curve traits to derived state active_traits
+    const bcTraitIds: Array<"early_believer_halo" | "graduate_medal"> = [];
+    if (bonding_curve_traits.early_believer_halo) bcTraitIds.push("early_believer_halo");
+    if (bonding_curve_traits.graduate_medal) bcTraitIds.push("graduate_medal");
+    const finalState = bcTraitIds.length > 0
+      ? {
+          ...derivedState,
+          active_traits: Array.from(new Set([...derivedState.active_traits, ...bcTraitIds])) as typeof derivedState.active_traits,
+        }
+      : derivedState;
+
     return NextResponse.json({
       dna,
       archetype: archetypeResult,
       event_count: events.length,
       activity_counts,
       loyalty,
-      derived_state: derivedState,
+      derived_state: finalState,
       data_source: dataSource,
       creator_stats,
       token_overlay,
+      bonding_curve_traits,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

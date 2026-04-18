@@ -14,7 +14,9 @@ export type TraitId =
   | "skull_ring"         // survival_streak ≥ 5
   | "creator_badge"      // TF-05: launched ≥ 1 token on Four.meme
   | "kingmaker_crown"    // TF-05: launched token with high trading volume
-  | "fallen_creator_mark"; // TF-05: launched token that went to zero
+  | "fallen_creator_mark" // TF-05: launched token that went to zero
+  | "early_believer_halo" // 2.2: bought a token in the bonding curve early stage (<30%)
+  | "graduate_medal";    // 2.2: held a token that graduated from bonding curve to DEX
 
 export interface TraitDefinition {
   id: TraitId;
@@ -41,6 +43,8 @@ export const TRAIT_EMOJI: Record<TraitId, string> = {
   creator_badge: "🏗️",
   kingmaker_crown: "🤴",
   fallen_creator_mark: "🪦",
+  early_believer_halo: "🌟",
+  graduate_medal: "🎓",
 };
 
 export const TRAIT_DEFINITIONS: Record<TraitId, TraitDefinition> = {
@@ -148,5 +152,19 @@ export const TRAIT_DEFINITIONS: Record<TraitId, TraitDefinition> = {
     description: "Launched a token that went to zero — the scar of ambition",
     asset_path: "traits/fallen_creator_mark.svg",
     category: "body",
+  },
+  early_believer_halo: {
+    id: "early_believer_halo",
+    label: "Early Believer Halo",
+    description: "Bought a Four.meme token before 30% of bonding curve was filled — true early degen",
+    asset_path: "traits/early_believer_halo.svg",
+    category: "aura",
+  },
+  graduate_medal: {
+    id: "graduate_medal",
+    label: "Graduate Medal",
+    description: "Held a token all the way through the bonding curve to DEX graduation",
+    asset_path: "traits/graduate_medal.svg",
+    category: "accessory",
   },
 };
