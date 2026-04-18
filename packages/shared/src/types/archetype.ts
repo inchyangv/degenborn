@@ -27,50 +27,50 @@ export const ARCHETYPE_PROFILES: Record<ArchetypeId, ArchetypeProfile> = {
   mad_gambler: {
     id: "mad_gambler",
     name: "Mad Gambler",
-    tagline: "All-in, always.",
+    tagline: "ngmi energy. all-in anyway.",
     description:
-      "Fires first, asks questions never. High aggression, high chaos — luck is irrelevant when you're already going again.",
-    tone_seed: "frenetic, impulsive, darkly funny",
+      "Apes in before the chart loads, exits before the rug. High aggression, max chaos — fumbled the bag and immediately rebought.",
+    tone_seed: "frenetic, impulsive, darkly funny, degen slang",
   },
   ice_whale: {
     id: "ice_whale",
     name: "Ice Whale",
-    tagline: "Patience is the trade.",
+    tagline: "I hold while you panic-sell.",
     description:
-      "Conviction so deep it's cold. Holds through storms, exits at peaks. Luck doesn't hurt, but it isn't needed.",
-    tone_seed: "stoic, commanding, glacial",
+      "Conviction so deep it's cold. Held through 3 rugs, 2 bear markets, and your exit liq. Still green. Cope.",
+    tone_seed: "stoic, commanding, glacial, unbothered",
   },
   rug_necromancer: {
     id: "rug_necromancer",
     name: "Rug Necromancer",
-    tagline: "Death is just a dip.",
+    tagline: "still here. somehow.",
     description:
-      "Walked into rugs that would kill lesser degens — and came back. Chaos and survival in equal measure.",
-    tone_seed: "undead, darkly triumphant, battle-scarred",
+      "Your portfolio died. You didn't. Every jeet that sold the bottom funded your next entry. Chaos + survival = this creature.",
+    tone_seed: "undead, darkly triumphant, battle-scarred, savage",
   },
   diamond_cultist: {
     id: "diamond_cultist",
     name: "Diamond Cultist",
-    tagline: "Still holding.",
+    tagline: "it'll come back. it always comes back.",
     description:
-      "High conviction, bad luck, stubbornly alive. The bags are heavy but the belief never wavers.",
-    tone_seed: "obsessive, reverent, quietly suffering",
+      "High conviction, catastrophic luck, stubbornly alive. The bag is heavy. The belief is heavier. ngmi or wagmi — no in between.",
+    tone_seed: "obsessive, reverent, quietly suffering, cope arc",
   },
   sniper_jester: {
     id: "sniper_jester",
     name: "Sniper Jester",
-    tagline: "In and out. Count it.",
+    tagline: "in, out, +400%. cope.",
     description:
-      "Quick entries, quicker exits, somehow profitable. Aggression + luck = a dangerous kind of funny.",
-    tone_seed: "cocky, fast-talking, irreverent",
+      "Fast entries, faster exits, somehow still profitable. Apes in, exit liq's the top, never holds a bag. You hate this wallet.",
+    tone_seed: "cocky, fast-talking, irreverent, effortlessly based",
   },
   ghost_bagholder: {
     id: "ghost_bagholder",
     name: "Ghost Bagholder",
-    tagline: "Still waiting.",
+    tagline: "the bag got heavy. i got lighter.",
     description:
-      "Convinced, chaotic, and utterly exhausted. The bags haven't moved. Neither has the belief.",
-    tone_seed: "haunted, resigned, quietly delusional",
+      "Convinced, chaotic, and utterly cooked. The devs left. The TG is dead. The bag is at -94%. Still here. Still a jeet in denial.",
+    tone_seed: "haunted, resigned, quietly delusional, ngmi confirmed",
   },
 };
 
