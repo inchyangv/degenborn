@@ -55,16 +55,27 @@ export default function ShareCard({ dna, archetype, state, wallet, loyalty }: Pr
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const shareToX = () => {
-    const text = encodeURIComponent(`${caption}\n\nTrade on @four_meme to evolve your monster 👾\n#DegenBorn #fourmeme`);
+  const buildShareText = () =>
+    `${caption}\n\nTrade on @four_meme to evolve your monster 👾\n#DegenBorn #fourmeme`;
+
+  const shareToX = async () => {
+    const shareText = buildShareText();
+    // Auto-copy caption to clipboard before opening Twitter
+    try { await navigator.clipboard.writeText(shareText); } catch { /* ignore */ }
+    const text = encodeURIComponent(shareText);
     const profileUrl = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${profileUrl}`, "_blank", "noopener");
   };
 
   const shareNative = async () => {
-    if (!navigator.share) { shareToX(); return; }
+    const shareText = buildShareText();
+    if (!navigator.share) { await shareToX(); return; }
     try {
-      await navigator.share({ title: `DegenBorn — ${archetype.profile.name}`, text: `${caption}\n\nTrade on @four_meme to evolve your monster 👾\n#DegenBorn #fourmeme`, url: `${window.location.origin}/m/${wallet}` });
+      await navigator.share({
+        title: `DegenBorn — ${archetype.profile.name}`,
+        text: shareText,
+        url: `${window.location.origin}/m/${wallet}`,
+      });
     } catch {
       // user cancelled or not supported
     }
@@ -305,7 +316,7 @@ export default function ShareCard({ dna, archetype, state, wallet, loyalty }: Pr
       </div>
 
       <div className="text-xs text-gray-700 text-center">
-        Auto-posting is disabled by design — you control when to share.
+        𝕏 Share opens Twitter with caption pre-filled + copied to clipboard.
       </div>
     </div>
   );
