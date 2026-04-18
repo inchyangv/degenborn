@@ -519,6 +519,173 @@ export const MEME_TEMPLATES: MemeTemplate[] = [
 </svg>`;
     },
   },
+
+  // 11 — POV: You Opened DegenBorn (4-panel comic) ← FORMAT MEME #1
+  {
+    id: "pov_opened",
+    name: "POV: You Opened DegenBorn",
+    preferredArchetypes: ["rug_necromancer", "mad_gambler", "ghost_bagholder", "sniper_jester", "ice_whale", "diamond_cultist"],
+    characterSlot: { x: 440, y: 340, size: 140 },
+    bg: "#080010",
+    textSlots: [
+      { id: "p1", label: "Panel 1: Before", maxChars: 22 },
+      { id: "p2", label: "Panel 2: Connecting", maxChars: 22 },
+      { id: "p3", label: "Panel 3: Archetype reveal", maxChars: 22 },
+      { id: "p4", label: "Panel 4: Reaction", maxChars: 22 },
+    ],
+    buildSvg: (texts, charUrl) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <defs>
+    <linearGradient id="panelbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0014"/>
+      <stop offset="100%" stop-color="#050008"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#panelbg)"/>
+  <!-- Title -->
+  ${svgText("POV: You opened DegenBorn", 300, 26, { fontSize: 20, fill: "#9945ff", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <!-- 2x2 Panel grid -->
+  <!-- Panel borders -->
+  <rect x="10" y="40" width="280" height="260" rx="8" fill="#0d000f" stroke="#9945ff33" stroke-width="1"/>
+  <rect x="310" y="40" width="280" height="260" rx="8" fill="#0d000f" stroke="#9945ff33" stroke-width="1"/>
+  <rect x="10" y="320" width="280" height="260" rx="8" fill="#0d000f" stroke="#9945ff33" stroke-width="1"/>
+  <rect x="310" y="320" width="280" height="260" rx="8" fill="#0d000f" stroke="#9945ff33" stroke-width="1"/>
+  <!-- Panel 1: casual degen face -->
+  <text x="150" y="155" font-size="64" text-anchor="middle" dominant-baseline="middle">😐</text>
+  ${svgText(texts["p1"] ?? "just checking my wallet lol", 150, 265, { fontSize: 16, fill: "#888", maxChars: 24, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <!-- Panel 2: loading screen -->
+  <text x="450" y="120" font-size="40" text-anchor="middle" dominant-baseline="middle">🔗</text>
+  <rect x="360" y="150" width="180" height="8" rx="4" fill="#333"/>
+  <rect x="360" y="150" width="100" height="8" rx="4" fill="#9945ff"/>
+  <text x="450" y="190" font-size="28" text-anchor="middle" dominant-baseline="middle">⚡</text>
+  ${svgText(texts["p2"] ?? "analyzing on-chain activity...", 450, 265, { fontSize: 16, fill: "#9945ff", maxChars: 24, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <!-- Panel 3: archetype reveal + character -->
+  <rect x="20" y="330" width="260" height="60" rx="6" fill="#9945ff22" stroke="#9945ff44" stroke-width="1"/>
+  ${svgText("YOU ARE A", 150, 355, { fontSize: 14, fill: "#9945ff", maxChars: 20, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  ${svgText(texts["p3"] ?? "RUG NECROMANCER", 150, 380, { fontSize: 22, fill: "#fff", stroke: "#9945ff", strokeWidth: 1, maxChars: 18, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <!-- Character in panel 3 -->
+  ${characterImage(charUrl, { x: 55, y: 400, size: 190 })}
+  <!-- Panel 4: reaction -->
+  <text x="450" y="430" font-size="64" text-anchor="middle" dominant-baseline="middle">💀</text>
+  ${svgText(texts["p4"] ?? "ngmi. still here. somehow.", 450, 545, { fontSize: 16, fill: "#ff3d3d", maxChars: 24, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <!-- DegenBorn watermark -->
+  ${svgText("DegenBorn × Four.meme", 300, 590, { fontSize: 11, fill: "#333", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+</svg>`,
+  },
+
+  // 12 — Tag Yourself: Archetype Grid ← FORMAT MEME #2
+  {
+    id: "tag_yourself",
+    name: "Tag Yourself",
+    preferredArchetypes: ["rug_necromancer", "mad_gambler", "ghost_bagholder", "sniper_jester", "ice_whale", "diamond_cultist"],
+    characterSlot: { x: 0, y: 0, size: 0 }, // no single character slot — uses grid
+    bg: "#080010",
+    textSlots: [
+      { id: "arrow", label: "Arrow label (I am this one)", maxChars: 18 },
+    ],
+    buildSvg: (texts) => {
+      const archetypes = [
+        { name: "Mad Gambler", emoji: "🎲", color: "#ff3d3d", x: 20, y: 90 },
+        { name: "Ice Whale", emoji: "🐋", color: "#00d4ff", x: 220, y: 90 },
+        { name: "Rug Necro", emoji: "💀", color: "#9945ff", x: 420, y: 90 },
+        { name: "Sniper Jester", emoji: "🎯", color: "#ffd700", x: 20, y: 310 },
+        { name: "Diamond Cultist", emoji: "💎", color: "#88ccff", x: 220, y: 310 },
+        { name: "Ghost Bagholder", emoji: "👻", color: "#aaa", x: 420, y: 310 },
+      ];
+      const cells = archetypes.map(({ name, emoji, color, x, y }) => `
+        <rect x="${x}" y="${y}" width="160" height="190" rx="10" fill="${color}15" stroke="${color}44" stroke-width="1.5"/>
+        <text x="${x + 80}" y="${y + 80}" font-size="50" text-anchor="middle" dominant-baseline="middle">${emoji}</text>
+        ${svgText(name, x + 80, y + 155, { fontSize: 15, fill: color, maxChars: 16, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+      `).join("");
+      const arrowText = texts["arrow"] ?? "i am this one →";
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 540" width="600" height="540">
+  <rect width="600" height="540" fill="#06000e"/>
+  ${svgText("TAG YOURSELF", 300, 38, { fontSize: 32, fill: "#fff", stroke: "#9945ff", strokeWidth: 1, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  ${svgText("degen edition", 300, 62, { fontSize: 14, fill: "#555", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  ${cells}
+  <!-- Arrow + label -->
+  ${svgText(arrowText, 300, 512, { fontSize: 18, fill: "#ffd700", maxChars: 26, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  ${svgText("DegenBorn × Four.meme", 300, 532, { fontSize: 10, fill: "#333", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+</svg>`;
+    },
+  },
+
+  // 13 — Quote Card: "X said: '___'. Their monster:" ← FORMAT MEME #3
+  {
+    id: "quote_card",
+    name: "Quote → Monster",
+    preferredArchetypes: ["mad_gambler", "sniper_jester", "rug_necromancer", "ghost_bagholder", "diamond_cultist", "ice_whale"],
+    characterSlot: { x: 340, y: 160, size: 220 },
+    bg: "#060006",
+    textSlots: [
+      { id: "handle", label: "@handle who said it", maxChars: 18 },
+      { id: "quote", label: "The quote", maxChars: 60 },
+    ],
+    buildSvg: (texts, charUrl) => {
+      const handle = texts["handle"] ?? "@anon_degen";
+      const quote = texts["quote"] ?? "I'm just going to ape one more time, I swear";
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <rect width="600" height="400" fill="#050008"/>
+  <!-- Left panel: quote -->
+  <rect x="10" y="10" width="310" height="380" rx="12" fill="#0a000f" stroke="#ffd70033" stroke-width="1"/>
+  <!-- Quote marks -->
+  ${svgText("\u201C\u201C", 55, 60, { fontSize: 60, fill: "#ffd70033", fontFamily: "Georgia, serif", textAnchor: "middle", fontWeight: "400" })}
+  ${svgText(quote, 165, 200, { fontSize: 18, fill: "#ddd", maxChars: 22, lineHeight: 28, fontFamily: "Georgia, serif", textAnchor: "middle", fontWeight: "400" })}
+  <!-- Handle -->
+  ${svgText(handle, 165, 350, { fontSize: 16, fill: "#ffd700", maxChars: 20, fontFamily: "Courier New, monospace", textAnchor: "middle", fontWeight: "bold" })}
+  ${svgText("said this.", 165, 375, { fontSize: 13, fill: "#555", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <!-- Divider -->
+  <line x1="330" y1="10" x2="330" y2="390" stroke="#ffd70022" stroke-width="1"/>
+  <!-- Right panel: monster -->
+  <rect x="330" y="10" width="260" height="380" rx="12" fill="#0a0000" stroke="#ffd70033" stroke-width="1"/>
+  ${svgText("their monster:", 460, 50, { fontSize: 14, fill: "#555", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  ${characterImage(charUrl, { x: 350, y: 60, size: 220 })}
+  ${svgText("checks out.", 460, 370, { fontSize: 16, fill: "#ff3d3d", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <!-- Watermark -->
+  ${svgText("DegenBorn × Four.meme", 300, 395, { fontSize: 10, fill: "#222", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+</svg>`;
+    },
+  },
+
+  // 14 — Before / After Rugpull ← FORMAT MEME #4
+  {
+    id: "before_after_rug",
+    name: "Before / After Rugpull",
+    preferredArchetypes: ["rug_necromancer", "ghost_bagholder", "diamond_cultist", "mad_gambler"],
+    characterSlot: { x: 0, y: 0, size: 0 },
+    bg: "#060006",
+    textSlots: [
+      { id: "token", label: "Token name / ticker", maxChars: 16 },
+      { id: "before_quote", label: "Before quote (hopium)", maxChars: 30 },
+      { id: "after_quote", label: "After quote (reality)", maxChars: 30 },
+    ],
+    buildSvg: (texts, charUrl) => {
+      const token = texts["token"] ?? "$RUGTOKEN";
+      const before = texts["before_quote"] ?? "this is the one. 100x easy";
+      const after = texts["after_quote"] ?? "dev left. tg is dead. i'm still here";
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <rect width="600" height="400" fill="#050008"/>
+  <!-- BEFORE panel (left, green tint) -->
+  <rect x="5" y="5" width="290" height="390" rx="12" fill="#001a00" stroke="#00ff8833" stroke-width="1.5"/>
+  ${svgText("BEFORE", 150, 35, { fontSize: 24, fill: "#00ff88", stroke: "#000", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  ${svgText(token, 150, 55, { fontSize: 14, fill: "#00ff8877", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <text x="150" y="175" font-size="80" text-anchor="middle" dominant-baseline="middle">😍</text>
+  ${svgText("\"" + before + "\"", 150, 290, { fontSize: 15, fill: "#00ff88", maxChars: 28, lineHeight: 22, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  ${svgText("+420%", 150, 360, { fontSize: 28, fill: "#00ff88", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <!-- AFTER panel (right, red tint) -->
+  <rect x="305" y="5" width="290" height="390" rx="12" fill="#1a0000" stroke="#ff3d3d33" stroke-width="1.5"/>
+  ${svgText("AFTER", 450, 35, { fontSize: 24, fill: "#ff3d3d", stroke: "#000", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  ${svgText(token, 450, 55, { fontSize: 14, fill: "#ff3d3d77", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <!-- Character on the after side -->
+  ${charUrl ? characterImage(charUrl, { x: 360, y: 70, size: 160 }) : `<text x="450" y="175" font-size="80" text-anchor="middle" dominant-baseline="middle">💀</text>`}
+  ${svgText("\"" + after + "\"", 450, 290, { fontSize: 14, fill: "#ff3d3d", maxChars: 28, lineHeight: 22, fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  ${svgText("-99.6%", 450, 360, { fontSize: 28, fill: "#ff3d3d", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+  <!-- Divider arrow -->
+  <text x="300" y="205" font-size="28" text-anchor="middle" dominant-baseline="middle" fill="#ffffff33">→</text>
+  <!-- Watermark -->
+  ${svgText("DegenBorn × Four.meme", 300, 395, { fontSize: 10, fill: "#222", fontFamily: "Impact, sans-serif", textAnchor: "middle" })}
+</svg>`;
+    },
+  },
 ];
 
 /** Get the best default text for a slot based on archetype/state */
