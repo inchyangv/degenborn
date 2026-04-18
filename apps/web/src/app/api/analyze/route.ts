@@ -10,6 +10,7 @@ import { createInitialState, applyStateEvent } from "@/lib/state-machine";
 import { canonicalizeWallet, isDemoWallet, isWalletInputSupported } from "@/lib/demo-wallets";
 import { deriveTokenOverlay } from "@/lib/token-trait";
 import { deriveBondingCurveTraits } from "@/lib/bonding-curve-trait";
+import { detectAbuse, applyAbuseDiscount } from "@/lib/abuse-guard";
 import path from "path";
 
 export async function POST(req: NextRequest) {
@@ -70,7 +71,11 @@ export async function POST(req: NextRequest) {
       wallet_address: walletLower,
     }));
 
-    const { dna } = scoreDNA(walletLower, events);
+    const { dna: rawDNA } = scoreDNA(walletLower, events);
+    // 5.4: Abuse guard — detect wash trades, apply score discount
+    const abuseReport = detectAbuse(events);
+    const discountedStats = applyAbuseDiscount(rawDNA, abuseReport);
+    const dna = { ...rawDNA, ...discountedStats };
     const archetypeResult = classify(dna);
     const loyalty = computeLoyaltyScore(events);
 
@@ -152,6 +157,12 @@ export async function POST(req: NextRequest) {
       creator_stats,
       token_overlay,
       bonding_curve_traits,
+      abuse: abuseReport.is_suspicious ? {
+        is_suspicious: true,
+        flags: abuseReport.flags,
+        confidence: abuseReport.confidence,
+        score_discount_pct: Math.round(abuseReport.score_discount * 100),
+      } : null,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
