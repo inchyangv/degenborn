@@ -30,6 +30,12 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "DegenBorn",
+  },
   title: "DegenBorn — Your wallet, reborn as a monster",
   description:
     "DegenBorn turns your Four.meme trading history into an evolving on-chain monster persona. Connect, awaken, evolve.",

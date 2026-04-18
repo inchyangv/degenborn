@@ -1,0 +1,41 @@
+{
+  "name": "DegenBorn",
+  "short_name": "DegenBorn",
+  "description": "Your wallet, reborn as a monster. Built on Four.meme.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#9945ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["games", "finance", "entertainment"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "My Monster",
+      "short_name": "Monster",
+      "description": "View your monster room",
+      "url": "/monster",
+      "icons": [{ "src": "/icon.png", "sizes": "512x512" }]
+    },
+    {
+      "name": "Meme Studio",
+      "short_name": "Studio",
+      "description": "Create memes",
+      "url": "/studio",
+      "icons": [{ "src": "/icon.png", "sizes": "512x512" }]
+    }
+  ]
+}
