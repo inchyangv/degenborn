@@ -17,6 +17,8 @@ import { HeroSkeleton } from "@/components/LoadingSkeleton";
 import { canonicalizeWallet } from "@/lib/demo-wallets";
 import InstallPrompt from "@/components/InstallPrompt";
 import Link from "next/link";
+import { playVoiceLine } from "@/lib/sfx-config";
+import { isMuted, toggleMute } from "@/lib/sfx";
 
 // XP thresholds: level N requires (N * 100) XP to level up
 function levelXP(state: CharacterState): { current: number; needed: number; pct: number } {
@@ -92,6 +94,12 @@ export default function MonsterClient({ wallet = "" }: MonsterClientProps) {
   const [horoscopeOpen, setHoroscopeOpen] = useState(false);
   const [newMilestones, setNewMilestones] = useState<Array<{ milestone_type: number; name: string; description: string }>>([]);
   const [milestoneAlertDismissed, setMilestoneAlertDismissed] = useState(false);
+  const [voicePlaying, setVoicePlaying] = useState(false);
+  const [sfxMuted, setSfxMuted] = useState(false);
+
+  useEffect(() => {
+    setSfxMuted(isMuted());
+  }, []);
 
   useEffect(() => {
     if (!normalizedWallet) {
@@ -357,6 +365,32 @@ export default function MonsterClient({ wallet = "" }: MonsterClientProps) {
           >
             ⚔ Challenge →
           </Link>
+        </div>
+
+        {/* 1.4: Signature Voice Line */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (sfxMuted) return;
+              setVoicePlaying(true);
+              playVoiceLine(archetype.archetype);
+              setTimeout(() => setVoicePlaying(false), 13000);
+            }}
+            disabled={sfxMuted || voicePlaying}
+            className="flex items-center gap-2 px-4 py-2 text-xs border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-125"
+            style={{ borderColor: "var(--neon-purple)", color: "var(--neon-purple)", background: "rgba(153,69,255,0.06)" }}
+            title="Hear your monster speak"
+          >
+            <span>{voicePlaying ? "🔊" : "🎙"}</span>
+            <span>{voicePlaying ? "Speaking…" : "Hear My Voice"}</span>
+          </button>
+          <button
+            onClick={() => setSfxMuted(toggleMute())}
+            className="text-lg leading-none text-gray-600 hover:text-gray-300 transition-colors"
+            title={sfxMuted ? "Unmute" : "Mute"}
+          >
+            {sfxMuted ? "🔇" : "🔉"}
+          </button>
         </div>
 
         {/* Evolve Your Monster CTA — TF-03 */}
