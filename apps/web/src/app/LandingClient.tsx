@@ -200,6 +200,35 @@ interface LandingClientProps {
   fromWallet?: string | null;
 }
 
+// 5.2: A/B test — landing tagline copy tone
+// Variant A = polite ("evolving identity" vibe)
+// Variant B = savage (degen vernacular)
+const AB_TAGLINES = {
+  A: {
+    headline: "Connect your wallet. See what kind of trader you really are.",
+    sub: "Four.meme is where meme tokens are born. DegenBorn is where meme traders are born.",
+    cta: "Reveal My Monster",
+  },
+  B: {
+    headline: "stop pretending ur a rational investor. see what you actually are.",
+    sub: "your on-chain history doesn't lie. we just make it look cool.",
+    cta: "what am i? (ngmi to know)",
+  },
+};
+
+function getABVariant(): "A" | "B" {
+  if (typeof window === "undefined") return "A";
+  try {
+    const stored = localStorage.getItem("ab_tagline");
+    if (stored === "A" || stored === "B") return stored;
+    const variant: "A" | "B" = Math.random() < 0.5 ? "A" : "B";
+    localStorage.setItem("ab_tagline", variant);
+    return variant;
+  } catch {
+    return "A";
+  }
+}
+
 export default function LandingClient({ fromWallet = null }: LandingClientProps) {
   const router = useRouter();
   const { address, isConnected } = useAccount();
@@ -208,10 +237,13 @@ export default function LandingClient({ fromWallet = null }: LandingClientProps)
   const [analyzeLoading, setAnalyzeLoading] = useState(false);
   const [pasteWallet, setPasteWallet] = useState("");
   const [pasteError, setPasteError] = useState("");
+  const [abVariant, setAbVariant] = useState<"A" | "B">("A");
 
-  // Funnel step 1: fire on mount
+  // Funnel step 1: fire on mount + assign A/B variant
   useEffect(() => {
-    analytics.landingArrived({ from: fromWallet ? "challenge_link" : undefined });
+    const variant = getABVariant();
+    setAbVariant(variant);
+    analytics.landingArrived({ from: fromWallet ? "challenge_link" : undefined, ab_variant: variant });
   }, [fromWallet]);
 
   const handleConnect = () => {
@@ -269,12 +301,18 @@ export default function LandingClient({ fromWallet = null }: LandingClientProps)
             DEGEN<span className="text-[var(--neon-green)]">BORN</span>
           </h1>
 
-          {/* TF-06: Core positioning tagline */}
+          {/* TF-06 / 5.2: A/B tagline */}
           <p className="text-sm text-gray-500 mb-5 max-w-sm italic leading-relaxed">
-            Four.meme is where meme tokens are born.{" "}
-            <span className="text-[var(--neon-green)] not-italic font-black">
-              DegenBorn is where meme traders are born.
-            </span>
+            {abVariant === "B" ? (
+              <span className="text-[var(--neon-green)] not-italic">{AB_TAGLINES.B.sub}</span>
+            ) : (
+              <>
+                Four.meme is where meme tokens are born.{" "}
+                <span className="text-[var(--neon-green)] not-italic font-black">
+                  DegenBorn is where meme traders are born.
+                </span>
+              </>
+            )}
           </p>
 
           {/* Flow line — Wallet → Persona DNA → Soul Core */}
@@ -295,7 +333,7 @@ export default function LandingClient({ fromWallet = null }: LandingClientProps)
           </div>
 
           <p className="text-gray-400 text-base max-w-sm mb-8">
-            Connect your wallet. See what kind of trader you really are.
+            {abVariant === "B" ? AB_TAGLINES.B.headline : AB_TAGLINES.A.headline}
           </p>
 
           {/* CTA block */}

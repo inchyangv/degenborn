@@ -59,8 +59,8 @@ export function track(event: string, props?: Record<string, unknown>): void {
 // Convenience wrappers for the 5 core funnel steps
 export const analytics = {
   // FUNNEL STEP 1: user arrived at landing
-  landingArrived: (props?: { from?: string }) =>
-    track("funnel_01_landing_arrived", { from: props?.from ?? "direct" }),
+  landingArrived: (props?: { from?: string; ab_variant?: string }) =>
+    track("funnel_01_landing_arrived", { from: props?.from ?? "direct", ab_variant: props?.ab_variant ?? "A" }),
 
   // FUNNEL STEP 2a: wallet connected via metamask/injected
   walletConnected: (address: string) =>
