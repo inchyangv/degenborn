@@ -211,6 +211,10 @@ export interface LoyaltyScore {
   active_days: number;
   first_trade_at: number | null;
   last_trade_at: number | null;
+  /** 2.7: Purity — % of trades that are Four.meme-native vs. general BSC (0–100) */
+  four_meme_purity: number;
+  /** Human-readable purity label, e.g. "99.4% Four.meme native" */
+  purity_label: string;
 }
 
 /**
@@ -225,7 +229,10 @@ export interface LoyaltyScore {
  */
 export function computeLoyaltyScore(events: ActivityEvent[]): LoyaltyScore {
   if (events.length === 0) {
-    return { score: 0, grade: "Bronze", trade_count: 0, unique_tokens: 0, active_days: 0, first_trade_at: null, last_trade_at: null };
+    return {
+      score: 0, grade: "Bronze", trade_count: 0, unique_tokens: 0, active_days: 0,
+      first_trade_at: null, last_trade_at: null, four_meme_purity: 0, purity_label: "0% Four.meme native",
+    };
   }
 
   const trades = events.filter((e) => e.event_type === "buy" || e.event_type === "sell" || e.event_type === "rug");
@@ -261,7 +268,17 @@ export function computeLoyaltyScore(events: ActivityEvent[]): LoyaltyScore {
     : score >= 35 ? "Silver"
     : "Bronze";
 
-  return { score, grade, trade_count: tradeCount, unique_tokens: uniqueTokens, active_days: activeDays, first_trade_at: firstAt, last_trade_at: lastAt };
+  // 2.7: Four.meme Purity — % of trades on BNB Chain (chain_id=56 or unset → assumed F4M).
+  // Events with chain_id set to something other than 56 are non-Four.meme BSC trades.
+  const f4mTrades = trades.filter((e) => !e.chain_id || e.chain_id === 56);
+  const four_meme_purity = tradeCount > 0 ? clamp(Math.round((f4mTrades.length / tradeCount) * 100)) : 100;
+  const purityLabel = `${four_meme_purity.toFixed(1)}% Four.meme native`;
+
+  return {
+    score, grade, trade_count: tradeCount, unique_tokens: uniqueTokens,
+    active_days: activeDays, first_trade_at: firstAt, last_trade_at: lastAt,
+    four_meme_purity, purity_label: purityLabel,
+  };
 }
 
 /**

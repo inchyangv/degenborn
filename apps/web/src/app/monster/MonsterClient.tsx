@@ -517,6 +517,11 @@ export default function MonsterClient({ wallet = "" }: MonsterClientProps) {
                 <div className="text-gray-600 text-[10px]">Active days</div>
               </div>
             </div>
+            {loyalty.four_meme_purity !== undefined && (
+              <div className="mt-2 text-center text-[10px] text-[var(--neon-green)] opacity-80">
+                🧬 {loyalty.purity_label}
+              </div>
+            )}
           </div>
         )}
 
