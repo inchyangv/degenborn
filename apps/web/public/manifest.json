@@ -1,9 +1,11 @@
 {
+  "id": "/?source=pwa",
   "name": "DegenBorn",
   "short_name": "DegenBorn",
   "description": "Your wallet, reborn as a monster. Built on Four.meme.",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#0a0a0f",
   "theme_color": "#9945ff",
   "orientation": "portrait-primary",

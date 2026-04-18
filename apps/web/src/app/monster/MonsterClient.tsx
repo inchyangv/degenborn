@@ -15,6 +15,7 @@ import WeeklyRecapModal from "@/components/WeeklyRecapModal";
 import TypewriterText from "@/components/TypewriterText";
 import { HeroSkeleton } from "@/components/LoadingSkeleton";
 import { canonicalizeWallet } from "@/lib/demo-wallets";
+import InstallPrompt from "@/components/InstallPrompt";
 import Link from "next/link";
 
 // XP thresholds: level N requires (N * 100) XP to level up
@@ -239,6 +240,8 @@ export default function MonsterClient({ wallet = "" }: MonsterClientProps) {
 
   return (
     <div className="min-h-screen pb-12 relative">
+      {/* 3.6: PWA Add to Home Screen prompt */}
+      <InstallPrompt />
       {/* Mood-driven weather background */}
       <WeatherLayer mood={state.mood} />
       {/* Weekly recap — shown on Mondays if state changed */}
