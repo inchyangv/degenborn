@@ -10,6 +10,7 @@ import SummoningBanner from "@/components/SummoningBanner";
 import type { CharacterState, ArchetypeId } from "@degenborn/shared";
 import { ARCHETYPE_PROFILES, ARCHETYPE_COLORS } from "@degenborn/shared";
 import { DEMO_WALLETS } from "@/lib/demo-wallets";
+import { analytics } from "@/lib/analytics";
 
 const SAMPLE_MONSTERS: Array<{
   archetype: ArchetypeId;
@@ -208,6 +209,11 @@ export default function LandingClient({ fromWallet = null }: LandingClientProps)
   const [pasteWallet, setPasteWallet] = useState("");
   const [pasteError, setPasteError] = useState("");
 
+  // Funnel step 1: fire on mount
+  useEffect(() => {
+    analytics.landingArrived({ from: fromWallet ? "challenge_link" : undefined });
+  }, [fromWallet]);
+
   const handleConnect = () => {
     connect({ connector: injected() });
   };
@@ -228,6 +234,7 @@ export default function LandingClient({ fromWallet = null }: LandingClientProps)
       return;
     }
     setPasteError("");
+    analytics.walletPasted(trimmed);
     router.push(`/birth?wallet=${trimmed.toLowerCase()}`);
   };
 
@@ -333,7 +340,10 @@ export default function LandingClient({ fromWallet = null }: LandingClientProps)
                 {DEMO_PREVIEWS.map((d) => (
                   <button
                     key={d.key}
-                    onClick={() => router.push(`/birth?wallet=${DEMO_WALLETS[d.key]}`)}
+                    onClick={() => {
+                      analytics.demoSelected(d.key);
+                      router.push(`/birth?wallet=${DEMO_WALLETS[d.key]}`);
+                    }}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--degen-card)] border border-[var(--degen-border)] rounded-full text-xs text-gray-500 hover:text-gray-300 hover:border-gray-500 transition-all"
                   >
                     <span>{d.emoji}</span>

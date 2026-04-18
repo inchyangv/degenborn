@@ -46,11 +46,55 @@ export function track(event: string, props?: Record<string, unknown>): void {
   }).catch(() => { /* silent */ });
 }
 
-// Convenience wrappers for the 5 core events
+/**
+ * Funnel events — 5 core conversion checkpoints (TODO 5.1).
+ *
+ *  Step 1: landing_arrived     — user hits the landing page
+ *  Step 2: wallet_entered      — wallet address connected or pasted
+ *  Step 3: archetype_revealed  — archetype + DNA shown to user
+ *  Step 4: share_card_viewed   — user sees the share card section
+ *  Step 5: share_clicked       — user clicks any share button
+ */
+
+// Convenience wrappers for the 5 core funnel steps
 export const analytics = {
-  walletConnected: (address: string) => track("wallet_connected", { wallet: address.slice(0, 8) }),
-  analysisStarted: (wallet: string, window_: string) => track("analysis_started", { wallet: wallet.slice(0, 8), window: window_ }),
-  analysisCompleted: (archetype: string) => track("analysis_completed", { archetype }),
-  mintClicked: (archetype: string) => track("mint_clicked", { archetype }),
-  shareClicked: (archetype: string) => track("share_clicked", { archetype }),
+  // FUNNEL STEP 1: user arrived at landing
+  landingArrived: (props?: { from?: string }) =>
+    track("funnel_01_landing_arrived", { from: props?.from ?? "direct" }),
+
+  // FUNNEL STEP 2a: wallet connected via metamask/injected
+  walletConnected: (address: string) =>
+    track("funnel_02_wallet_connected", { method: "connect", wallet_prefix: address.slice(0, 8) }),
+
+  // FUNNEL STEP 2b: wallet pasted (no-wallet mode)
+  walletPasted: (address: string) =>
+    track("funnel_02_wallet_pasted", { method: "paste", wallet_prefix: address.slice(0, 8) }),
+
+  // FUNNEL STEP 2c: demo wallet selected
+  demoSelected: (archetype: string) =>
+    track("funnel_02_demo_selected", { method: "demo", archetype }),
+
+  // FUNNEL STEP 3: archetype revealed (analysis complete)
+  archetypeRevealed: (archetype: string, data_source: string) =>
+    track("funnel_03_archetype_revealed", { archetype, data_source }),
+
+  // FUNNEL STEP 4: share card section viewed
+  shareCardViewed: (archetype: string, mode: string) =>
+    track("funnel_04_share_card_viewed", { archetype, mode }),
+
+  // FUNNEL STEP 5: share button clicked
+  shareClicked: (archetype: string, channel: string) =>
+    track("funnel_05_share_clicked", { archetype, channel }),
+
+  // Non-funnel supplementary events
+  analysisStarted: (wallet: string, window_: string) =>
+    track("analysis_started", { wallet_prefix: wallet.slice(0, 8), window: window_ }),
+  analysisCompleted: (archetype: string) =>
+    track("analysis_completed", { archetype }),
+  mintClicked: (archetype: string) =>
+    track("mint_clicked", { archetype }),
+  memeStudioOpened: (archetype: string) =>
+    track("meme_studio_opened", { archetype }),
+  tokenWidgetViewed: (token_address: string) =>
+    track("token_widget_viewed", { token_prefix: token_address.slice(0, 10) }),
 };

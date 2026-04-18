@@ -9,6 +9,7 @@ import {
   pickShowcaseBadges,
   evaluateBadges,
 } from "@degenborn/shared";
+import { analytics } from "@/lib/analytics";
 import type { LoyaltyScore } from "@degenborn/scoring";
 import { useRef, useState } from "react";
 import CharacterDisplay from "./CharacterDisplay";
@@ -62,6 +63,7 @@ export default function ShareCard({ dna, archetype, state, wallet, loyalty }: Pr
     const shareText = buildShareText();
     // Auto-copy caption to clipboard before opening Twitter
     try { await navigator.clipboard.writeText(shareText); } catch { /* ignore */ }
+    analytics.shareClicked(archetype.archetype, "twitter");
     const text = encodeURIComponent(shareText);
     const profileUrl = encodeURIComponent(`${window.location.origin}/m/${wallet}`);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${profileUrl}`, "_blank", "noopener");
