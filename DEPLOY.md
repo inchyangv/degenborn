@@ -1,5 +1,7 @@
 # DegenBorn 배포 가이드
 
+> **Archived:** 아래 배포(Vercel / Railway)는 모두 내려간 상태입니다. 이 문서는 기록용으로만 남겨둡니다.
+
 ## 1. 사전 준비
 
 ### WalletConnect Project ID

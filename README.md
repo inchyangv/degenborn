@@ -1,5 +1,8 @@
 # DegenBorn
 
+> [!NOTE]
+> **Archived (2026-09).** 이 프로젝트는 더 이상 개발되지 않습니다. 모든 배포(Vercel web, Railway worker)는 내려갔고, 리포는 읽기 전용으로 보관됩니다. 로컬 실행은 아래 *Getting Started* / Replay Mode로 여전히 가능합니다.
+
 > **We are not making another NFT. We are turning wallet behavior into a living identity.**
 
 DegenBorn is an AI identity engine for Four.meme traders. Connect your wallet, receive your Persona DNA, and watch your on-chain behavior evolve into a unique monster character — the Soul Core.
@@ -8,7 +11,7 @@ DegenBorn is an AI identity engine for Four.meme traders. Connect your wallet, r
 
 ## Demo
 
-**Live Demo**: [degenborn.xyz](https://degenborn.xyz) *(deploy post-hackathon)*  
+**Live Demo**: 종료됨 (프로젝트 아카이브)  
 **Replay Mode**: `/replay` — runs offline, no API keys required
 
 ### 2-minute demo flow

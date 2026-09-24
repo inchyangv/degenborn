@@ -1,5 +1,7 @@
 # DegenBorn — TODO (Meme & Product Improvement Backlog)
 
+> **Frozen:** 프로젝트가 아카이브되어 이 백로그는 더 이상 진행되지 않습니다.
+
 > 이 문서는 PROJECT.md / docs/roadmap.md를 보완한다.
 > "지금 MVP는 됐다. 그럼 진짜 밈처럼 퍼지고, Four.meme의 중력장에 더 깊이 박히려면 무엇이 필요한가"를 정리한다.
 >
